@@ -38,3 +38,18 @@ public:
         fflush(stdout);
     }
 };
+
+TEST_F(DeclarableOpsTests17, test_sparse_to_dense) {
+    auto values = NDArrayFactory::create<float>({1.f, 2.f, 3.f});
+    auto shape = NDArrayFactory::create<Nd4jLong>({3, 3});
+    auto ranges = NDArrayFactory::create<Nd4jLong>({0,0, 1,1, 2,2});
+    auto def = NDArrayFactory::create<float>(0.f);
+    auto exp = NDArrayFactory::create<float>('c', {3, 3}, {1.f,0.f,0.f,  0.f,2.f,0.f,  0.f,0.f,3.f});
+
+
+    nd4j::ops::compat_sparse_to_dense op;
+    auto result = op.execute({&ranges, &shape, &values, &def}, {}, {});
+    ASSERT_EQ(Status::OK(), result->status());
+
+    delete result;
+}

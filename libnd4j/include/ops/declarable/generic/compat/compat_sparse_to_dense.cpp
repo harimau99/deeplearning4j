@@ -22,20 +22,30 @@
 #if NOT_EXCLUDED(OP_split_string)
 
 #include <ops/declarable/CustomOperations.h>
+#include <ops/declarable/helpers/sparse_to_dense.h>
 
 namespace nd4j {
     namespace ops {
         CUSTOM_OP_IMPL(compat_sparse_to_dense, 4, 1, false, 0, 0) {
-            auto input = INPUT_VARIABLE(0);
-            auto delim = INPUT_VARIABLE(1);
+            auto indices = INPUT_VARIABLE(0);
+            auto shape = INPUT_VARIABLE(1);
+            auto values = INPUT_VARIABLE(2);
+            NDArray *def = nullptr;
+
+            auto output = OUTPUT_VARIABLE(0);
+
+            if (block.width() > 3)
+                def = INPUT_VARIABLE(3);
+
+            nd4j::ops::helpers::compat_sparse_to_dense(*values, *indices, def, *output);
 
             return Status::OK();
         };
 
         DECLARE_SHAPE_FN(compat_sparse_to_dense) {
-            auto values = INPUT_VARIABLE(0);
+            auto indices = INPUT_VARIABLE(0);
             auto shape = INPUT_VARIABLE(1);
-            auto ranges = INPUT_VARIABLE(2);
+            auto values = INPUT_VARIABLE(2);
 
             if (block.width() > 3) {
                 auto def = INPUT_VARIABLE(3);
@@ -51,10 +61,10 @@ namespace nd4j {
 
         DECLARE_TYPES(compat_sparse_to_dense) {
             getOpDescriptor()
-                    ->setAllowedInputTypes(0,nd4j::DataType::ANY)
-                    ->setAllowedInputTypes(1, {ALL_INTS})
-                    ->setAllowedInputTypes(2, {ALL_INTS})
-                    ->setAllowedInputTypes(3,nd4j::DataType::ANY)
+                    ->setAllowedInputTypes(0, {ALL_INTS}) // indices
+                    ->setAllowedInputTypes(1, {ALL_INTS}) // shape
+                    ->setAllowedInputTypes(2,nd4j::DataType::ANY) // sparse values
+                    ->setAllowedInputTypes(3,nd4j::DataType::ANY) // default value
                     ->setAllowedOutputTypes(nd4j::DataType::ANY);
         }
     }
