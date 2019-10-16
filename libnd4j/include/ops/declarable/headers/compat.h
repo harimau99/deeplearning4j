@@ -32,7 +32,14 @@ namespace nd4j {
          * Input[1] - delimiter
          */
     #if NOT_EXCLUDED(OP_compat_split)
-        DECLARE_CUSTOM_OP(compat_split, 2, 2, true, 0, 0);
+        DECLARE_CUSTOM_OP(compat_split, 2, 2, false, 0, 0);
+    #endif
+
+        /**
+         * This operation converts TF sparse array representation to dense NDArray
+         */
+    #if NOT_EXCLUDED(OP_compat_sparse_to_dense)
+        DECLARE_CUSTOM_OP(compat_sparse_to_dense, 4, 1, false, 0, 0);
     #endif
 
     }

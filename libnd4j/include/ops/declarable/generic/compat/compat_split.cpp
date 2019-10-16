@@ -25,7 +25,7 @@
 
 namespace nd4j {
     namespace ops {
-        CUSTOM_OP_IMPL(compat_split, 2, 2, true, 0, 0) {
+        CUSTOM_OP_IMPL(compat_split, 2, 2, false, 0, 0) {
             auto input = INPUT_VARIABLE(0);
             auto delim = INPUT_VARIABLE(1);
 
