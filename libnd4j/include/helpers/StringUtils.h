@@ -53,6 +53,9 @@ namespace nd4j {
 
             return result;
         }
+
+
+        static uint64_t countSubarrays(void *haystack, uint64_t haystackLength, void *needle, uint64_t needleLength);
     };
 }
 

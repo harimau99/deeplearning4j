@@ -25,21 +25,21 @@
 
 namespace nd4j {
     namespace ops {
-        CUSTOM_OP_IMPL(split_string, 2, 1, true, 0, 0) {
+        CUSTOM_OP_IMPL(compat_split, 2, 2, true, 0, 0) {
             auto input = INPUT_VARIABLE(0);
             auto delim = INPUT_VARIABLE(1);
 
             return Status::OK();
         };
 
-        DECLARE_SHAPE_FN(split_string) {
+        DECLARE_SHAPE_FN(compat_split) {
             auto input = INPUT_VARIABLE(0);
             auto delim = INPUT_VARIABLE(1);
 
             return SHAPELIST();
         }
 
-        DECLARE_TYPES(split_string) {
+        DECLARE_TYPES(compat_split) {
             getOpDescriptor()
                     ->setAllowedInputTypes({ALL_STRINGS})
                     ->setAllowedOutputTypes({ALL_STRINGS});

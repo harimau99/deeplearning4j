@@ -21,5 +21,25 @@
 #include <helpers/StringUtils.h>
 
 namespace nd4j {
+    static FORCEINLINE bool match(uint8_t *haystack, uint8_t *needle, uint64_t length) {
+        for (int e = 0; e < length; e++)
+            if (haystack[e] != needle[e])
+                return false;
 
+        return true;
+    }
+
+    uint64_t StringUtils::countSubarrays(void *vhaystack, uint64_t haystackLength, void *vneedle, uint64_t needleLength) {
+        auto haystack = reinterpret_cast<uint8_t*>(vhaystack);
+        auto needle = reinterpret_cast<uint8_t*>(vneedle);
+
+        uint64_t number = 0;
+
+        for (int e = 0; e < haystackLength - needleLength; e++) {
+            if (match(&haystack[e], needle, needleLength))
+                number++;
+        }
+
+        return number;
+    }
 }

@@ -18,33 +18,25 @@
 //  @author raver119@gmail.com
 //
 
-#include <op_boilerplate.h>
-#if NOT_EXCLUDED(OP_split_string)
+#ifndef SAMEDIFF_COMPAT_H
+#define SAMEDIFF_COMPAT_H
 
-#include <ops/declarable/CustomOperations.h>
+#include <ops/declarable/headers/common.h>
 
 namespace nd4j {
     namespace ops {
-        CUSTOM_OP_IMPL(split_string, 2, 1, true, 0, 0) {
-            auto input = INPUT_VARIABLE(0);
-            auto delim = INPUT_VARIABLE(1);
+        /**
+         * This operation splits input string into pieces separated by delimiter
+         *
+         * Input[0] - string to split
+         * Input[1] - delimiter
+         */
+    #if NOT_EXCLUDED(OP_compat_split)
+        DECLARE_CUSTOM_OP(compat_split, 2, 2, true, 0, 0);
+    #endif
 
-            return Status::OK();
-        };
-
-        DECLARE_SHAPE_FN(split_string) {
-            auto input = INPUT_VARIABLE(0);
-            auto delim = INPUT_VARIABLE(1);
-
-            return SHAPELIST();
-        }
-
-        DECLARE_TYPES(split_string) {
-            getOpDescriptor()
-                    ->setAllowedInputTypes({ALL_STRINGS})
-                    ->setAllowedOutputTypes({ALL_STRINGS});
-        }
     }
 }
 
-#endif
+
+#endif //SAMEDIFF_COMPAT_H
