@@ -38,6 +38,7 @@ namespace nd4j {
                         coords[p] = indices[pos++];
                     }
 
+                    // fill output at given coords with sparse value
                     output[shape::getOffset(zShapeInfo, coords)] = values[e];
                 }
 
