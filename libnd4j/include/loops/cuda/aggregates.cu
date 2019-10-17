@@ -20,6 +20,7 @@
 //
 
 #include "../aggregates.h"
+#include <DebugHelper.h>
 
 namespace functions {
 namespace aggregate {

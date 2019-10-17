@@ -37,8 +37,11 @@ namespace nd4j {
         memcpy(newBuffer, _primaryBuffer, _lenInBytes);
         cudaMemcpy(newSpecialBuffer, _specialBuffer, _lenInBytes, cudaMemcpyDeviceToDevice);
 
-        RELEASE(reinterpret_cast<int8_t *>(_primaryBuffer), _workspace);
-        RELEASE_SPECIAL(reinterpret_cast<int8_t *>(_specialBuffer), _workspace);
+        auto ipb = reinterpret_cast<int8_t*>(_primaryBuffer);
+        auto isb = reinterpret_cast<int8_t*>(_specialBuffer);
+
+        RELEASE(ipb, _workspace);
+        RELEASE_SPECIAL(isb, _workspace);
 
         _primaryBuffer = newBuffer;
         _specialBuffer = newSpecialBuffer;
