@@ -25,6 +25,25 @@
 #include <exceptions/cuda_exception.h>
 
 namespace nd4j {
+    void DataBuffer::expand(const uint64_t size) {
+        // allocate new buffer
+        int8_t *newBuffer = nullptr;
+        int8_t *newSpecialBuffer = nullptr;
+        ALLOCATE(newBuffer, _workspace, size, int8_t);
+        ALLOCATE_SPECIAL(newSpecialBuffer, _workspace, size, int8_t);
+
+
+        // copy data from existing buffer
+        memcpy(newBuffer, _primaryBuffer, _lenInBytes);
+        cudaMemcpy(newSpecialBuffer, _specialBuffer, _lenInBytes, cudaMemcpyDeviceToDevice);
+
+        RELEASE(reinterpret_cast<int8_t *>(_primaryBuffer), _workspace);
+        RELEASE_SPECIAL(reinterpret_cast<int8_t *>(_specialBuffer), _workspace);
+
+        _primaryBuffer = newBuffer;
+        _specialBuffer = newSpecialBuffer;
+        _lenInBytes = size;
+    }
 
 ////////////////////////////////////////////////////////////////////////
 void DataBuffer::allocateSpecial() {
