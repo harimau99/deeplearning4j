@@ -19,6 +19,7 @@
 //
 
 #include <helpers/StringUtils.h>
+#include <exceptions/datatype_exception.h>
 
 namespace nd4j {
     static FORCEINLINE bool match(uint8_t *haystack, uint8_t *needle, uint64_t length) {
@@ -35,11 +36,25 @@ namespace nd4j {
 
         uint64_t number = 0;
 
-        for (int e = 0; e < haystackLength - needleLength; e++) {
+        for (uint64_t e = 0; e < haystackLength - needleLength; e++) {
             if (match(&haystack[e], needle, needleLength))
                 number++;
         }
 
         return number;
+    }
+
+
+    uint64_t StringUtils::byteLength(const NDArray &array) {
+        if (!array.isS())
+            throw nd4j::datatype_exception::build("StringUtils::byteLength expects one of String types;", array.dataType());
+
+        uint64_t result = 0;
+
+        // our buffer stores offsets, and the last value is basically number of bytes used
+        auto buffer = array.bufferAsT<Nd4jLong>();
+        result = buffer[array.lengthOf()];
+
+        return result;
     }
 }

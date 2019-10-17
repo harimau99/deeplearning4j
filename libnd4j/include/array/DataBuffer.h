@@ -105,6 +105,8 @@ class ND4J_EXPORT DataBuffer {
         bool isPrimaryActual() const;
         bool isSpecialActual() const;
 
+        void expand(const uint64_t size);
+
         void migrate();
 
         template <typename T> FORCEINLINE T* primaryAsT();

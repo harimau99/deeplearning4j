@@ -20,6 +20,8 @@
 
 
 #include <ops/declarable/helpers/sparse_to_dense.h>
+#include <helpers/StringUtils.h>
+#include <helpers/ShapeUtils.h>
 
 namespace nd4j {
     namespace ops {
@@ -49,18 +51,70 @@ namespace nd4j {
                 values.syncToHost();
                 indices.syncToHost();
 
-                // write out default values, if they are present
-                if (def != nullptr) {
-                    output.assign(def);
-
-                    // make sure output is synced back
-                    output.syncToHost();
-                }
-
-                // write out values
                 auto rank = output.rankOf();
-                BUILD_DOUBLE_SELECTOR(values.dataType(), indices.dataType(), fill_, (values.getBuffer(), indices.getBuffer(), output.buffer(), output.getShapeInfo(), rank, values.lengthOf()), LIBND4J_TYPES, INDEXING_TYPES);
 
+                if (output.isS()) {
+                    // string case is not so trivial, since elements might, and probably will, have different sizes
+                    auto numValues = values.lengthOf();
+                    auto numElements = output.lengthOf();
+
+                    // first of all we calculate final buffer sizes and offsets
+                    auto defaultLength = def == nullptr ? 0 : StringUtils::byteLength(*def);
+                    auto valuesLength = StringUtils::byteLength(values);
+                    auto bufferLength = defaultLength * (output.lengthOf() - numValues) + valuesLength;
+                    auto headerLength = ShapeUtils::stringBufferHeaderRequirements(numElements);
+
+                    // now we make sure our output buffer can hold results
+                    output.dataBuffer()->expand( bufferLength + headerLength);
+
+                    std::vector<Nd4jLong> outputCoords(rank);
+                    std::vector<Nd4jLong> valueCoords(rank);
+
+                    auto offsetsBuffer = output.bufferAsT<Nd4jLong>();
+                    auto dataBuffer = reinterpret_cast<uint8_t*>(offsetsBuffer + output.lengthOf());
+
+                    offsetsBuffer[0] = 0;
+
+                    // getting initial value coords
+                    for (int e = 0; e < rank; e++)
+                        valueCoords[e] = indices.e<Nd4jLong>(e);
+
+                    // write results individually
+                    for (uint64_t e = 0; e < numElements; e++) {
+                        auto vIndex = shape::coords2index(output.shapeInfo(), valueCoords.data());
+                        auto cLength = 0L;
+                        std::string str;
+                        if (vIndex == e) {
+                            // we're writing down sparse value here
+                             str = values.e<std::string>(e);
+                        } else {
+                            // we're writing down default value if it exists
+                            if (def != nullptr)
+                                str = def->e<std::string>(0);
+                            else
+                                str = "";
+                        }
+
+                        // TODO: make it unicode compliant
+                        memcpy(&dataBuffer[offsetsBuffer[e]], str.c_str(), str.length());
+
+                        // writing down offset
+                        offsetsBuffer[e+1] = cLength;
+                    }
+                } else {
+                    // numeric case is trivial, since all elements have equal sizes
+
+                    // write out default values, if they are present
+                    if (def != nullptr) {
+                        output.assign(def);
+
+                        // make sure output is synced back
+                        output.syncToHost();
+                    }
+
+                    // write out values
+                    BUILD_DOUBLE_SELECTOR(values.dataType(), indices.dataType(), fill_, (values.getBuffer(), indices.getBuffer(), output.buffer(), output.getShapeInfo(), rank, values.lengthOf()), LIBND4J_TYPES, INDEXING_TYPES);
+                }
                 // copy back to device, if there's any
                 output.syncToDevice();
             }

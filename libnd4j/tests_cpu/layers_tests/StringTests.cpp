@@ -91,3 +91,16 @@ TEST_F(StringTests, Basic_dup_1) {
 
     delete dup;
 }
+
+TEST_F(StringTests, byte_length_test_1) {
+    std::string f("alpha");
+    auto array = NDArrayFactory::string(f);
+
+    ASSERT_EQ(f.length(), StringUtils::byteLength(array));
+}
+
+TEST_F(StringTests, byte_length_test_2) {
+    auto array = NDArrayFactory::string('c', {2}, {"alpha", "beta"});
+
+    ASSERT_EQ(9, StringUtils::byteLength(array));
+}
