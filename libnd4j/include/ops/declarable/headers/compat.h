@@ -27,12 +27,17 @@ namespace nd4j {
     namespace ops {
         /**
          * This operation splits input string into pieces separated by delimiter
+         * PLEASE NOTE: This implementation is compatible with TF 1.x
          *
          * Input[0] - string to split
          * Input[1] - delimiter
+         *
+         * Returns:
+         * Output[0] - indices tensor
+         * Output[1] - values tensor
          */
-    #if NOT_EXCLUDED(OP_compat_split)
-        DECLARE_CUSTOM_OP(compat_split, 2, 2, false, 0, 0);
+    #if NOT_EXCLUDED(OP_compat_string_split)
+        DECLARE_CUSTOM_OP(compat_string_split, 2, 2, false, 0, 0);
     #endif
 
         /**

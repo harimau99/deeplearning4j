@@ -22,7 +22,7 @@
 #include <exceptions/datatype_exception.h>
 
 namespace nd4j {
-    static FORCEINLINE bool match(uint8_t *haystack, uint8_t *needle, uint64_t length) {
+    static FORCEINLINE bool match(const uint8_t *haystack, const uint8_t *needle, uint64_t length) {
         for (int e = 0; e < length; e++)
             if (haystack[e] != needle[e])
                 return false;
@@ -30,9 +30,9 @@ namespace nd4j {
         return true;
     }
 
-    uint64_t StringUtils::countSubarrays(void *vhaystack, uint64_t haystackLength, void *vneedle, uint64_t needleLength) {
-        auto haystack = reinterpret_cast<uint8_t*>(vhaystack);
-        auto needle = reinterpret_cast<uint8_t*>(vneedle);
+    uint64_t StringUtils::countSubarrays(const void *vhaystack, uint64_t haystackLength, const void *vneedle, uint64_t needleLength) {
+        auto haystack = reinterpret_cast<const uint8_t*>(vhaystack);
+        auto needle = reinterpret_cast<const uint8_t*>(vneedle);
 
         uint64_t number = 0;
 

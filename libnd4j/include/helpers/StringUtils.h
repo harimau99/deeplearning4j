@@ -65,7 +65,7 @@ namespace nd4j {
          * @param needleLength
          * @return
          */
-        static uint64_t countSubarrays(void *haystack, uint64_t haystackLength, void *needle, uint64_t needleLength);
+        static uint64_t countSubarrays(const void *haystack, uint64_t haystackLength, const void *needle, uint64_t needleLength);
 
         /**
          * This method returns number of bytes used for string NDArrays content
