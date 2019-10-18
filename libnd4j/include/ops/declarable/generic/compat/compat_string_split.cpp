@@ -30,6 +30,42 @@ namespace nd4j {
             auto input = INPUT_VARIABLE(0);
             auto delim = INPUT_VARIABLE(1);
 
+            auto indices = OUTPUT_VARIABLE(0);
+            auto values = OUTPUT_VARIABLE(1);
+
+            auto d = delim->e<std::string>(0);
+
+            // output rank N+1 wrt input rank
+            std::vector<Nd4jLong> ocoords(input->rankOf() + 1);
+            std::vector<Nd4jLong> icoords(input->rankOf());
+
+            Nd4jLong ic = 0L;
+            // loop through each string withn tensor
+            for (auto e = 0L; e < input->lengthOf(); e++) {
+                // now we should map substring to indices
+                auto s = input->e<std::string>(e);
+
+                // getting base index
+                shape::index2coords(e, input->shapeInfo(), icoords.data());
+
+                // getting number of substrings
+                auto cnt = StringUtils::countSubarrays(s.c_str(), s.length(), d.c_str(), d.length()) + 1;
+
+                // filling output indices
+                for (uint64_t f = 0; f < cnt; f++) {
+                    for (auto v: icoords)
+                        indices->p(ic++, v);
+
+                    // last index
+                    indices->p(ic++, f);
+                }
+            }
+
+
+            // special case, for future use
+            indices->syncToDevice();
+            values->syncToDevice();
+
             return Status::OK();
         };
 
@@ -42,6 +78,7 @@ namespace nd4j {
             // count number of delimiter substrings in all strings within input tensor
             uint64_t cnt = 0;
             for (auto e = 0L; e < input->lengthOf(); e++) {
+                // FIXME: bad, not UTF-compatible
                 auto s = input->e<std::string>(e);
 
                 // each substring we see in haystack, splits string in two parts. so we should add 1 to the number of subarrays
