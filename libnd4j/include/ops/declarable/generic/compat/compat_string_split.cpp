@@ -43,6 +43,8 @@ namespace nd4j {
             uint64_t cnt = 0;
             for (auto e = 0L; e < input->lengthOf(); e++) {
                 auto s = input->e<std::string>(e);
+
+                // each substring we see in haystack, splits string in two parts. so we should add 1 to the number of subarrays
                 cnt += StringUtils::countSubarrays(s.c_str(), s.length(), d.c_str(), d.length()) + 1;
             }
 
