@@ -35,12 +35,20 @@ namespace nd4j {
 
             auto d = delim->e<std::string>(0);
 
+            input->syncToHost();
+            delim->syncToHost();
+
             // output rank N+1 wrt input rank
             std::vector<Nd4jLong> ocoords(input->rankOf() + 1);
             std::vector<Nd4jLong> icoords(input->rankOf());
 
+            // getting buffer lengths
+            // FIXME: it'll be bigger, since it'll include delimiters,
+            auto outputLength = StringUtils::byteLength(*input);
+
+            uint64_t ss = 0L;
             Nd4jLong ic = 0L;
-            // loop through each string withn tensor
+            // loop through each string within tensor
             for (auto e = 0L; e < input->lengthOf(); e++) {
                 // now we should map substring to indices
                 auto s = input->e<std::string>(e);
@@ -59,7 +67,20 @@ namespace nd4j {
                     // last index
                     indices->p(ic++, f);
                 }
+
+                ss += cnt;
             }
+
+            // process strings now
+            std::vector<std::string> strings;
+            for (auto e = 0L; e < input->lengthOf(); e++) {
+                auto split = StringUtils::split(input->e<std::string>(e), d);
+
+                for (const auto &s:split)
+                    strings.emplace_back(s);
+            }
+
+            // now once we have all strings in single vector time to fill
 
 
             // special case, for future use

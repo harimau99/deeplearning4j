@@ -25,6 +25,7 @@
 #include <op_boilerplate.h>
 #include <string>
 #include <sstream>
+#include <vector>
 #include <NDArray.h>
 
 namespace nd4j {
@@ -75,6 +76,15 @@ namespace nd4j {
          * @return
          */
         static uint64_t byteLength(const NDArray &array);
+
+        /**
+         * This method splits a string into substring by delimiter
+         *
+         * @param haystack
+         * @param delimiter
+         * @return
+         */
+        static std::vector<std::string> split(const std::string &haystack, const std::string &delimiter);
     };
 }
 

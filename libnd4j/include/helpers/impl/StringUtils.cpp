@@ -57,4 +57,20 @@ namespace nd4j {
 
         return result;
     }
+
+    std::vector<std::string> StringUtils::split(const std::string &haystack, const std::string &delimiter) {
+        std::vector<std::string> output;
+
+        std::string::size_type prev_pos = 0, pos = 0;
+
+        // iterating through the haystack till the end
+        while((pos = haystack.find(delimiter, pos)) != std::string::npos) {
+            output.emplace_back(haystack.substr(prev_pos, pos-prev_pos));
+            prev_pos = ++pos;
+        }
+
+        output.emplace_back(haystack.substr(prev_pos, pos - prev_pos)); // Last word
+
+        return output;
+    }
 }
