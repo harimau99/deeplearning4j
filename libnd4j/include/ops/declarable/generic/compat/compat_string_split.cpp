@@ -81,7 +81,8 @@ namespace nd4j {
             }
 
             // now once we have all strings in single vector time to fill
-
+            // FIXME: BAD! Buffer is overwritten here!
+            *values = NDArrayFactory::string('c', {(Nd4jLong) strings.size()}, strings);
 
             // special case, for future use
             indices->syncToDevice();
