@@ -16,11 +16,8 @@
 
 package org.nd4j.nativeblas;
 
-import lombok.val;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.annotation.Cast;
-import org.bytedeco.javacpp.indexer.LongIndexer;
-import org.nd4j.linalg.api.buffer.Utf8Buffer;
 
 
 /**

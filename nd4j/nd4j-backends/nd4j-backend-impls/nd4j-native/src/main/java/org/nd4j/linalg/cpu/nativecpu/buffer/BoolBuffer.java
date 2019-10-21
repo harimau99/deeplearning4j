@@ -14,11 +14,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.api.buffer;
+package org.nd4j.linalg.cpu.nativecpu.buffer;
 
 
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.indexer.Indexer;
+import org.nd4j.linalg.api.buffer.BaseDataBuffer;
+import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 
 import java.nio.ByteBuffer;
@@ -28,7 +31,7 @@ import java.nio.ByteBuffer;
  *
  * @author Adam Gibson
  */
-public class UInt8Buffer extends BaseDataBuffer {
+public class BoolBuffer extends BaseCpuDataBuffer {
 
     /**
      * Meant for creating another view of a buffer
@@ -37,7 +40,7 @@ public class UInt8Buffer extends BaseDataBuffer {
      * @param indexer the indexer for the pointer
      * @param length  the length of the view
      */
-    public UInt8Buffer(Pointer pointer, Indexer indexer, long length) {
+    public BoolBuffer(Pointer pointer, Indexer indexer, long length) {
         super(pointer, indexer, length);
     }
 
@@ -45,24 +48,24 @@ public class UInt8Buffer extends BaseDataBuffer {
      * Create a float buffer with the given length
      * @param length the float buffer with the given length
      */
-    public UInt8Buffer(long length) {
+    public BoolBuffer(long length) {
         super(length);
 
     }
 
-    public UInt8Buffer(long length, boolean initialize) {
+    public BoolBuffer(long length, boolean initialize) {
         super(length, initialize);
     }
 
-    public UInt8Buffer(long length, boolean initialize, MemoryWorkspace workspace) {
+    public BoolBuffer(long length, boolean initialize, MemoryWorkspace workspace) {
         super(length, initialize, workspace);
     }
 
-    public UInt8Buffer(int length, int elementSize) {
+    public BoolBuffer(int length, int elementSize) {
         super(length, elementSize);
     }
 
-    public UInt8Buffer(int length, int elementSize, long offset) {
+    public BoolBuffer(int length, int elementSize, long offset) {
         super(length, elementSize, offset);
     }
 
@@ -71,93 +74,93 @@ public class UInt8Buffer extends BaseDataBuffer {
      */
     @Override
     protected void initTypeAndSize() {
-        type = DataType.UBYTE;
+        type = DataType.BOOL;
         elementSize = 1;
     }
 
-    public UInt8Buffer(DataBuffer underlyingBuffer, long length, long offset) {
+    public BoolBuffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
     }
 
-    public UInt8Buffer(float[] data) {
+    public BoolBuffer(float[] data) {
         this(data, true);
     }
 
-    public UInt8Buffer(float[] data, MemoryWorkspace workspace) {
+    public BoolBuffer(float[] data, MemoryWorkspace workspace) {
         this(data, true, workspace);
     }
 
-    public UInt8Buffer(int[] data) {
+    public BoolBuffer(int[] data) {
         this(data, true);
     }
 
-    public UInt8Buffer(double[] data) {
+    public BoolBuffer(double[] data) {
         this(data, true);
     }
 
-    public UInt8Buffer(int[] data, boolean copyOnOps) {
+    public BoolBuffer(int[] data, boolean copyOnOps) {
         super(data, copyOnOps);
     }
 
-    public UInt8Buffer(int[] data, boolean copy, long offset) {
+    public BoolBuffer(int[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public UInt8Buffer(double[] data, boolean copyOnOps) {
+    public BoolBuffer(double[] data, boolean copyOnOps) {
         super(data, copyOnOps);
     }
 
-    public UInt8Buffer(double[] data, boolean copy, long offset) {
+    public BoolBuffer(double[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public UInt8Buffer(ByteBuffer buffer, int length) {
+    public BoolBuffer(ByteBuffer buffer, int length) {
         super(buffer, length);
     }
 
-    public UInt8Buffer(ByteBuffer buffer, int length, long offset) {
+    public BoolBuffer(ByteBuffer buffer, int length, long offset) {
         super(buffer, length, offset);
     }
 
-    public UInt8Buffer(byte[] data, int length) {
+    public BoolBuffer(byte[] data, int length) {
         super(data, length);
     }
 
-    public UInt8Buffer(float[] floats, boolean copy) {
+    public BoolBuffer(float[] floats, boolean copy) {
         super(floats, copy);
     }
 
-    public UInt8Buffer(float[] floats, boolean copy, MemoryWorkspace workspace) {
+    public BoolBuffer(float[] floats, boolean copy, MemoryWorkspace workspace) {
         super(floats, copy, workspace);
     }
 
-    public UInt8Buffer(float[] data, boolean copy, long offset) {
+    public BoolBuffer(float[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public UInt8Buffer(float[] data, boolean copy, long offset, MemoryWorkspace workspace) {
+    public BoolBuffer(float[] data, boolean copy, long offset, MemoryWorkspace workspace) {
         super(data, copy, offset, workspace);
     }
 
     @Override
     protected DataBuffer create(long length) {
-        return new UInt8Buffer(length);
+        return new BoolBuffer(length);
     }
 
 
     @Override
     public DataBuffer create(double[] data) {
-        return new UInt8Buffer(data);
+        return new BoolBuffer(data);
     }
 
     @Override
     public DataBuffer create(float[] data) {
-        return new UInt8Buffer(data);
+        return new BoolBuffer(data);
     }
 
     @Override
     public DataBuffer create(int[] data) {
-        return new UInt8Buffer(data);
+        return new BoolBuffer(data);
     }
 
 

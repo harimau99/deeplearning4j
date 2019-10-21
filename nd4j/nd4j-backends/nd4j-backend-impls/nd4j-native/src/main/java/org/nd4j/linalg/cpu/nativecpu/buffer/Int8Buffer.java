@@ -14,11 +14,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.api.buffer;
+package org.nd4j.linalg.cpu.nativecpu.buffer;
 
 
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.indexer.Indexer;
+import org.nd4j.linalg.api.buffer.BaseDataBuffer;
+import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 
 import java.nio.ByteBuffer;
@@ -28,7 +31,7 @@ import java.nio.ByteBuffer;
  *
  * @author Adam Gibson
  */
-public class HalfBuffer extends BaseDataBuffer {
+public class Int8Buffer extends BaseCpuDataBuffer {
 
     /**
      * Meant for creating another view of a buffer
@@ -37,7 +40,7 @@ public class HalfBuffer extends BaseDataBuffer {
      * @param indexer the indexer for the pointer
      * @param length  the length of the view
      */
-    public HalfBuffer(Pointer pointer, Indexer indexer, long length) {
+    public Int8Buffer(Pointer pointer, Indexer indexer, long length) {
         super(pointer, indexer, length);
     }
 
@@ -45,24 +48,24 @@ public class HalfBuffer extends BaseDataBuffer {
      * Create a float buffer with the given length
      * @param length the float buffer with the given length
      */
-    public HalfBuffer(long length) {
+    public Int8Buffer(long length) {
         super(length);
 
     }
 
-    public HalfBuffer(long length, boolean initialize) {
+    public Int8Buffer(long length, boolean initialize) {
         super(length, initialize);
     }
 
-    public HalfBuffer(long length, boolean initialize, MemoryWorkspace workspace) {
+    public Int8Buffer(long length, boolean initialize, MemoryWorkspace workspace) {
         super(length, initialize, workspace);
     }
 
-    public HalfBuffer(int length, int elementSize) {
+    public Int8Buffer(int length, int elementSize) {
         super(length, elementSize);
     }
 
-    public HalfBuffer(int length, int elementSize, long offset) {
+    public Int8Buffer(int length, int elementSize, long offset) {
         super(length, elementSize, offset);
     }
 
@@ -71,93 +74,93 @@ public class HalfBuffer extends BaseDataBuffer {
      */
     @Override
     protected void initTypeAndSize() {
-        type = DataType.HALF;
-        elementSize = 2;
+        type = DataType.BYTE;
+        elementSize = 1;
     }
 
-    public HalfBuffer(DataBuffer underlyingBuffer, long length, long offset) {
+    public Int8Buffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
     }
 
-    public HalfBuffer(float[] data) {
+    public Int8Buffer(float[] data) {
         this(data, true);
     }
 
-    public HalfBuffer(float[] data, MemoryWorkspace workspace) {
+    public Int8Buffer(float[] data, MemoryWorkspace workspace) {
         this(data, true, workspace);
     }
 
-    public HalfBuffer(int[] data) {
+    public Int8Buffer(int[] data) {
         this(data, true);
     }
 
-    public HalfBuffer(double[] data) {
+    public Int8Buffer(double[] data) {
         this(data, true);
     }
 
-    public HalfBuffer(int[] data, boolean copyOnOps) {
+    public Int8Buffer(int[] data, boolean copyOnOps) {
         super(data, copyOnOps);
     }
 
-    public HalfBuffer(int[] data, boolean copy, long offset) {
+    public Int8Buffer(int[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public HalfBuffer(double[] data, boolean copyOnOps) {
+    public Int8Buffer(double[] data, boolean copyOnOps) {
         super(data, copyOnOps);
     }
 
-    public HalfBuffer(double[] data, boolean copy, long offset) {
+    public Int8Buffer(double[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public HalfBuffer(ByteBuffer buffer, int length) {
+    public Int8Buffer(ByteBuffer buffer, int length) {
         super(buffer, length);
     }
 
-    public HalfBuffer(ByteBuffer buffer, int length, long offset) {
+    public Int8Buffer(ByteBuffer buffer, int length, long offset) {
         super(buffer, length, offset);
     }
 
-    public HalfBuffer(byte[] data, int length) {
+    public Int8Buffer(byte[] data, int length) {
         super(data, length);
     }
 
-    public HalfBuffer(float[] floats, boolean copy) {
+    public Int8Buffer(float[] floats, boolean copy) {
         super(floats, copy);
     }
 
-    public HalfBuffer(float[] floats, boolean copy, MemoryWorkspace workspace) {
+    public Int8Buffer(float[] floats, boolean copy, MemoryWorkspace workspace) {
         super(floats, copy, workspace);
     }
 
-    public HalfBuffer(float[] data, boolean copy, long offset) {
+    public Int8Buffer(float[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public HalfBuffer(float[] data, boolean copy, long offset, MemoryWorkspace workspace) {
+    public Int8Buffer(float[] data, boolean copy, long offset, MemoryWorkspace workspace) {
         super(data, copy, offset, workspace);
     }
 
     @Override
     protected DataBuffer create(long length) {
-        return new HalfBuffer(length);
+        return new Int8Buffer(length);
     }
 
 
     @Override
     public DataBuffer create(double[] data) {
-        return new HalfBuffer(data);
+        return new Int8Buffer(data);
     }
 
     @Override
     public DataBuffer create(float[] data) {
-        return new HalfBuffer(data);
+        return new Int8Buffer(data);
     }
 
     @Override
     public DataBuffer create(int[] data) {
-        return new HalfBuffer(data);
+        return new Int8Buffer(data);
     }
 
 

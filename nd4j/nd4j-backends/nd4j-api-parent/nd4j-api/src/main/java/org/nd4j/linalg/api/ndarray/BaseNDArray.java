@@ -23,7 +23,6 @@ import com.google.flatbuffers.FlatBufferBuilder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import net.ericaro.neoitertools.Generator;
 import org.apache.commons.math3.util.FastMath;
 import org.bytedeco.javacpp.BytePointer;
 import org.nd4j.autodiff.samediff.serde.FlatBuffersMapper;
@@ -5401,29 +5400,7 @@ public abstract class BaseNDArray implements INDArray, Iterable {
 
     }
 
-    protected int stringBuffer(FlatBufferBuilder builder, DataBuffer buffer) {
-        Preconditions.checkArgument(buffer.dataType() == DataType.UTF8, "This method can be called on UTF8 buffers only");
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(bos);
-
-            val numWords = this.length();
-            val ub = (Utf8Buffer) buffer;
-            // writing length first
-            val t = length();
-            val ptr = (BytePointer) ub.pointer();
-
-            // now write all strings as bytes
-            for (int i = 0; i < ub.length(); i++) {
-                dos.writeByte(ptr.get(i));
-            }
-
-            val bytes = bos.toByteArray();
-            return FlatArray.createBufferVector(builder, bytes);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    protected abstract int stringBuffer(FlatBufferBuilder builder, DataBuffer buffer);
 
     @Override
     public int toFlatArray(FlatBufferBuilder builder) {
@@ -5531,13 +5508,6 @@ public abstract class BaseNDArray implements INDArray, Iterable {
         return !any();
     }
 
-    @Override
-    public String getString(long index) {
-        if (!isS())
-            throw new UnsupportedOperationException("This method is usable only on String dataType, but got [" + this.dataType() + "]");
-
-        return ((Utf8Buffer) data).getString(index);
-    }
 
     /**
      * Validate that the operation is being applied on a numerical array (not boolean or utf8).

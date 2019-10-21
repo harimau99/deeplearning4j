@@ -25,7 +25,6 @@ import lombok.val;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.indexer.LongIndexer;
 import org.nd4j.autodiff.functions.DifferentialFunction;
-import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.samediff.serde.FlatBuffersMapper;
 import org.nd4j.base.Preconditions;
 import org.nd4j.compression.impl.AbstractCompressor;
@@ -57,6 +56,8 @@ import org.nd4j.linalg.compression.CompressionDescriptor;
 import org.nd4j.linalg.compression.CompressionType;
 import org.nd4j.linalg.compression.ThresholdCompression;
 import org.nd4j.linalg.cpu.nativecpu.CpuTADManager;
+import org.nd4j.linalg.cpu.nativecpu.buffer.LongBuffer;
+import org.nd4j.linalg.cpu.nativecpu.buffer.Utf8Buffer;
 import org.nd4j.linalg.cpu.nativecpu.rng.CpuNativeRandom;
 import org.nd4j.linalg.exception.ND4JIllegalArgumentException;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
@@ -1946,7 +1947,9 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
     }
 
     @Override
-    public String getString(Utf8Buffer buffer, long index) {
+    public String getString(DataBuffer buffer, long index) {
+        Preconditions.checkArgument(buffer instanceof Utf8Buffer, "Expected Utf8Buffer");
+
         val addr = ((LongIndexer) buffer.indexer()).get(index);
         val ptr = new PagedPointer(addr);
         val str = new Nd4jCpu.utf8string(ptr);

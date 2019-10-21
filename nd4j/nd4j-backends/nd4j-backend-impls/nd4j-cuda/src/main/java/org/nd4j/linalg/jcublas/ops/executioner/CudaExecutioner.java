@@ -24,10 +24,8 @@ import lombok.val;
 import lombok.var;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.indexer.LongIndexer;
-import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.samediff.serde.FlatBuffersMapper;
 import org.nd4j.base.Preconditions;
-import org.nd4j.jita.allocator.impl.AllocationPoint;
 import org.nd4j.jita.allocator.impl.AtomicAllocator;
 import org.nd4j.jita.allocator.pointers.CudaPointer;
 import org.nd4j.jita.allocator.tad.DeviceTADManager;
@@ -36,7 +34,6 @@ import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.buffer.BaseDataBuffer;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
-import org.nd4j.linalg.api.buffer.Utf8Buffer;
 import org.nd4j.linalg.api.environment.Nd4jEnvironment;
 import org.nd4j.linalg.api.memory.pointers.PagedPointer;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -58,13 +55,13 @@ import org.nd4j.linalg.api.shape.options.ArrayOptionsHelper;
 import org.nd4j.linalg.api.shape.options.ArrayType;
 import org.nd4j.linalg.cache.TADManager;
 import org.nd4j.linalg.compression.ThresholdCompression;
-import org.nd4j.linalg.exception.ND4JIllegalArgumentException;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
 import org.nd4j.linalg.exception.ND4JOpProfilerException;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.jcublas.buffer.AddressRetriever;
 import org.nd4j.linalg.jcublas.buffer.BaseCudaDataBuffer;
 import org.nd4j.linalg.jcublas.buffer.CudaLongDataBuffer;
+import org.nd4j.linalg.jcublas.buffer.CudaUtf8Buffer;
 import org.nd4j.linalg.jcublas.context.CudaContext;
 import org.nd4j.linalg.primitives.AtomicBoolean;
 import org.nd4j.linalg.primitives.Pair;
@@ -2436,7 +2433,9 @@ public class CudaExecutioner extends DefaultOpExecutioner {
     }
 
     @Override
-    public String getString(Utf8Buffer buffer, long index) {
+    public String getString(DataBuffer buffer, long index) {
+        Preconditions.checkArgument(buffer instanceof CudaUtf8Buffer, "Expected Utf8Buffer");
+
         val addr = ((LongIndexer) buffer.indexer()).get(index);
         val ptr = new PagedPointer(addr);
         val str = new Nd4jCuda.utf8string(ptr);

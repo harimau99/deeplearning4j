@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.api.buffer;
+package org.nd4j.linalg.jcublas.buffer;
 
 
 import lombok.Getter;
@@ -23,11 +23,10 @@ import lombok.val;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.LongPointer;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.javacpp.indexer.ByteIndexer;
 import org.bytedeco.javacpp.indexer.Indexer;
-import org.bytedeco.javacpp.indexer.LongIndexer;
+import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
-import org.nd4j.linalg.api.memory.pointers.PagedPointer;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -39,7 +38,7 @@ import java.util.Collection;
  *
  * @author Adam Gibson
  */
-public class Utf8Buffer extends BaseDataBuffer {
+public class CudaUtf8Buffer extends BaseCudaDataBuffer {
 
     protected Collection<Pointer> references = new ArrayList<>();
 
@@ -53,81 +52,81 @@ public class Utf8Buffer extends BaseDataBuffer {
      * @param indexer the indexer for the pointer
      * @param length  the length of the view
      */
-    public Utf8Buffer(Pointer pointer, Indexer indexer, long length) {
+    public CudaUtf8Buffer(Pointer pointer, Indexer indexer, long length) {
         super(pointer, indexer, length);
     }
 
-    public Utf8Buffer(long length) {
+    public CudaUtf8Buffer(long length) {
         super(length);
     }
 
-    public Utf8Buffer(long length, boolean initialize) {
-        super(length, initialize);
+    public CudaUtf8Buffer(long length, boolean initialize) {
+        super(length, 1, initialize);
     }
 
-    public Utf8Buffer(long length, boolean initialize, MemoryWorkspace workspace) {
-        super(length, initialize, workspace);
+    public CudaUtf8Buffer(long length, boolean initialize, MemoryWorkspace workspace) {
+        super(length, 1, initialize, workspace);
     }
 
-    public Utf8Buffer(int[] ints, boolean copy, MemoryWorkspace workspace) {
+    public CudaUtf8Buffer(int[] ints, boolean copy, MemoryWorkspace workspace) {
         super(ints, copy, workspace);
     }
 
-    public Utf8Buffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
+    public CudaUtf8Buffer(ByteBuffer buffer, int length, long offset) {
+        super(buffer, length, DataType.UTF8);
     }
 
-    public Utf8Buffer(byte[] data, long numWords) {
-        super(data.length, false);
+    public CudaUtf8Buffer(byte[] data, long numWords) {
+        super(data.length, 1, false);
 
         val bp = (BytePointer) pointer;
         bp.put(data);
         this.numWords = numWords;
     }
 
-    public Utf8Buffer(double[] data, boolean copy) {
+    public CudaUtf8Buffer(double[] data, boolean copy) {
         super(data, copy);
     }
 
-    public Utf8Buffer(double[] data, boolean copy, long offset) {
+    public CudaUtf8Buffer(double[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public Utf8Buffer(float[] data, boolean copy) {
+    public CudaUtf8Buffer(float[] data, boolean copy) {
         super(data, copy);
     }
 
-    public Utf8Buffer(long[] data, boolean copy) {
+    public CudaUtf8Buffer(long[] data, boolean copy) {
         super(data, copy);
     }
 
-    public Utf8Buffer(long[] data, boolean copy, MemoryWorkspace workspace) {
-        super(data, copy, workspace);
+    public CudaUtf8Buffer(long[] data, boolean copy, MemoryWorkspace workspace) {
+        super(data, copy);
     }
 
-    public Utf8Buffer(float[] data, boolean copy, long offset) {
+    public CudaUtf8Buffer(float[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public Utf8Buffer(int[] data, boolean copy, long offset) {
+    public CudaUtf8Buffer(int[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public Utf8Buffer(int length, int elementSize) {
+    public CudaUtf8Buffer(int length, int elementSize) {
         super(length, elementSize);
     }
 
-    public Utf8Buffer(int length, int elementSize, long offset) {
+    public CudaUtf8Buffer(int length, int elementSize, long offset) {
         super(length, elementSize, offset);
     }
 
-    public Utf8Buffer(DataBuffer underlyingBuffer, long length, long offset) {
+    public CudaUtf8Buffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
         this.numWords = length;
     }
 
-    public Utf8Buffer(@NonNull Collection<String> strings) {
-        super(Utf8Buffer.stringBufferRequiredLength(strings), false);
+    public CudaUtf8Buffer(@NonNull Collection<String> strings) {
+        super(CudaUtf8Buffer.stringBufferRequiredLength(strings), 1, false);
 
         // at this point we should have fully allocated buffer, time to fill length
         val headerLength = (strings.size() + 1) * 8;
@@ -155,8 +154,8 @@ public class Utf8Buffer extends BaseDataBuffer {
         headerPointer.put(cnt, currentLength);
     }
 
-    public Utf8Buffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
+    public CudaUtf8Buffer(ByteBuffer buffer, int length) {
+        super(buffer, length, DataType.UTF8);
     }
 
     public String getString(long index) {
@@ -191,7 +190,7 @@ public class Utf8Buffer extends BaseDataBuffer {
 
     @Override
     protected DataBuffer create(long length) {
-        return new Utf8Buffer(length);
+        return new CudaUtf8Buffer(length);
     }
 
     @Override

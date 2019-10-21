@@ -14,11 +14,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.api.buffer;
+package org.nd4j.linalg.cpu.nativecpu.buffer;
 
 
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.indexer.Indexer;
+import org.nd4j.linalg.api.buffer.BaseDataBuffer;
+import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 
 import java.nio.ByteBuffer;
@@ -28,7 +31,7 @@ import java.nio.ByteBuffer;
  *
  * @author Adam Gibson
  */
-public class FloatBuffer extends BaseDataBuffer {
+public class Int16Buffer extends BaseCpuDataBuffer {
 
     /**
      * Meant for creating another view of a buffer
@@ -37,7 +40,7 @@ public class FloatBuffer extends BaseDataBuffer {
      * @param indexer the indexer for the pointer
      * @param length  the length of the view
      */
-    public FloatBuffer(Pointer pointer, Indexer indexer, long length) {
+    public Int16Buffer(Pointer pointer, Indexer indexer, long length) {
         super(pointer, indexer, length);
     }
 
@@ -45,24 +48,24 @@ public class FloatBuffer extends BaseDataBuffer {
      * Create a float buffer with the given length
      * @param length the float buffer with the given length
      */
-    public FloatBuffer(long length) {
+    public Int16Buffer(long length) {
         super(length);
 
     }
 
-    public FloatBuffer(long length, boolean initialize) {
+    public Int16Buffer(long length, boolean initialize) {
         super(length, initialize);
     }
 
-    public FloatBuffer(long length, boolean initialize, MemoryWorkspace workspace) {
+    public Int16Buffer(long length, boolean initialize, MemoryWorkspace workspace) {
         super(length, initialize, workspace);
     }
 
-    public FloatBuffer(int length, int elementSize) {
+    public Int16Buffer(int length, int elementSize) {
         super(length, elementSize);
     }
 
-    public FloatBuffer(int length, int elementSize, long offset) {
+    public Int16Buffer(int length, int elementSize, long offset) {
         super(length, elementSize, offset);
     }
 
@@ -71,93 +74,93 @@ public class FloatBuffer extends BaseDataBuffer {
      */
     @Override
     protected void initTypeAndSize() {
-        type = DataType.FLOAT;
-        elementSize = 4;
+        type = DataType.SHORT;
+        elementSize = 2;
     }
 
-    public FloatBuffer(DataBuffer underlyingBuffer, long length, long offset) {
+    public Int16Buffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
     }
 
-    public FloatBuffer(float[] data) {
+    public Int16Buffer(float[] data) {
         this(data, true);
     }
 
-    public FloatBuffer(float[] data, MemoryWorkspace workspace) {
+    public Int16Buffer(float[] data, MemoryWorkspace workspace) {
         this(data, true, workspace);
     }
 
-    public FloatBuffer(int[] data) {
+    public Int16Buffer(int[] data) {
         this(data, true);
     }
 
-    public FloatBuffer(double[] data) {
+    public Int16Buffer(double[] data) {
         this(data, true);
     }
 
-    public FloatBuffer(int[] data, boolean copyOnOps) {
+    public Int16Buffer(int[] data, boolean copyOnOps) {
         super(data, copyOnOps);
     }
 
-    public FloatBuffer(int[] data, boolean copy, long offset) {
+    public Int16Buffer(int[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public FloatBuffer(double[] data, boolean copyOnOps) {
+    public Int16Buffer(double[] data, boolean copyOnOps) {
         super(data, copyOnOps);
     }
 
-    public FloatBuffer(double[] data, boolean copy, long offset) {
+    public Int16Buffer(double[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public FloatBuffer(ByteBuffer buffer, int length) {
+    public Int16Buffer(ByteBuffer buffer, int length) {
         super(buffer, length);
     }
 
-    public FloatBuffer(ByteBuffer buffer, int length, long offset) {
+    public Int16Buffer(ByteBuffer buffer, int length, long offset) {
         super(buffer, length, offset);
     }
 
-    public FloatBuffer(byte[] data, int length) {
+    public Int16Buffer(byte[] data, int length) {
         super(data, length);
     }
 
-    public FloatBuffer(float[] floats, boolean copy) {
+    public Int16Buffer(float[] floats, boolean copy) {
         super(floats, copy);
     }
 
-    public FloatBuffer(float[] floats, boolean copy, MemoryWorkspace workspace) {
+    public Int16Buffer(float[] floats, boolean copy, MemoryWorkspace workspace) {
         super(floats, copy, workspace);
     }
 
-    public FloatBuffer(float[] data, boolean copy, long offset) {
+    public Int16Buffer(float[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public FloatBuffer(float[] data, boolean copy, long offset, MemoryWorkspace workspace) {
+    public Int16Buffer(float[] data, boolean copy, long offset, MemoryWorkspace workspace) {
         super(data, copy, offset, workspace);
     }
 
     @Override
     protected DataBuffer create(long length) {
-        return new FloatBuffer(length);
+        return new Int16Buffer(length);
     }
 
 
     @Override
     public DataBuffer create(double[] data) {
-        return new FloatBuffer(data);
+        return new Int16Buffer(data);
     }
 
     @Override
     public DataBuffer create(float[] data) {
-        return new FloatBuffer(data);
+        return new Int16Buffer(data);
     }
 
     @Override
     public DataBuffer create(int[] data) {
-        return new FloatBuffer(data);
+        return new Int16Buffer(data);
     }
 
 

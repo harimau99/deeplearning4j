@@ -14,11 +14,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.api.buffer;
+package org.nd4j.linalg.cpu.nativecpu.buffer;
 
 
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.indexer.Indexer;
+import org.nd4j.linalg.api.buffer.BaseDataBuffer;
+import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 
 import java.nio.ByteBuffer;
@@ -28,7 +31,7 @@ import java.nio.ByteBuffer;
  *
  * @author Adam Gibson
  */
-public class UInt64Buffer extends BaseDataBuffer {
+public class FloatBuffer extends BaseCpuDataBuffer {
 
     /**
      * Meant for creating another view of a buffer
@@ -37,7 +40,7 @@ public class UInt64Buffer extends BaseDataBuffer {
      * @param indexer the indexer for the pointer
      * @param length  the length of the view
      */
-    public UInt64Buffer(Pointer pointer, Indexer indexer, long length) {
+    public FloatBuffer(Pointer pointer, Indexer indexer, long length) {
         super(pointer, indexer, length);
     }
 
@@ -45,24 +48,24 @@ public class UInt64Buffer extends BaseDataBuffer {
      * Create a float buffer with the given length
      * @param length the float buffer with the given length
      */
-    public UInt64Buffer(long length) {
+    public FloatBuffer(long length) {
         super(length);
 
     }
 
-    public UInt64Buffer(long length, boolean initialize) {
+    public FloatBuffer(long length, boolean initialize) {
         super(length, initialize);
     }
 
-    public UInt64Buffer(long length, boolean initialize, MemoryWorkspace workspace) {
+    public FloatBuffer(long length, boolean initialize, MemoryWorkspace workspace) {
         super(length, initialize, workspace);
     }
 
-    public UInt64Buffer(int length, int elementSize) {
+    public FloatBuffer(int length, int elementSize) {
         super(length, elementSize);
     }
 
-    public UInt64Buffer(int length, int elementSize, long offset) {
+    public FloatBuffer(int length, int elementSize, long offset) {
         super(length, elementSize, offset);
     }
 
@@ -71,93 +74,93 @@ public class UInt64Buffer extends BaseDataBuffer {
      */
     @Override
     protected void initTypeAndSize() {
-        type = DataType.UINT64;
-        elementSize = 8;
+        type = DataType.FLOAT;
+        elementSize = 4;
     }
 
-    public UInt64Buffer(DataBuffer underlyingBuffer, long length, long offset) {
+    public FloatBuffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
     }
 
-    public UInt64Buffer(float[] data) {
+    public FloatBuffer(float[] data) {
         this(data, true);
     }
 
-    public UInt64Buffer(float[] data, MemoryWorkspace workspace) {
+    public FloatBuffer(float[] data, MemoryWorkspace workspace) {
         this(data, true, workspace);
     }
 
-    public UInt64Buffer(int[] data) {
+    public FloatBuffer(int[] data) {
         this(data, true);
     }
 
-    public UInt64Buffer(double[] data) {
+    public FloatBuffer(double[] data) {
         this(data, true);
     }
 
-    public UInt64Buffer(int[] data, boolean copyOnOps) {
+    public FloatBuffer(int[] data, boolean copyOnOps) {
         super(data, copyOnOps);
     }
 
-    public UInt64Buffer(int[] data, boolean copy, long offset) {
+    public FloatBuffer(int[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public UInt64Buffer(double[] data, boolean copyOnOps) {
+    public FloatBuffer(double[] data, boolean copyOnOps) {
         super(data, copyOnOps);
     }
 
-    public UInt64Buffer(double[] data, boolean copy, long offset) {
+    public FloatBuffer(double[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public UInt64Buffer(ByteBuffer buffer, int length) {
+    public FloatBuffer(ByteBuffer buffer, int length) {
         super(buffer, length);
     }
 
-    public UInt64Buffer(ByteBuffer buffer, int length, long offset) {
+    public FloatBuffer(ByteBuffer buffer, int length, long offset) {
         super(buffer, length, offset);
     }
 
-    public UInt64Buffer(byte[] data, int length) {
+    public FloatBuffer(byte[] data, int length) {
         super(data, length);
     }
 
-    public UInt64Buffer(float[] floats, boolean copy) {
+    public FloatBuffer(float[] floats, boolean copy) {
         super(floats, copy);
     }
 
-    public UInt64Buffer(float[] floats, boolean copy, MemoryWorkspace workspace) {
+    public FloatBuffer(float[] floats, boolean copy, MemoryWorkspace workspace) {
         super(floats, copy, workspace);
     }
 
-    public UInt64Buffer(float[] data, boolean copy, long offset) {
+    public FloatBuffer(float[] data, boolean copy, long offset) {
         super(data, copy, offset);
     }
 
-    public UInt64Buffer(float[] data, boolean copy, long offset, MemoryWorkspace workspace) {
+    public FloatBuffer(float[] data, boolean copy, long offset, MemoryWorkspace workspace) {
         super(data, copy, offset, workspace);
     }
 
     @Override
     protected DataBuffer create(long length) {
-        return new UInt64Buffer(length);
+        return new FloatBuffer(length);
     }
 
 
     @Override
     public DataBuffer create(double[] data) {
-        return new UInt64Buffer(data);
+        return new FloatBuffer(data);
     }
 
     @Override
     public DataBuffer create(float[] data) {
-        return new UInt64Buffer(data);
+        return new FloatBuffer(data);
     }
 
     @Override
     public DataBuffer create(int[] data) {
-        return new UInt64Buffer(data);
+        return new FloatBuffer(data);
     }
 
 

@@ -858,4 +858,5 @@ public interface DataBufferFactory {
 
     Class<? extends DataBuffer> doubleBufferClass();
 
+    DataBuffer createUtf8Buffer(byte[] data, long product);
 }

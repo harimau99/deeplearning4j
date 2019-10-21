@@ -14,15 +14,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.api.buffer;
+package org.nd4j.linalg.cpu.nativecpu.buffer;
 
 
 import lombok.NonNull;
-import lombok.val;
 import org.bytedeco.javacpp.LongPointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.indexer.Indexer;
 import org.bytedeco.javacpp.indexer.LongIndexer;
+import org.nd4j.linalg.api.buffer.BaseDataBuffer;
+import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.pointers.PagedPointer;
 
@@ -33,7 +35,7 @@ import java.nio.ByteBuffer;
  *
  * @author Adam Gibson
  */
-public class LongBuffer extends BaseDataBuffer {
+public class LongBuffer extends BaseCpuDataBuffer {
 
     /**
      * Meant for creating another view of a buffer

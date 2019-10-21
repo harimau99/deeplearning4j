@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.api.buffer.factory;
+package org.nd4j.linalg.cpu.nativecpu.buffer;
 
 import lombok.NonNull;
 import org.bytedeco.javacpp.DoublePointer;
@@ -26,6 +26,7 @@ import org.bytedeco.javacpp.indexer.FloatIndexer;
 import org.bytedeco.javacpp.indexer.Indexer;
 import org.bytedeco.javacpp.indexer.IntIndexer;
 import org.nd4j.linalg.api.buffer.*;
+import org.nd4j.linalg.api.buffer.factory.DataBufferFactory;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.util.ArrayUtil;
 
@@ -1045,5 +1046,9 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
     @Override
     public Class<? extends DataBuffer> doubleBufferClass() {
         return DoubleBuffer.class;
+    }
+
+    public DataBuffer createUtf8Buffer(byte[] data, long product) {
+        return new Utf8Buffer(data, product);
     }
 }

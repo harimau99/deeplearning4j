@@ -18,11 +18,9 @@ package org.nd4j.linalg.jcublas;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import lombok.var;
 import org.nd4j.base.Preconditions;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.buffer.DataTypeEx;
-import org.nd4j.linalg.api.buffer.Utf8Buffer;
 import org.nd4j.linalg.api.memory.enums.MemoryKind;
 import org.nd4j.linalg.api.ops.custom.Flatten;
 import org.nd4j.linalg.api.ops.impl.shape.Concat;
@@ -34,12 +32,10 @@ import org.nd4j.linalg.jcublas.buffer.*;
 import org.nd4j.linalg.memory.MemcpyDirection;
 import org.nd4j.linalg.primitives.Pair;
 import org.bytedeco.javacpp.*;
-import org.bytedeco.javacpp.indexer.*;
 import org.nd4j.jita.allocator.enums.CudaConstants;
 import org.nd4j.jita.allocator.impl.AllocationPoint;
 import org.nd4j.jita.allocator.impl.AtomicAllocator;
 import org.nd4j.jita.allocator.pointers.CudaPointer;
-import org.nd4j.jita.allocator.utils.AllocationUtils;
 import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
@@ -51,19 +47,12 @@ import org.nd4j.linalg.compression.CompressedDataBuffer;
 import org.nd4j.linalg.compression.CompressionDescriptor;
 import org.nd4j.linalg.compression.CompressionType;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
-import org.nd4j.linalg.factory.BaseNDArrayFactory;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.jcublas.blas.*;
 import org.nd4j.linalg.jcublas.context.CudaContext;
 import org.nd4j.linalg.util.ArrayUtil;
 import org.nd4j.nativeblas.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -216,7 +205,7 @@ public class JCublasNDArrayFactory extends BaseNativeNDArrayFactory {
     @Override
     public INDArray create(Collection<String> strings, long[] shape, char order) {
         val pairShape = Nd4j.getShapeInfoProvider().createShapeInformation(shape, order, DataType.UTF8);
-        val buffer = new Utf8Buffer(strings);
+        val buffer = new CudaUtf8Buffer(strings);
         val list = new ArrayList<String>(strings);
         return Nd4j.createArrayFromShapeBuffer(buffer, pairShape);
     }

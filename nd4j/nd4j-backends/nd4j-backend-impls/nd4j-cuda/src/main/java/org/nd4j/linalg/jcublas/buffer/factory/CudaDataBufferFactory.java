@@ -24,15 +24,11 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.indexer.*;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
-import org.nd4j.linalg.api.buffer.LongBuffer;
-import org.nd4j.linalg.api.buffer.Utf8Buffer;
 import org.nd4j.linalg.api.buffer.factory.DataBufferFactory;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
 import org.nd4j.linalg.jcublas.buffer.*;
 import org.nd4j.linalg.util.ArrayUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 
@@ -94,7 +90,7 @@ public class CudaDataBufferFactory implements DataBufferFactory {
             case BOOL:
                 return new CudaBoolDataBuffer(underlyingBuffer, length, offset);
             case UTF8:
-                return new Utf8Buffer(underlyingBuffer, length, offset);
+                return new CudaUtf8Buffer(underlyingBuffer, length, offset);
             default:
                 throw new ND4JIllegalStateException("Unknown data buffer type: " + underlyingBuffer.dataType().toString());
         }
@@ -1124,4 +1120,7 @@ public class CudaDataBufferFactory implements DataBufferFactory {
         return new CudaLongDataBuffer(length, initialize, workspace);
     }
 
+    public DataBuffer createUtf8Buffer(byte[] data, long product) {
+        return new CudaUtf8Buffer(data, product);
+    }
 }

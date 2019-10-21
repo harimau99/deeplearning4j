@@ -36,7 +36,6 @@ import org.nd4j.graph.FlatArray;
 import org.nd4j.linalg.api.blas.params.MMulTranspose;
 import org.nd4j.linalg.api.buffer.*;
 import org.nd4j.linalg.api.buffer.factory.DataBufferFactory;
-import org.nd4j.linalg.api.buffer.factory.DefaultDataBufferFactory;
 import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
 import org.nd4j.linalg.api.concurrency.AffinityManager;
 import org.nd4j.linalg.api.concurrency.BasicAffinityManager;
@@ -5139,7 +5138,7 @@ public class Nd4j {
                     pp.toString(NDARRAY_FACTORY_CLASS));
             Class<? extends ConvolutionInstance> convolutionInstanceClazz = (Class<? extends ConvolutionInstance>) Class
                     .forName(pp.toString(CONVOLUTION_OPS, DefaultConvolutionInstance.class.getName()));
-            String defaultName = pp.toString(DATA_BUFFER_OPS, DefaultDataBufferFactory.class.getName());
+            String defaultName = pp.toString(DATA_BUFFER_OPS, "org.nd4j.linalg.cpu.nativecpu.buffer.DefaultDataBufferFactory");
             Class<? extends DataBufferFactory> dataBufferFactoryClazz = (Class<? extends DataBufferFactory>) Class
                     .forName(pp.toString(DATA_BUFFER_OPS, defaultName));
             Class<? extends BaseShapeInfoProvider> shapeInfoProviderClazz = (Class<? extends BaseShapeInfoProvider>) Class
@@ -5796,14 +5795,14 @@ public class Nd4j {
                         arr[e] = sb.get(e + pos);
                     }
 
-                    val buffer = new Utf8Buffer(arr, prod);
+                    val buffer = DATA_BUFFER_FACTORY_INSTANCE.createUtf8Buffer(arr, prod);
                     return Nd4j.create(buffer, shapeOf);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
             case UBYTE:
-                UInt8Buffer b = new UInt8Buffer(ArrayUtil.prod(shapeOf));
+                val b = Nd4j.createBuffer(DataType.UBYTE, ArrayUtil.prod(shapeOf), false);
                 val sb = bb.order(_order).asReadOnlyBuffer();
                 for (int e = 0; e < prod; e++)
                     b.put(e, sb.get(e));

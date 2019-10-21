@@ -19,12 +19,10 @@ package org.nd4j.jita.allocator.impl;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
-import org.apache.commons.lang3.RandomUtils;
 import org.bytedeco.javacpp.Pointer;
 import org.nd4j.jita.allocator.Allocator;
 import org.nd4j.jita.allocator.enums.Aggressiveness;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
-import org.nd4j.jita.allocator.garbage.GarbageBufferReference;
 import org.nd4j.jita.allocator.pointers.CudaPointer;
 import org.nd4j.jita.allocator.pointers.PointersPair;
 import org.nd4j.jita.allocator.time.Ring;
@@ -37,29 +35,24 @@ import org.nd4j.jita.flow.FlowController;
 import org.nd4j.jita.handler.MemoryHandler;
 import org.nd4j.jita.handler.impl.CudaZeroHandler;
 import org.nd4j.jita.workspace.CudaWorkspace;
-import org.nd4j.linalg.api.buffer.BaseDataBuffer;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
-import org.nd4j.linalg.api.buffer.Utf8Buffer;
 import org.nd4j.linalg.api.memory.enums.MemoryKind;
-import org.nd4j.linalg.api.memory.pointers.PagedPointer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.cache.ConstantHandler;
 import org.nd4j.linalg.compression.CompressedDataBuffer;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.jcublas.buffer.CudaUtf8Buffer;
 import org.nd4j.linalg.jcublas.context.CudaContext;
 import org.nd4j.nativeblas.NativeOpsHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.nd4j.linalg.jcublas.buffer.BaseCudaDataBuffer;
 
-import java.lang.ref.ReferenceQueue;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -285,14 +278,14 @@ public class AtomicAllocator implements Allocator {
      */
     @Override
     public Pointer getPointer(@NonNull DataBuffer buffer, CudaContext context) {
-        if (buffer instanceof Utf8Buffer)
+        if (buffer instanceof CudaUtf8Buffer)
             return null;
 
         return memoryHandler.getDevicePointer(buffer, context);
     }
 
     public Pointer getPointer(DataBuffer buffer) {
-        if (buffer instanceof Utf8Buffer)
+        if (buffer instanceof CudaUtf8Buffer)
             return null;
 
         return memoryHandler.getDevicePointer(buffer, getDeviceContext());
