@@ -22,8 +22,12 @@ import org.nd4j.linalg.api.buffer.BaseDataBuffer;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.buffer.util.AllocUtil;
+import org.nd4j.linalg.api.memory.Deallocatable;
+import org.nd4j.linalg.api.memory.Deallocator;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.pointers.PagedPointer;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.memory.deallocation.DeallocatorService;
 import org.nd4j.nativeblas.NativeOpsHolder;
 import org.nd4j.nativeblas.OpaqueDataBuffer;
 
@@ -34,12 +38,32 @@ import java.nio.ByteBuffer;
  *
  * @author raver119@gmail.com
  */
-public abstract class BaseCpuDataBuffer extends BaseDataBuffer {
+public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallocatable {
 
-    protected OpaqueDataBuffer ptrDataBuffer;
+    private OpaqueDataBuffer ptrDataBuffer;
 
     protected BaseCpuDataBuffer() {
 
+    }
+
+    @Override
+    public String getUniqueId() {
+        return "BCDB" + Nd4j.getDeallocatorService().nextValue();
+    }
+
+    @Override
+    public Deallocator deallocator() {
+        return new CpuDeallocator(this);
+    }
+
+    protected OpaqueDataBuffer getOpaqueDataBuffer() {
+        return ptrDataBuffer;
+    }
+
+    @Override
+    public int targetDevice() {
+        // TODO: once we add NUMA support this might change. Or might not.
+        return 0;
     }
 
     /**
@@ -327,14 +351,16 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer {
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UTF8) {
-            pointer = new BytePointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length(), true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length()).asBytePointer();
+
             setIndexer(ByteIndexer.create((BytePointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         }
 
-        //// log.info("Creating new buffer of size: {}; dtype: {}; A", length, dataType());
+        Nd4j.getDeallocatorService().pickObject(this);
     }
 
     protected BaseCpuDataBuffer(long length, boolean initialize, MemoryWorkspace workspace) {
