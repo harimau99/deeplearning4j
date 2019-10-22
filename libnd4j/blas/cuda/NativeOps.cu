@@ -3593,3 +3593,21 @@ bool isMinimalRequirementsMet() {
 bool isOptimalRequirementsMet() {
     return true;
 }
+
+OpaqueDataBuffer* allocateDataBuffer(Nd4jLong numBytes, bool allocatePrimary, bool allocateSpecial) {
+    auto db = new nd4j::DataBuffer(numBytes, nd4j::DataType::INT8, nullptr, allocatePrimary && allocateSpecial);
+
+    return db;
+}
+
+Nd4jPointer dbPrimaryBuffer(OpaqueDataBuffer *dataBuffer) {
+    return dataBuffer->primary();
+}
+
+Nd4jPointer dbSpecialBuffer(OpaqueDataBuffer *dataBuffer) {
+    return dataBuffer->special();
+}
+
+void deleteDataBuffer(OpaqueDataBuffer *dataBuffer) {
+    delete dataBuffer;
+}

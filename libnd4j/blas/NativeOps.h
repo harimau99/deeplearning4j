@@ -1760,6 +1760,13 @@ ND4J_EXPORT Nd4jPointer lcCopyStream(OpaqueLaunchContext* lc);
 ND4J_EXPORT Nd4jPointer lcBlasHandle(OpaqueLaunchContext* lc);
 ND4J_EXPORT Nd4jPointer lcSolverHandle(OpaqueLaunchContext* lc);
 
+typedef nd4j::DataBuffer OpaqueDataBuffer;
+
+ND4J_EXPORT OpaqueDataBuffer* allocateDataBuffer(Nd4jLong numBytes, bool allocatePrimary, bool allocateSpecial);
+ND4J_EXPORT Nd4jPointer dbPrimaryBuffer(OpaqueDataBuffer *dataBuffer);
+ND4J_EXPORT Nd4jPointer dbSpecialBuffer(OpaqueDataBuffer *dataBuffer);
+ND4J_EXPORT void deleteDataBuffer(OpaqueDataBuffer *dataBuffer);
+
 
 ND4J_EXPORT int  binaryLevel();
 ND4J_EXPORT int optimalLevel();

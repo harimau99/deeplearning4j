@@ -3240,6 +3240,24 @@ bool isOptimalRequirementsMet() {
 #endif
 }
 
+OpaqueDataBuffer* allocateDataBuffer(Nd4jLong numBytes, bool allocatePrimary, bool allocateSpecial) {
+    auto db = new nd4j::DataBuffer(numBytes, nd4j::DataType::INT8, nullptr, allocatePrimary && allocateSpecial);
+
+    return db;
+}
+
+Nd4jPointer dbPrimaryBuffer(OpaqueDataBuffer *dataBuffer) {
+    return dataBuffer->primary();
+}
+
+Nd4jPointer dbSpecialBuffer(OpaqueDataBuffer *dataBuffer) {
+    return dataBuffer->special();
+}
+
+void deleteDataBuffer(OpaqueDataBuffer *dataBuffer) {
+    delete dataBuffer;
+}
+
 BUILD_SINGLE_TEMPLATE(template void pullRowsGeneric, (void *, Nd4jLong*, void*, Nd4jLong*, const int, Nd4jLong*, Nd4jLong*, Nd4jLong*, Nd4jLong*, Nd4jLong*), LIBND4J_TYPES);
 BUILD_SINGLE_TEMPLATE(template void tearGeneric, (void *, Nd4jLong*, Nd4jPointer*, Nd4jLong*, Nd4jLong*, Nd4jLong*), LIBND4J_TYPES);
 BUILD_SINGLE_TEMPLATE(template void shuffleGeneric, (void**, Nd4jLong**, void**, Nd4jLong**, int, int*, Nd4jLong**, Nd4jLong**), LIBND4J_TYPES);
