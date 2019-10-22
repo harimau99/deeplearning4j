@@ -391,6 +391,9 @@ public class Nd4jCpu extends org.nd4j.nativeblas.Nd4jCpuHelper {
 
         public native void copyBufferFrom(@Const @ByRef DataBuffer other, @Cast("size_t") long sizeToCopyinBytes/*=0*/, @Cast("const Nd4jLong") long offsetThis/*=0*/, @Cast("const Nd4jLong") long offsetOther/*=0*/);
         public native void copyBufferFrom(@Const @ByRef DataBuffer other);
+
+        public native void setPrimaryBuffer(Pointer buffer, @Cast("size_t") long length);
+        public native void setSpecialBuffer(Pointer buffer, @Cast("size_t") long length);
 }
 ///// IMLEMENTATION OF INLINE METHODS /////
 
@@ -3265,6 +3268,8 @@ public native @Cast("Nd4jPointer") Pointer lcSolverHandle(OpaqueLaunchContext lc
 public native OpaqueDataBuffer allocateDataBuffer(@Cast("Nd4jLong") long numBytes, @Cast("bool") boolean allocatePrimary, @Cast("bool") boolean allocateSpecial);
 public native @Cast("Nd4jPointer") Pointer dbPrimaryBuffer(OpaqueDataBuffer dataBuffer);
 public native @Cast("Nd4jPointer") Pointer dbSpecialBuffer(OpaqueDataBuffer dataBuffer);
+public native void dbSetPrimaryBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer primaryBuffer, @Cast("Nd4jLong") long numBytes);
+public native void dbSetSpecialBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer specialBuffer, @Cast("Nd4jLong") long numBytes);
 public native void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
 
 
