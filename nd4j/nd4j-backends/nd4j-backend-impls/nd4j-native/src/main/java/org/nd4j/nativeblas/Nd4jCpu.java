@@ -266,6 +266,146 @@ public class Nd4jCpu extends org.nd4j.nativeblas.Nd4jCpuHelper {
 
 // #endif
 
+// Parsed from array/DataBuffer.h
+
+/*******************************************************************************
+ * Copyright (c) 2015-2018 Skymind, Inc.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ******************************************************************************/
+
+//
+// @author raver119@gmail.com
+// @author Yurii Shyrma (iuriish@yahoo.com)
+//
+
+// #ifndef DEV_TESTS_DATABUFFER_H
+// #define DEV_TESTS_DATABUFFER_H
+
+// #include <cstring>
+// #include <op_boilerplate.h>
+// #include <dll.h>
+// #include <pointercast.h>
+// #include <array/DataType.h>
+// #include <memory/Workspace.h>
+// #include <execution/LaunchContext.h>
+
+@Namespace("nd4j") @NoOffset public static class DataBuffer extends Pointer {
+    static { Loader.load(); }
+    /** Pointer cast constructor. Invokes {@link Pointer#Pointer(Pointer)}. */
+    public DataBuffer(Pointer p) { super(p); }
+    /** Native array allocator. Access with {@link Pointer#position(long)}. */
+    public DataBuffer(long size) { super((Pointer)null); allocateArray(size); }
+    private native void allocateArray(long size);
+    @Override public DataBuffer position(long position) {
+        return (DataBuffer)super.position(position);
+    }
+
+
+        public DataBuffer(Pointer primary, Pointer special,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
+                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/, @Cast("const bool") boolean isOwnerSpecial/*=false*/,
+                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(primary, special, lenInBytes, dataType, isOwnerPrimary, isOwnerSpecial, workspace); }
+        private native void allocate(Pointer primary, Pointer special,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
+                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/, @Cast("const bool") boolean isOwnerSpecial/*=false*/,
+                                       Workspace workspace/*=nullptr*/);
+        public DataBuffer(Pointer primary, Pointer special,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(primary, special, lenInBytes, dataType); }
+        private native void allocate(Pointer primary, Pointer special,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
+
+        public DataBuffer(Pointer primary,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
+                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/,
+                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(primary, lenInBytes, dataType, isOwnerPrimary, workspace); }
+        private native void allocate(Pointer primary,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
+                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/,
+                                       Workspace workspace/*=nullptr*/);
+        public DataBuffer(Pointer primary,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(primary, lenInBytes, dataType); }
+        private native void allocate(Pointer primary,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
+
+        public DataBuffer(@Const Pointer hostBuffer,
+                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes,
+                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(hostBuffer, dataType, lenInBytes, workspace); }
+        private native void allocate(@Const Pointer hostBuffer,
+                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes,
+                                       Workspace workspace/*=nullptr*/);
+        public DataBuffer(@Const Pointer hostBuffer,
+                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes) { super((Pointer)null); allocate(hostBuffer, dataType, lenInBytes); }
+        private native void allocate(@Const Pointer hostBuffer,
+                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes);
+
+        public DataBuffer(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType, Workspace workspace/*=nullptr*/, @Cast("const bool") boolean allocBoth/*=false*/) { super((Pointer)null); allocate(lenInBytes, dataType, workspace, allocBoth); }
+        private native void allocate(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType, Workspace workspace/*=nullptr*/, @Cast("const bool") boolean allocBoth/*=false*/);
+        public DataBuffer(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(lenInBytes, dataType); }
+        private native void allocate(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
+
+        public DataBuffer(@Const @ByRef DataBuffer other) { super((Pointer)null); allocate(other); }
+        private native void allocate(@Const @ByRef DataBuffer other);
+        public DataBuffer() { super((Pointer)null); allocate(); }
+        private native void allocate();
+
+        public native @ByRef @Name("operator =") DataBuffer put(@Const @ByRef DataBuffer other);
+
+        public native @Cast("nd4j::DataType") int getDataType();
+        public native @Cast("size_t") long getLenInBytes();
+
+        public native Pointer primary();
+        public native Pointer special();
+
+        public native void allocatePrimary();
+        public native void allocateSpecial();
+
+        public native void writePrimary();
+        public native void writeSpecial();
+        public native void readPrimary();
+        public native void readSpecial();
+        public native @Cast("bool") boolean isPrimaryActual();
+        public native @Cast("bool") boolean isSpecialActual();
+
+        public native void expand(@Cast("const uint64_t") long size);
+
+        public native void migrate();
+
+        public native void syncToPrimary(@Const LaunchContext context, @Cast("const bool") boolean forceSync/*=false*/);
+        public native void syncToPrimary(@Const LaunchContext context);
+        public native void syncToSpecial(@Cast("const bool") boolean forceSync/*=false*/);
+        public native void syncToSpecial();
+
+        public native void setToZeroBuffers(@Cast("const bool") boolean both/*=false*/);
+        public native void setToZeroBuffers();
+
+        public native void copyBufferFrom(@Const @ByRef DataBuffer other, @Cast("size_t") long sizeToCopyinBytes/*=0*/, @Cast("const Nd4jLong") long offsetThis/*=0*/, @Cast("const Nd4jLong") long offsetOther/*=0*/);
+        public native void copyBufferFrom(@Const @ByRef DataBuffer other);
+}
+///// IMLEMENTATION OF INLINE METHODS /////
+
+////////////////////////////////////////////////////////////////////////
+    
+
+////////////////////////////////////////////////////////////////////////
+    
+
+
+
+
+// #endif //DEV_TESTS_DATABUFFER_H
+
+
 // Parsed from array/ConstantDataBuffer.h
 
 /*******************************************************************************

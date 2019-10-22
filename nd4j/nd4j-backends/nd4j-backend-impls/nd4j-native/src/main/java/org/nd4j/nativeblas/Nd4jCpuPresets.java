@@ -35,6 +35,7 @@ import java.util.Scanner;
                 value = {@Platform(define = "LIBND4J_ALL_OPS", include = {
                                               "memory/MemoryType.h",
                                               "array/DataType.h",
+                                              "array/DataBuffer.h",
                                               "array/ConstantDataBuffer.h",
                                               "array/ConstantDescriptor.h",
                                               "array/TadPack.h",

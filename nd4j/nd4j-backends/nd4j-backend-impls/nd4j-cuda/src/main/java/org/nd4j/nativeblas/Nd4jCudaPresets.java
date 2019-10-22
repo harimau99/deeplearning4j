@@ -29,6 +29,7 @@ import org.bytedeco.javacpp.tools.InfoMapper;
 @Properties(target = "org.nd4j.nativeblas.Nd4jCuda", helper = "org.nd4j.nativeblas.Nd4jCudaHelper",
                 value = {@Platform(define = "LIBND4J_ALL_OPS", include = {
                         "array/DataType.h",
+                        "array/DataBuffer.h",
                         "array/ConstantDescriptor.h",
                         "array/ConstantDataBuffer.h",
                         "array/TadPack.h",
