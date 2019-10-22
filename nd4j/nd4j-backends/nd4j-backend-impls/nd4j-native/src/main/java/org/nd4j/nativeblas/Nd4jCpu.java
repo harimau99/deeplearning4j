@@ -3262,6 +3262,11 @@ public native @Cast("Nd4jPointer") Pointer lcCopyStream(OpaqueLaunchContext lc);
 public native @Cast("Nd4jPointer") Pointer lcBlasHandle(OpaqueLaunchContext lc);
 public native @Cast("Nd4jPointer") Pointer lcSolverHandle(OpaqueLaunchContext lc);
 
+public native OpaqueDataBuffer allocateDataBuffer(@Cast("Nd4jLong") long numBytes, @Cast("bool") boolean allocatePrimary, @Cast("bool") boolean allocateSpecial);
+public native @Cast("Nd4jPointer") Pointer dbPrimaryBuffer(OpaqueDataBuffer dataBuffer);
+public native @Cast("Nd4jPointer") Pointer dbSpecialBuffer(OpaqueDataBuffer dataBuffer);
+public native void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
+
 
 public native int binaryLevel();
 public native int optimalLevel();

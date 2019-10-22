@@ -23,6 +23,9 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.buffer.util.AllocUtil;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
+import org.nd4j.linalg.api.memory.pointers.PagedPointer;
+import org.nd4j.nativeblas.NativeOpsHolder;
+import org.nd4j.nativeblas.OpaqueDataBuffer;
 
 import java.nio.ByteBuffer;
 
@@ -32,6 +35,8 @@ import java.nio.ByteBuffer;
  * @author raver119@gmail.com
  */
 public abstract class BaseCpuDataBuffer extends BaseDataBuffer {
+
+    protected OpaqueDataBuffer ptrDataBuffer;
 
     protected BaseCpuDataBuffer() {
 
@@ -216,80 +221,107 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer {
             throw new IllegalArgumentException("Unable to create a buffer of length <= 0");
 
         if (dataType() == DataType.DOUBLE) {
-            pointer = new DoublePointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 8, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asDoublePointer();
+
             indexer = DoubleIndexer.create((DoublePointer) pointer);
+
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.FLOAT) {
-            pointer = new FloatPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 4, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asFloatPointer();
+
             setIndexer(FloatIndexer.create((FloatPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
 
         } else if (dataType() == DataType.HALF) {
-            pointer = new ShortPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 2, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
+
             setIndexer(HalfIndexer.create((ShortPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.BFLOAT16) {
-            pointer = new ShortPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 2, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer)).asShortPointer();
+
             setIndexer(Bfloat16Indexer.create((ShortPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.INT) {
-            pointer = new IntPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 4, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asIntPointer();
+
             setIndexer(IntIndexer.create((IntPointer) pointer));
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.LONG) {
-            pointer = new LongPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 8, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asLongPointer();
+
             setIndexer(LongIndexer.create((LongPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.BYTE) {
-            pointer = new BytePointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBytePointer();
+
             setIndexer(ByteIndexer.create((BytePointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.SHORT) {
-            pointer = new ShortPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 2, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
+
             setIndexer(ShortIndexer.create((ShortPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UBYTE) {
-            pointer = new BytePointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBytePointer();
+
             setIndexer(UByteIndexer.create((BytePointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UINT16) {
-            pointer = new ShortPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 2, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
+
             setIndexer(UShortIndexer.create((ShortPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UINT32) {
-            pointer = new IntPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 4, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asIntPointer();
+
             // FIXME: we need unsigned indexer here
             setIndexer(IntIndexer.create((IntPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UINT64) {
-            pointer = new LongPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 8, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asLongPointer();
+
             // FIXME: we need unsigned indexer here
             setIndexer(LongIndexer.create((LongPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.BOOL) {
-            pointer = new BooleanPointer(length());
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, true, false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBoolPointer();
+
             setIndexer(BooleanIndexer.create((BooleanPointer) pointer));
 
             if (initialize)

@@ -168,6 +168,7 @@ public class Nd4jCpuPresets implements InfoMapper, BuildEnabled {
                         .put(new Info("OpaqueVariablesSet").pointerTypes("OpaqueVariablesSet"))
                         .put(new Info("OpaqueVariable").pointerTypes("OpaqueVariable"))
                         .put(new Info("OpaqueConstantDataBuffer").pointerTypes("OpaqueConstantDataBuffer"))
+                        .put(new Info("OpaqueDataBuffer").pointerTypes("OpaqueDataBuffer"))
                         .put(new Info("OpaqueContext").pointerTypes("OpaqueContext"))
                         .put(new Info("OpaqueRandomGenerator").pointerTypes("OpaqueRandomGenerator"))
                         .put(new Info("OpaqueLaunchContext").pointerTypes("OpaqueLaunchContext"))
