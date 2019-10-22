@@ -256,4 +256,17 @@ namespace nd4j {
 
         deleteBuffers();
     }
+
+    void DataBuffer::setPrimaryBuffer(void *buffer, size_t length) {
+        // TODO: release original primary buffer if it's not null? or not?
+        if (_primaryBuffer != nullptr && _isOwnerPrimary) {
+            // delete?
+        }
+        _primaryBuffer = buffer;
+        _isOwnerPrimary = false;
+    }
+
+    void DataBuffer::setSpecialBuffer(void *buffer, size_t length) {
+        this->setSpecial(buffer, false);
+    }
 }

@@ -36,11 +36,11 @@ class ND4J_EXPORT DataBuffer {
 
     private:
 
-        void* _primaryBuffer;
-        void* _specialBuffer;
-        size_t _lenInBytes;
+        void* _primaryBuffer = nullptr;
+        void* _specialBuffer = nullptr;
+        size_t _lenInBytes = 0;
         DataType _dataType;
-        memory::Workspace* _workspace;
+        memory::Workspace* _workspace = nullptr;
         bool _isOwnerPrimary;
         bool _isOwnerSpecial;
 
@@ -118,6 +118,9 @@ class ND4J_EXPORT DataBuffer {
         void setToZeroBuffers(const bool both = false);
 
         void copyBufferFrom(const DataBuffer& other, size_t sizeToCopyinBytes = 0, const Nd4jLong offsetThis = 0, const Nd4jLong offsetOther = 0);
+
+        void setPrimaryBuffer(void *buffer, size_t length);
+        void setSpecialBuffer(void *buffer, size_t length);
 };
 ///// IMLEMENTATION OF INLINE METHODS /////
 

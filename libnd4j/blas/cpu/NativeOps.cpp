@@ -3241,7 +3241,14 @@ bool isOptimalRequirementsMet() {
 }
 
 OpaqueDataBuffer* allocateDataBuffer(Nd4jLong numBytes, bool allocatePrimary, bool allocateSpecial) {
-    auto db = new nd4j::DataBuffer(numBytes, nd4j::DataType::INT8, nullptr, allocatePrimary && allocateSpecial);
+    nd4j::DataBuffer *db = nullptr;
+    if (!allocatePrimary && !allocateSpecial) {
+        // empty databuffer, will be filled later from Java probably?
+        db = new nd4j::DataBuffer();
+    } else {
+        // filling it with platform-default options
+        db = new nd4j::DataBuffer(numBytes, nd4j::DataType::INT8, nullptr, allocatePrimary && allocateSpecial);
+    }
 
     return db;
 }
@@ -3256,6 +3263,14 @@ Nd4jPointer dbSpecialBuffer(OpaqueDataBuffer *dataBuffer) {
 
 void deleteDataBuffer(OpaqueDataBuffer *dataBuffer) {
     delete dataBuffer;
+}
+
+void dbSetPrimaryBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer primaryBuffer, Nd4jLong numBytes) {
+    dataBuffer->setPrimaryBuffer(primaryBuffer, numBytes);
+}
+
+void dbSetSpecialBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer specialBuffer, Nd4jLong numBytes) {
+    dataBuffer->setSpecialBuffer(specialBuffer, numBytes);
 }
 
 BUILD_SINGLE_TEMPLATE(template void pullRowsGeneric, (void *, Nd4jLong*, void*, Nd4jLong*, const int, Nd4jLong*, Nd4jLong*, Nd4jLong*, Nd4jLong*, Nd4jLong*), LIBND4J_TYPES);
