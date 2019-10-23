@@ -3233,6 +3233,8 @@ public native void markGraphContextInplace(OpaqueContext ptr, @Cast("bool") bool
 public native void setGraphContextCudaContext(OpaqueContext ptr, Pointer stream, Pointer reductionPointer, Pointer allocationPointer);
 public native void setGraphContextInputArray(OpaqueContext ptr, int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
 public native void setGraphContextOutputArray(OpaqueContext ptr, int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
+public native void setGraphContextInputBuffer(OpaqueContext ptr, int index, OpaqueDataBuffer buffer, Pointer shapeInfo, Pointer specialShapeInfo);
+public native void setGraphContextOutputBuffer(OpaqueContext ptr, int index, OpaqueDataBuffer buffer, Pointer shapeInfo, Pointer specialShapeInfo);
 public native void setGraphContextTArguments(OpaqueContext ptr, DoublePointer arguments, int numberOfArguments);
 public native void setGraphContextTArguments(OpaqueContext ptr, DoubleBuffer arguments, int numberOfArguments);
 public native void setGraphContextTArguments(OpaqueContext ptr, double[] arguments, int numberOfArguments);
@@ -6874,10 +6876,12 @@ NDArray& NDArray::operator()(const Nd4jLong* idx) {
             public native void setInputArray(int index, NDArray array, @Cast("bool") boolean removable/*=false*/);
             public native void setInputArray(int index, NDArray array);
             public native void setInputArray(int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
+            public native void setInputArray(int index, Pointer databuffer, Pointer shapeInfo, Pointer specialShapeInfo);
 
             public native void setOutputArray(int index, NDArray array, @Cast("bool") boolean removable/*=false*/);
             public native void setOutputArray(int index, NDArray array);
             public native void setOutputArray(int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
+            public native void setOutputArray(int index, Pointer databuffer, Pointer shapeInfo, Pointer specialShapeInfo);
 
             public native void setTArguments(DoublePointer arguments, int numberOfArguments);
             public native void setTArguments(DoubleBuffer arguments, int numberOfArguments);

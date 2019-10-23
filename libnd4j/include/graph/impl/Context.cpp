@@ -426,6 +426,36 @@ namespace nd4j {
                 array->setContext(_context);
         }
 
+        void Context::setInputArray(int index, void *vdatabuffer, void *shapeInfo, void *specialShapeInfo) {
+            auto dataBuffer = reinterpret_cast<DataBuffer*>(vdatabuffer);
+
+            if (_fastpath_in.size() < index + 1)
+                _fastpath_in.resize(index+1);
+
+            auto array = new NDArray(dataBuffer->primary(), dataBuffer->special(), reinterpret_cast<Nd4jLong *>(shapeInfo));
+
+            _fastpath_in[index] = array;
+            _handles.emplace_back(array);
+
+            if (_context != nullptr)
+                array->setContext(_context);
+        }
+
+        void Context::setOutputArray(int index, void *vdatabuffer, void *shapeInfo, void *specialShapeInfo) {
+            auto dataBuffer = reinterpret_cast<DataBuffer*>(vdatabuffer);
+
+            if (_fastpath_out.size() < index + 1)
+                _fastpath_out.resize(index+1);
+
+            auto array = new NDArray(dataBuffer->primary(), dataBuffer->special(), reinterpret_cast<Nd4jLong *>(shapeInfo));
+
+            _fastpath_out[index] = array;
+            _handles.emplace_back(array);
+
+            if (_context != nullptr)
+                array->setContext(_context);
+        }
+
         void Context::setTArguments(double *arguments, int numberOfArguments) {
             _tArgs.clear();
             _tArgs.reserve(numberOfArguments);

@@ -1725,6 +1725,7 @@ ND4J_EXPORT Nd4jLong getConstantDataBufferSizeOf(OpaqueConstantDataBuffer* dbf);
 ND4J_EXPORT void deleteShapeBuffer(OpaqueConstantDataBuffer* ptr);
 
 typedef nd4j::graph::Context OpaqueContext;
+typedef nd4j::DataBuffer OpaqueDataBuffer;
 typedef nd4j::graph::RandomGenerator OpaqueRandomGenerator;
 
 ND4J_EXPORT OpaqueContext* createGraphContext(int nodeId);
@@ -1733,6 +1734,8 @@ ND4J_EXPORT void markGraphContextInplace(OpaqueContext* ptr, bool reallyInplace)
 ND4J_EXPORT void setGraphContextCudaContext(OpaqueContext* ptr, void *stream, void *reductionPointer, void *allocationPointer);
 ND4J_EXPORT void setGraphContextInputArray(OpaqueContext* ptr, int index, void *buffer, void *shapeInfo, void *specialBuffer, void *specialShapeInfo);
 ND4J_EXPORT void setGraphContextOutputArray(OpaqueContext* ptr, int index, void *buffer, void *shapeInfo, void *specialBuffer, void *specialShapeInfo);
+ND4J_EXPORT void setGraphContextInputBuffer(OpaqueContext* ptr, int index, OpaqueDataBuffer *buffer, void *shapeInfo, void *specialShapeInfo);
+ND4J_EXPORT void setGraphContextOutputBuffer(OpaqueContext* ptr, int index, OpaqueDataBuffer *buffer, void *shapeInfo, void *specialShapeInfo);
 ND4J_EXPORT void setGraphContextTArguments(OpaqueContext* ptr, double *arguments, int numberOfArguments);
 ND4J_EXPORT void setGraphContextIArguments(OpaqueContext* ptr, Nd4jLong *arguments, int numberOfArguments);
 ND4J_EXPORT void setGraphContextBArguments(OpaqueContext* ptr, bool *arguments, int numberOfArguments);
@@ -1759,8 +1762,6 @@ ND4J_EXPORT Nd4jPointer lcExecutionStream(OpaqueLaunchContext* lc);
 ND4J_EXPORT Nd4jPointer lcCopyStream(OpaqueLaunchContext* lc);
 ND4J_EXPORT Nd4jPointer lcBlasHandle(OpaqueLaunchContext* lc);
 ND4J_EXPORT Nd4jPointer lcSolverHandle(OpaqueLaunchContext* lc);
-
-typedef nd4j::DataBuffer OpaqueDataBuffer;
 
 ND4J_EXPORT OpaqueDataBuffer* allocateDataBuffer(Nd4jLong numBytes, bool allocatePrimary, bool allocateSpecial);
 ND4J_EXPORT Nd4jPointer dbPrimaryBuffer(OpaqueDataBuffer *dataBuffer);

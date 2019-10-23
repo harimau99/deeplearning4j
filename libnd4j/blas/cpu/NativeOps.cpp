@@ -2933,6 +2933,15 @@ void setGraphContextInputArray(nd4j::graph::Context* ptr, int index, void *buffe
 void setGraphContextOutputArray(nd4j::graph::Context* ptr, int index, void *buffer, void *shapeInfo, void *specialBuffer, void *specialShapeInfo) {
     ptr->setOutputArray(index, buffer, shapeInfo, specialBuffer, specialShapeInfo);
 }
+
+void setGraphContextInputBuffer(OpaqueContext* ptr, int index, OpaqueDataBuffer *buffer, void *shapeInfo, void *specialShapeInfo) {
+    ptr->setInputArray(index, buffer, shapeInfo, specialShapeInfo);
+}
+
+void setGraphContextOutputBuffer(OpaqueContext* ptr, int index, OpaqueDataBuffer *buffer, void *shapeInfo, void *specialShapeInfo) {
+    ptr->setOutputArray(index, buffer, shapeInfo, specialShapeInfo);
+}
+
 void setGraphContextTArguments(nd4j::graph::Context* ptr, double *arguments, int numberOfArguments) {
     ptr->setTArguments(arguments, numberOfArguments);
 }

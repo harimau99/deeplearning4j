@@ -3403,27 +3403,43 @@ nd4j::graph::Context* createGraphContext(int nodeId) {
 nd4j::graph::RandomGenerator* getGraphContextRandomGenerator(nd4j::graph::Context* ptr) {
     return &ptr->randomGenerator();
 }
+
 void markGraphContextInplace(nd4j::graph::Context* ptr, bool reallyInplace) {
     ptr->markInplace(reallyInplace);
 }
+
 void setGraphContextCudaContext(nd4j::graph::Context* ptr, void *stream, void *reductionPointer, void *allocationPointer) {
     ptr->setCudaContext(stream, reductionPointer, allocationPointer);
 }
+
 void setGraphContextInputArray(nd4j::graph::Context* ptr, int index, void *buffer, void *shapeInfo, void *specialBuffer, void *specialShapeInfo) {
     ptr->setInputArray(index, buffer, shapeInfo, specialBuffer, specialShapeInfo);
 }
+
 void setGraphContextOutputArray(nd4j::graph::Context* ptr, int index, void *buffer, void *shapeInfo, void *specialBuffer, void *specialShapeInfo) {
     ptr->setOutputArray(index, buffer, shapeInfo, specialBuffer, specialShapeInfo);
 }
+
+void setGraphContextInputBuffer(OpaqueContext* ptr, int index, OpaqueDataBuffer *buffer, void *shapeInfo, void *specialShapeInfo) {
+    ptr->setInputArray(index, buffer, shapeInfo, specialShapeInfo);
+}
+
+void setGraphContextOutputBuffer(OpaqueContext* ptr, int index, OpaqueDataBuffer *buffer, void *shapeInfo, void *specialShapeInfo) {
+    ptr->setOutputArray(index, buffer, shapeInfo, specialShapeInfo);
+}
+
 void setGraphContextTArguments(nd4j::graph::Context* ptr, double *arguments, int numberOfArguments) {
     ptr->setTArguments(arguments, numberOfArguments);
 }
+
 void setGraphContextIArguments(nd4j::graph::Context* ptr, Nd4jLong *arguments, int numberOfArguments) {
     ptr->setIArguments(arguments, numberOfArguments);
 }
+
 void setGraphContextBArguments(nd4j::graph::Context* ptr, bool *arguments, int numberOfArguments) {
     ptr->setBArguments(arguments, numberOfArguments);
 }
+
 void deleteGraphContext(nd4j::graph::Context* ptr) {
     delete ptr;
 }
