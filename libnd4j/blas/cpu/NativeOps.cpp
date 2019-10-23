@@ -3250,7 +3250,8 @@ bool isOptimalRequirementsMet() {
 }
 
 OpaqueDataBuffer* allocateDataBuffer(Nd4jLong elements, int dataType, bool allocateBoth) {
-    return new nd4j::InteropDataBuffer(elements, DataTypeUtils::fromInt(dataType), allocateBoth);
+    auto dtype = DataTypeUtils::fromInt(dataType);
+    return new nd4j::InteropDataBuffer(elements * DataTypeUtils::sizeOf(dtype) , dtype, allocateBoth);
 }
 
 Nd4jPointer dbPrimaryBuffer(OpaqueDataBuffer *dataBuffer) {
@@ -3266,11 +3267,11 @@ void deleteDataBuffer(OpaqueDataBuffer *dataBuffer) {
 }
 
 void dbSetPrimaryBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer primaryBuffer, Nd4jLong numBytes) {
-    dataBuffer->dataBuffer()->setPrimaryBuffer(primaryBuffer, numBytes);
+    dataBuffer->setPrimary(primaryBuffer, numBytes);
 }
 
 void dbSetSpecialBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer specialBuffer, Nd4jLong numBytes) {
-    dataBuffer->dataBuffer()->setSpecialBuffer(specialBuffer, numBytes);
+    dataBuffer->setSpecial(specialBuffer, numBytes);
 }
 
 BUILD_SINGLE_TEMPLATE(template void pullRowsGeneric, (void *, Nd4jLong*, void*, Nd4jLong*, const int, Nd4jLong*, Nd4jLong*, Nd4jLong*, Nd4jLong*, Nd4jLong*), LIBND4J_TYPES);

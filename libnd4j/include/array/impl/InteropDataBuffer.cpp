@@ -48,4 +48,12 @@ namespace nd4j {
     void* InteropDataBuffer::special() {
         return _dataBuffer->special();
     }
+
+    void InteropDataBuffer::setPrimary(void* ptr, size_t length) {
+        _dataBuffer->setPrimaryBuffer(ptr, length);
+    }
+
+    void InteropDataBuffer::setSpecial(void* ptr, size_t length) {
+        _dataBuffer->setSpecialBuffer(ptr, length);
+    }
 }

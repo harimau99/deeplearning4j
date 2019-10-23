@@ -3611,7 +3611,8 @@ bool isOptimalRequirementsMet() {
 }
 
 OpaqueDataBuffer* allocateDataBuffer(Nd4jLong elements, int dataType, bool allocateBoth) {
-    return new nd4j::InteropDataBuffer(elements, DataTypeUtils::fromInt(dataType), allocateBoth);
+    auto dtype = DataTypeUtils::fromInt(dataType);
+    return new nd4j::InteropDataBuffer(elements * DataTypeUtils::sizeOf(dtype) , dtype, allocateBoth);
 }
 
 Nd4jPointer dbPrimaryBuffer(OpaqueDataBuffer *dataBuffer) {

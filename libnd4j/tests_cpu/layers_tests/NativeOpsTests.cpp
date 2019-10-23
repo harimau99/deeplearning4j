@@ -1539,6 +1539,13 @@ TEST_F(NativeOpsTests, CalculateOutputShapeTests_2) {
     ::deleteShapeList((Nd4jPointer) shapeList);
 }
 
+
+TEST_F(NativeOpsTests, interop_databuffer_tests_1) {
+    auto idb = ::allocateDataBuffer(100, 10, false);
+    auto ptr = ::dbPrimaryBuffer(idb);
+    ::deleteDataBuffer(idb);
+}
+
 //Uncomment when needed only - massive calculations
 //TEST_F(NativeOpsTests, BenchmarkTests_1) {
 //

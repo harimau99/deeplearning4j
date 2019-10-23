@@ -886,6 +886,7 @@ bool verbose = false;
 // #include <array/ConstantDescriptor.h>
 // #include <helpers/ConstantShapeHelper.h>
 // #include <array/ConstantDataBuffer.h>
+// #include <array/InteropDataBuffer.h>
 // #include <helpers/ConstantHelper.h>
 // #include <array/TadPack.h>
 // #include <graph/VariablesSet.h>
@@ -3267,7 +3268,7 @@ public native @Cast("Nd4jPointer") Pointer lcCopyStream(OpaqueLaunchContext lc);
 public native @Cast("Nd4jPointer") Pointer lcBlasHandle(OpaqueLaunchContext lc);
 public native @Cast("Nd4jPointer") Pointer lcSolverHandle(OpaqueLaunchContext lc);
 
-public native OpaqueDataBuffer allocateDataBuffer(@Cast("Nd4jLong") long numBytes, @Cast("bool") boolean allocatePrimary, @Cast("bool") boolean allocateSpecial);
+public native OpaqueDataBuffer allocateDataBuffer(@Cast("Nd4jLong") long elements, int dataType, @Cast("bool") boolean allocateBoth);
 public native @Cast("Nd4jPointer") Pointer dbPrimaryBuffer(OpaqueDataBuffer dataBuffer);
 public native @Cast("Nd4jPointer") Pointer dbSpecialBuffer(OpaqueDataBuffer dataBuffer);
 public native void dbSetPrimaryBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer primaryBuffer, @Cast("Nd4jLong") long numBytes);
@@ -3769,6 +3770,7 @@ public native @Cast("bool") boolean isOptimalRequirementsMet();
 // #include <helpers/ConstantShapeHelper.h>
 // #include <array/DataBuffer.h>
 // #include <execution/AffinityManager.h>
+// #include <memory>
 
 
     @Namespace("nd4j") public static native @ByVal @Name("operator -") NDArray subtract(float arg0, @Const @ByRef NDArray arg1);

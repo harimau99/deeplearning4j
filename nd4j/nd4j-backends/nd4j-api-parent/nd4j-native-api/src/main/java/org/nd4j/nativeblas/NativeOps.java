@@ -1160,7 +1160,7 @@ public interface NativeOps {
     boolean isOptimalRequirementsMet();
 
 
-    OpaqueDataBuffer allocateDataBuffer(long numBytes, boolean allocatePrimary, boolean allocateSpecial);
+    OpaqueDataBuffer allocateDataBuffer(long elements, int dataType, boolean allocateBoth);
     Pointer dbPrimaryBuffer(OpaqueDataBuffer dataBuffer);
     Pointer dbSpecialBuffer(OpaqueDataBuffer dataBuffer);
     void dbSetPrimaryBuffer(OpaqueDataBuffer dataBuffer, Pointer primaryBuffer, long numBytes);

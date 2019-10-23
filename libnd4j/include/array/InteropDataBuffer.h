@@ -45,6 +45,9 @@ namespace nd4j {
 
         void* primary();
         void* special();
+
+        void setPrimary(void* ptr, size_t length);
+        void setSpecial(void* ptr, size_t length);
     };
 }
 
