@@ -114,18 +114,6 @@ public class FloatBuffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public FloatBuffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public FloatBuffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public FloatBuffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public FloatBuffer(float[] floats, boolean copy) {
         super(floats, copy);
     }

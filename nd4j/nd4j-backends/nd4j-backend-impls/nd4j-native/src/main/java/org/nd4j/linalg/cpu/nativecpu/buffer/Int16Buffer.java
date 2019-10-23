@@ -114,18 +114,6 @@ public class Int16Buffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public Int16Buffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public Int16Buffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public Int16Buffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public Int16Buffer(float[] floats, boolean copy) {
         super(floats, copy);
     }

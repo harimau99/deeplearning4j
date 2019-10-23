@@ -519,23 +519,6 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         set(data, data.length, 0, 0);
     }
 
-    public BaseCudaDataBuffer(byte[] data, long length, DataType type) {
-        this(ByteBuffer.wrap(data), length, type);
-    }
-
-    public BaseCudaDataBuffer(ByteBuffer buffer, long length, DataType type) {
-        //super(buffer,length);
-        this(buffer, length, 0, type);
-    }
-
-    public BaseCudaDataBuffer(ByteBuffer buffer, long length, long offset, DataType type) {
-        //super(buffer, length, offset);
-        this(length, Nd4j.sizeOfDataType(type), offset);
-
-        Pointer srcPtr = new CudaPointer(new Pointer(buffer.order(ByteOrder.nativeOrder())));
-
-        allocator.memcpyAsync(this, srcPtr, length * elementSize, offset * elementSize);
-    }
 
     /**
      * This method always returns host pointer

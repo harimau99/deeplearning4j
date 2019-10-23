@@ -72,10 +72,6 @@ public class CudaUtf8Buffer extends BaseCudaDataBuffer {
         super(ints, copy, workspace);
     }
 
-    public CudaUtf8Buffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, DataType.UTF8);
-    }
-
     public CudaUtf8Buffer(byte[] data, long numWords) {
         super(data.length, 1, false);
 
@@ -152,10 +148,6 @@ public class CudaUtf8Buffer extends BaseCudaDataBuffer {
             currentLength += length;
         }
         headerPointer.put(cnt, currentLength);
-    }
-
-    public CudaUtf8Buffer(ByteBuffer buffer, int length) {
-        super(buffer, length, DataType.UTF8);
     }
 
     public String getString(long index) {

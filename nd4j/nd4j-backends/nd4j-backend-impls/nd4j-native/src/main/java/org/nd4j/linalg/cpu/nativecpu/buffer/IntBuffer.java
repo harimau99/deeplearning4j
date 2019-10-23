@@ -60,14 +60,6 @@ public class IntBuffer extends BaseCpuDataBuffer {
         super(ints, copy, workspace);
     }
 
-    public IntBuffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public IntBuffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public IntBuffer(double[] data, boolean copy) {
         super(data, copy);
     }
@@ -98,10 +90,6 @@ public class IntBuffer extends BaseCpuDataBuffer {
 
     public IntBuffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
-    }
-
-    public IntBuffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
     }
 
     @Override

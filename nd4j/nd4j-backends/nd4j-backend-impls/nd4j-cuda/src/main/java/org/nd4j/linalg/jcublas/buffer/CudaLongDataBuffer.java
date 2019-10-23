@@ -179,19 +179,6 @@ public class CudaLongDataBuffer extends BaseCudaDataBuffer {
         super(data, copy, offset);
     }
 
-    public CudaLongDataBuffer(byte[] data, long length) {
-        super(data, length, DataType.LONG);
-    }
-
-    public CudaLongDataBuffer(ByteBuffer buffer, long length) {
-        super(buffer, (int) length, DataType.LONG);
-    }
-
-    public CudaLongDataBuffer(ByteBuffer buffer, long length, long offset) {
-        super(buffer, length, offset, DataType.LONG);
-    }
-
-
     @Override
     protected DataBuffer create(long length) {
         return new CudaLongDataBuffer(length);

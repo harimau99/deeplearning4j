@@ -103,18 +103,6 @@ public class DoubleBuffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public DoubleBuffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public DoubleBuffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public DoubleBuffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public DoubleBuffer(double[] doubles, boolean copy) {
         super(doubles, copy);
     }

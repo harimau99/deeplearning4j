@@ -128,18 +128,6 @@ public class CudaUInt64DataBuffer extends BaseCudaDataBuffer {
         super(data, copy, offset);
     }
 
-    public CudaUInt64DataBuffer(byte[] data, long length) {
-        super(data, length, DataType.UINT64);
-    }
-
-    public CudaUInt64DataBuffer(ByteBuffer buffer, long length) {
-        super(buffer, (int) length, DataType.UINT64);
-    }
-
-    public CudaUInt64DataBuffer(ByteBuffer buffer, long length, long offset) {
-        super(buffer, length, offset, DataType.UINT64);
-    }
-
     @Override
     public void assign(long[] indices, double[] data, boolean contiguous, long inc) {
 

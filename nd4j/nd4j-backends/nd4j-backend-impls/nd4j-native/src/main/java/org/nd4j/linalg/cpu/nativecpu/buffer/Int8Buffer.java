@@ -114,18 +114,6 @@ public class Int8Buffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public Int8Buffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public Int8Buffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public Int8Buffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public Int8Buffer(float[] floats, boolean copy) {
         super(floats, copy);
     }

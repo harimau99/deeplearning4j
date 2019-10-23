@@ -106,11 +106,6 @@ public class CudaIntDataBuffer extends BaseCudaDataBuffer {
         super(data, copy, offset);
     }
 
-
-    public CudaIntDataBuffer(byte[] data, int length) {
-        super(data, length, DataType.INT);
-    }
-
     public CudaIntDataBuffer(double[] data) {
         super(data);
     }
@@ -133,14 +128,6 @@ public class CudaIntDataBuffer extends BaseCudaDataBuffer {
 
     public CudaIntDataBuffer(float[] data, boolean copy, long offset) {
         super(data, copy, offset);
-    }
-
-    public CudaIntDataBuffer(ByteBuffer buffer, int length) {
-        super(buffer, length, DataType.INT);
-    }
-
-    public CudaIntDataBuffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset, DataType.INT);
     }
 
     @Override

@@ -985,16 +985,7 @@ public class Nd4j {
      * @return the created buffer
      */
     public static DataBuffer createBuffer(ByteBuffer buffer, DataType type, int length, long offset) {
-        switch (type) {
-            case INT:
-                return DATA_BUFFER_FACTORY_INSTANCE.createInt(offset, buffer, length);
-            case DOUBLE:
-                return DATA_BUFFER_FACTORY_INSTANCE.createDouble(offset, buffer, length);
-            case FLOAT:
-                return DATA_BUFFER_FACTORY_INSTANCE.createFloat(offset, buffer, length);
-            default:
-                throw new IllegalArgumentException("Illegal opType " + type);
-        }
+        throw new UnsupportedOperationException("To be removed");
     }
 
     /**
@@ -1288,38 +1279,9 @@ public class Nd4j {
      * @return the created buffer
      */
     public static DataBuffer createBuffer(ByteBuffer buffer, DataType type, int length) {
-        switch (type) {
-            case INT:
-                return DATA_BUFFER_FACTORY_INSTANCE.createInt(buffer, length);
-            case LONG:
-                return DATA_BUFFER_FACTORY_INSTANCE.createLong(buffer, length);
-            case DOUBLE:
-                return DATA_BUFFER_FACTORY_INSTANCE.createDouble(buffer, length);
-            case FLOAT:
-                return DATA_BUFFER_FACTORY_INSTANCE.createFloat(buffer, length);
-            case HALF:
-                return DATA_BUFFER_FACTORY_INSTANCE.createHalf(buffer, length);
-            default:
-                throw new IllegalArgumentException("Illegal opType " + type);
-        }
+        throw new UnsupportedOperationException("This method should be removed");
     }
 
-    /**
-     * Create a buffer based on the data opType
-     *
-     * @param data the data to create the buffer with
-     * @return the created buffer
-     */
-    public static DataBuffer createBuffer(byte[] data, int length) {
-        DataBuffer ret;
-        if (dataType() == DataType.DOUBLE)
-            ret = DATA_BUFFER_FACTORY_INSTANCE.createDouble(data, length);
-        else if (dataType() == DataType.HALF)
-            ret = DATA_BUFFER_FACTORY_INSTANCE.createHalf(data, length);
-        else
-            ret = DATA_BUFFER_FACTORY_INSTANCE.createFloat(data, length);
-        return ret;
-    }
 
     /**
      * Create a buffer equal of length prod(shape)

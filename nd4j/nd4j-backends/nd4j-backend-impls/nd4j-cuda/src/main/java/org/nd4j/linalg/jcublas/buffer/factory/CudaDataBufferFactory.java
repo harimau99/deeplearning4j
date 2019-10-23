@@ -166,27 +166,6 @@ public class CudaDataBufferFactory implements DataBufferFactory {
     }
 
     @Override
-    public DataBuffer createInt(long offset, ByteBuffer buffer, int length) {
-        return new CudaIntDataBuffer(buffer, length, offset);
-    }
-
-    @Override
-    public DataBuffer createFloat(long offset, ByteBuffer buffer, int length) {
-        return new CudaFloatDataBuffer(buffer, length, offset);
-    }
-
-    @Override
-    public DataBuffer createDouble(long offset, ByteBuffer buffer, int length) {
-        return new CudaDoubleDataBuffer(buffer, length, offset);
-    }
-
-
-    @Override
-    public DataBuffer createLong(ByteBuffer buffer, int length) {
-        return new CudaLongDataBuffer(buffer, length);
-    }
-
-    @Override
     public DataBuffer createDouble(long offset, int length) {
         return new CudaDoubleDataBuffer(length, 8, offset);
     }
@@ -309,21 +288,6 @@ public class CudaDataBufferFactory implements DataBufferFactory {
     @Override
     public DataBuffer createInt(long offset, float[] data, boolean copy) {
         return new CudaIntDataBuffer(data, copy, offset);
-    }
-
-    @Override
-    public DataBuffer createInt(ByteBuffer buffer, int length) {
-        return new CudaIntDataBuffer(buffer, length);
-    }
-
-    @Override
-    public DataBuffer createFloat(ByteBuffer buffer, int length) {
-        return new CudaFloatDataBuffer(buffer, length);
-    }
-
-    @Override
-    public DataBuffer createDouble(ByteBuffer buffer, int length) {
-        return new CudaDoubleDataBuffer(buffer, length);
     }
 
     @Override
@@ -575,16 +539,6 @@ public class CudaDataBufferFactory implements DataBufferFactory {
     @Override
     public DataBuffer createDouble(double[] data) {
         return new CudaDoubleDataBuffer(data);
-    }
-
-    @Override
-    public DataBuffer createDouble(byte[] data, int length) {
-        return new CudaDoubleDataBuffer(data, length);
-    }
-
-    @Override
-    public DataBuffer createFloat(byte[] data, int length) {
-        return new CudaFloatDataBuffer(data, length);
     }
 
     @Override
@@ -965,18 +919,6 @@ public class CudaDataBufferFactory implements DataBufferFactory {
         return new CudaHalfDataBuffer(data);
     }
 
-    /**
-     * Creates a half-precision data buffer
-     *
-     * @param offset
-     * @param data   the data to create the buffer from
-     * @param length
-     * @return the new buffer
-     */
-    @Override
-    public DataBuffer createHalf(long offset, byte[] data, int length) {
-        return new CudaHalfDataBuffer(ArrayUtil.toFloatArray(data), true, offset);
-    }
 
     /**
      * Creates a half-precision data buffer
@@ -988,30 +930,6 @@ public class CudaDataBufferFactory implements DataBufferFactory {
     @Override
     public DataBuffer createHalf(long offset, int length) {
         return new CudaHalfDataBuffer(length);
-    }
-
-    /**
-     * Creates a half-precision data buffer
-     *
-     * @param buffer
-     * @param length
-     * @return the new buffer
-     */
-    @Override
-    public DataBuffer createHalf(ByteBuffer buffer, int length) {
-        return new CudaHalfDataBuffer(buffer, length);
-    }
-
-    /**
-     * Creates a half-precision data buffer
-     *
-     * @param data
-     * @param length
-     * @return
-     */
-    @Override
-    public DataBuffer createHalf(byte[] data, int length) {
-        return new CudaHalfDataBuffer(data, length);
     }
 
     @Override

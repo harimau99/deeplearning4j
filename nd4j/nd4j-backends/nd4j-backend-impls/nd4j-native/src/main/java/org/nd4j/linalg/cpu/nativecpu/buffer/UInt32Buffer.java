@@ -114,18 +114,6 @@ public class UInt32Buffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public UInt32Buffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public UInt32Buffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public UInt32Buffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public UInt32Buffer(float[] floats, boolean copy) {
         super(floats, copy);
     }

@@ -64,13 +64,6 @@ public class LongBuffer extends BaseCpuDataBuffer {
         super(ints, copy, workspace);
     }
 
-    public LongBuffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public LongBuffer(byte[] data, int length) {
-        super(data, length);
-    }
 
     public LongBuffer(double[] data, boolean copy) {
         super(data, copy);
@@ -110,10 +103,6 @@ public class LongBuffer extends BaseCpuDataBuffer {
 
     public LongBuffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
-    }
-
-    public LongBuffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
     }
 
     public LongBuffer(@NonNull Pointer hostPointer, long numberOfElements) {

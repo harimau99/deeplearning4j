@@ -60,32 +60,6 @@ public interface DataBufferFactory {
     DataBuffer create(DataBuffer underlyingBuffer, long offset, long length);
 
     /**
-     * Create int buffer
-     * @param buffer
-     * @param length
-     * @return
-     */
-    DataBuffer createInt(long offset, ByteBuffer buffer, int length);
-
-    /**
-     * Create a float data buffer
-     * @param buffer
-     * @param length
-     * @return
-     */
-    DataBuffer createFloat(long offset, ByteBuffer buffer, int length);
-
-    /**
-     * Creates a double data buffer
-     * @param buffer
-     * @param length
-     * @return
-     */
-    DataBuffer createDouble(long offset, ByteBuffer buffer, int length);
-
-    DataBuffer createLong(ByteBuffer buffer, int length);
-
-    /**
      * Create a double data buffer
      *
      * @return the new data buffer
@@ -289,31 +263,6 @@ public interface DataBufferFactory {
      */
     DataBuffer createInt(long offset, float[] data, boolean copy);
 
-
-    /**
-     * Create int buffer
-     * @param buffer
-     * @param length
-     * @return
-     */
-    DataBuffer createInt(ByteBuffer buffer, int length);
-
-    /**
-     * Create a float data buffer
-     * @param buffer
-     * @param length
-     * @return
-     */
-    DataBuffer createFloat(ByteBuffer buffer, int length);
-
-    /**
-     * Creates a double data buffer
-     * @param buffer
-     * @param length
-     * @return
-     */
-    DataBuffer createDouble(ByteBuffer buffer, int length);
-
     /**
      * Create a double data buffer
      *
@@ -458,22 +407,6 @@ public interface DataBufferFactory {
      */
     DataBuffer createDouble(double[] data);
 
-
-    /**
-     * Create a double buffer
-     * @param data
-     * @param length
-     * @return
-     */
-    DataBuffer createDouble(byte[] data, int length);
-
-    /**
-     * Create a double buffer
-     * @param data
-     * @param length
-     * @return
-     */
-    DataBuffer createFloat(byte[] data, int length);
 
     /**
      * Creates a float data buffer
@@ -819,33 +752,9 @@ public interface DataBufferFactory {
     /**
      * Creates a half-precision data buffer
      *
-     * @param data the data to create the buffer from
-     * @return the new buffer
-     */
-    DataBuffer createHalf(long offset, byte[] data, int length);
-
-    /**
-     * Creates a half-precision data buffer
-     *
      * @return the new buffer
      */
     DataBuffer createHalf(long offset, int length);
-
-    /**
-     * Creates a half-precision data buffer
-     *
-     * @return the new buffer
-     */
-    DataBuffer createHalf(ByteBuffer buffer, int length);
-
-    /**
-     * Creates a half-precision data buffer
-     *
-     * @param data
-     * @param length
-     * @return
-     */
-    DataBuffer createHalf(byte[] data, int length);
 
 
     Class<? extends DataBuffer> intBufferClass();

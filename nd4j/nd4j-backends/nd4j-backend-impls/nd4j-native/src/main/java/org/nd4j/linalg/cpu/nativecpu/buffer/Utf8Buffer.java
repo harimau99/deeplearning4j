@@ -73,10 +73,6 @@ public class Utf8Buffer extends BaseCpuDataBuffer {
         super(ints, copy, workspace);
     }
 
-    public Utf8Buffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
     public Utf8Buffer(byte[] data, long numWords) {
         super(data.length, false);
 
@@ -153,10 +149,6 @@ public class Utf8Buffer extends BaseCpuDataBuffer {
             currentLength += length;
         }
         headerPointer.put(cnt, currentLength);
-    }
-
-    public Utf8Buffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
     }
 
     public String getString(long index) {

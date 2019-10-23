@@ -114,18 +114,6 @@ public class BoolBuffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public BoolBuffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public BoolBuffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public BoolBuffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public BoolBuffer(float[] floats, boolean copy) {
         super(floats, copy);
     }

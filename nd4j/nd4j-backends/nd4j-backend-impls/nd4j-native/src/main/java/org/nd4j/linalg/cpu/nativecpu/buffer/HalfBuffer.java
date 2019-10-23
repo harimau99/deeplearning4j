@@ -114,18 +114,6 @@ public class HalfBuffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public HalfBuffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public HalfBuffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public HalfBuffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public HalfBuffer(float[] floats, boolean copy) {
         super(floats, copy);
     }

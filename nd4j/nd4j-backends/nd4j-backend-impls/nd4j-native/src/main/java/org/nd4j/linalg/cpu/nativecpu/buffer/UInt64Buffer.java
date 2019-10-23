@@ -114,18 +114,6 @@ public class UInt64Buffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public UInt64Buffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public UInt64Buffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public UInt64Buffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public UInt64Buffer(float[] floats, boolean copy) {
         super(floats, copy);
     }

@@ -114,18 +114,6 @@ public class UInt8Buffer extends BaseCpuDataBuffer {
         super(data, copy, offset);
     }
 
-    public UInt8Buffer(ByteBuffer buffer, int length) {
-        super(buffer, length);
-    }
-
-    public UInt8Buffer(ByteBuffer buffer, int length, long offset) {
-        super(buffer, length, offset);
-    }
-
-    public UInt8Buffer(byte[] data, int length) {
-        super(data, length);
-    }
-
     public UInt8Buffer(float[] floats, boolean copy) {
         super(floats, copy);
     }

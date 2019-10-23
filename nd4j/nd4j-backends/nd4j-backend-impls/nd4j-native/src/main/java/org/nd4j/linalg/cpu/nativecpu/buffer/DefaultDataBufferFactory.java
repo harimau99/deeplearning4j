@@ -94,20 +94,6 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
         return null;
     }
 
-    @Override
-    public DataBuffer createInt(long offset, ByteBuffer buffer, int length) {
-        return new IntBuffer(buffer, length, offset);
-    }
-
-    @Override
-    public DataBuffer createFloat(long offset, ByteBuffer buffer, int length) {
-        return new FloatBuffer(buffer, length, offset);
-    }
-
-    @Override
-    public DataBuffer createDouble(long offset, ByteBuffer buffer, int length) {
-        return new DoubleBuffer(buffer, length, offset);
-    }
 
     @Override
     public DataBuffer createDouble(long offset, int length) {
@@ -237,25 +223,6 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
         return new IntBuffer(ArrayUtil.toInts(data), copy, offset);
     }
 
-    @Override
-    public DataBuffer createInt(ByteBuffer buffer, int length) {
-        return new IntBuffer(buffer, length);
-    }
-
-    @Override
-    public DataBuffer createLong(ByteBuffer buffer, int length) {
-        return new LongBuffer(buffer, length);
-    }
-
-    @Override
-    public DataBuffer createFloat(ByteBuffer buffer, int length) {
-        return new FloatBuffer(buffer, length);
-    }
-
-    @Override
-    public DataBuffer createDouble(ByteBuffer buffer, int length) {
-        return new DoubleBuffer(buffer, length);
-    }
 
     @Override
     public DataBuffer createDouble(long length) {
@@ -539,16 +506,6 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
     @Override
     public DataBuffer createDouble(double[] data) {
         return createDouble(data, true);
-    }
-
-    @Override
-    public DataBuffer createDouble(byte[] data, int length) {
-        return new DoubleBuffer(ByteBuffer.wrap(data), length);
-    }
-
-    @Override
-    public DataBuffer createFloat(byte[] data, int length) {
-        return new FloatBuffer(ByteBuffer.wrap(data), length);
     }
 
     @Override
@@ -959,18 +916,6 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
         throw new UnsupportedOperationException("FP16 isn't supported for CPU yet");
     }
 
-    /**
-     * Creates a half-precision data buffer
-     *
-     * @param offset
-     * @param data   the data to create the buffer from
-     * @param length
-     * @return the new buffer
-     */
-    @Override
-    public DataBuffer createHalf(long offset, byte[] data, int length) {
-        throw new UnsupportedOperationException("FP16 isn't supported for CPU yet");
-    }
 
     /**
      * Creates a half-precision data buffer
@@ -981,30 +926,6 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
      */
     @Override
     public DataBuffer createHalf(long offset, int length) {
-        throw new UnsupportedOperationException("FP16 isn't supported for CPU yet");
-    }
-
-    /**
-     * Creates a half-precision data buffer
-     *
-     * @param buffer
-     * @param length
-     * @return the new buffer
-     */
-    @Override
-    public DataBuffer createHalf(ByteBuffer buffer, int length) {
-        throw new UnsupportedOperationException("FP16 isn't supported for CPU yet");
-    }
-
-    /**
-     * Creates a half-precision data buffer
-     *
-     * @param data
-     * @param length
-     * @return
-     */
-    @Override
-    public DataBuffer createHalf(byte[] data, int length) {
         throw new UnsupportedOperationException("FP16 isn't supported for CPU yet");
     }
 

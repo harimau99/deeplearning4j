@@ -128,18 +128,6 @@ public class CudaBfloat16DataBuffer extends BaseCudaDataBuffer {
         super(data, copy, offset);
     }
 
-    public CudaBfloat16DataBuffer(byte[] data, long length) {
-        super(data, length, DataType.BFLOAT16);
-    }
-
-    public CudaBfloat16DataBuffer(ByteBuffer buffer, long length) {
-        super(buffer, (int) length, DataType.BFLOAT16);
-    }
-
-    public CudaBfloat16DataBuffer(ByteBuffer buffer, long length, long offset) {
-        super(buffer, length, offset, DataType.BFLOAT16);
-    }
-
     @Override
     public void assign(long[] indices, double[] data, boolean contiguous, long inc) {
 
