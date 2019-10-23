@@ -1244,8 +1244,8 @@ TEST_F(JavaInteropTests, test_expandable_array_op_1) {
     Context ctx(1);
     ctx.setInputArray(0, x.buffer(), x.shapeInfo(), x.specialBuffer(), x.specialShapeInfo());
     ctx.setInputArray(1, d.buffer(), d.shapeInfo(), d.specialBuffer(), d.specialShapeInfo());
-    ctx.setOutputArray(0, z0.buffer(), z0.shapeInfo(), z0.specialBuffer(), z0.specialShapeInfo());
-    ctx.setOutputArray(1, z1.buffer(), z1.shapeInfo(), z1.specialBuffer(), z1.specialShapeInfo());
+    ctx.setOutputArray(0, z0.dataBuffer().get(), z0.shapeInfo(), z0.specialShapeInfo());
+    ctx.setOutputArray(1, z1.dataBuffer().get(), z1.shapeInfo(), z1.specialShapeInfo());
 
     nd4j::ops::compat_string_split op;
     auto status = op.execute(&ctx);

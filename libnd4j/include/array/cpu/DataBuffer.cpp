@@ -24,17 +24,19 @@
 
 namespace nd4j {
     void DataBuffer::expand(const uint64_t size) {
-        // allocate new buffer
-        int8_t *newBuffer = nullptr;
-        ALLOCATE(newBuffer, _workspace, size, int8_t);
+        if (size > _lenInBytes) {
+            // allocate new buffer
+            int8_t *newBuffer = nullptr;
+            ALLOCATE(newBuffer, _workspace, size, int8_t);
 
-        // copy data from existing buffer
-        memcpy(newBuffer, _primaryBuffer, _lenInBytes);
+            // copy data from existing buffer
+            memcpy(newBuffer, _primaryBuffer, _lenInBytes);
 
-        RELEASE(reinterpret_cast<int8_t *>(_primaryBuffer), _workspace);
+            RELEASE(reinterpret_cast<int8_t *>(_primaryBuffer), _workspace);
 
-        _primaryBuffer = newBuffer;
-        _lenInBytes = size;
+            _primaryBuffer = newBuffer;
+            _lenInBytes = size;
+        }
     }
 
 ////////////////////////////////////////////////////////////////////////

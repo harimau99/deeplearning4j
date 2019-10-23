@@ -26,26 +26,32 @@
 
 namespace nd4j {
     void DataBuffer::expand(const uint64_t size) {
-        // allocate new buffer
-        int8_t *newBuffer = nullptr;
-        int8_t *newSpecialBuffer = nullptr;
-        ALLOCATE(newBuffer, _workspace, size, int8_t);
-        ALLOCATE_SPECIAL(newSpecialBuffer, _workspace, size, int8_t);
+        if (size > _lenInBytes) {
+            // allocate new buffer
+            int8_t *newBuffer = nullptr;
+            int8_t *newSpecialBuffer = nullptr;
+            ALLOCATE_SPECIAL(newSpecialBuffer, _workspace, size, int8_t);
 
+            // copy data from existing buffer
+            if (_primaryBuffer != nullptr) {
+                // there's non-zero chance that primary buffer doesn't exist yet
+                ALLOCATE(newBuffer, _workspace, size, int8_t);
+                memcpy(newBuffer, _primaryBuffer, _lenInBytes);
 
-        // copy data from existing buffer
-        memcpy(newBuffer, _primaryBuffer, _lenInBytes);
-        cudaMemcpy(newSpecialBuffer, _specialBuffer, _lenInBytes, cudaMemcpyDeviceToDevice);
+                auto ipb = reinterpret_cast<int8_t *>(_primaryBuffer);
+                RELEASE(ipb, _workspace);
+                _primaryBuffer = newBuffer;
+            }
 
-        auto ipb = reinterpret_cast<int8_t*>(_primaryBuffer);
-        auto isb = reinterpret_cast<int8_t*>(_specialBuffer);
+            cudaMemcpy(newSpecialBuffer, _specialBuffer, _lenInBytes, cudaMemcpyDeviceToDevice);
 
-        RELEASE(ipb, _workspace);
-        RELEASE_SPECIAL(isb, _workspace);
+            auto isb = reinterpret_cast<int8_t *>(_specialBuffer);
 
-        _primaryBuffer = newBuffer;
-        _specialBuffer = newSpecialBuffer;
-        _lenInBytes = size;
+            RELEASE_SPECIAL(isb, _workspace);
+
+            _specialBuffer = newSpecialBuffer;
+            _lenInBytes = size;
+        }
     }
 
 ////////////////////////////////////////////////////////////////////////
