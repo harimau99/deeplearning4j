@@ -1231,6 +1231,30 @@ TEST_F(JavaInteropTests, test_size_dtype_1) {
     ASSERT_EQ(e, z);
 }
 
+TEST_F(JavaInteropTests, test_expandable_array_op_1) {
+    auto x = NDArrayFactory::string('c', {2}, {"first string", "second"});
+    auto d = NDArrayFactory::string(" ");
+
+    auto z0 = NDArrayFactory::create<Nd4jLong>('c', {6});
+    auto z1 = NDArrayFactory::string('c', {3}, {"", "", ""});
+
+    auto exp0 = NDArrayFactory::create<Nd4jLong>({0,0, 0,1, 1,0});
+    auto exp1 = NDArrayFactory::string('c', {3}, {"first", "string", "second"});
+
+    Context ctx(1);
+    ctx.setInputArray(0, x.buffer(), x.shapeInfo(), x.specialBuffer(), x.specialShapeInfo());
+    ctx.setInputArray(1, d.buffer(), d.shapeInfo(), d.specialBuffer(), d.specialShapeInfo());
+    ctx.setOutputArray(0, z0.buffer(), z0.shapeInfo(), z0.specialBuffer(), z0.specialShapeInfo());
+    ctx.setOutputArray(1, z1.buffer(), z1.shapeInfo(), z1.specialBuffer(), z1.specialShapeInfo());
+
+    nd4j::ops::compat_string_split op;
+    auto status = op.execute(&ctx);
+    ASSERT_EQ(Status::OK(), status);
+
+    ASSERT_EQ(exp0, z0);
+    ASSERT_EQ(exp1, z1);
+}
+
 /*
 TEST_F(JavaInteropTests, Test_Results_Conversion_1) {
     auto pl = nd4j::graph::readFlatBuffers("./resources/gru_dynamic_mnist.fb");
