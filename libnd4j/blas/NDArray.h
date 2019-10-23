@@ -41,6 +41,7 @@
 #include <helpers/ConstantShapeHelper.h>
 #include <array/DataBuffer.h>
 #include <execution/AffinityManager.h>
+#include <memory>
 
 
 namespace nd4j {

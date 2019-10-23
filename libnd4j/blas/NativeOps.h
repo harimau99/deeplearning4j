@@ -69,6 +69,7 @@ bool verbose = false;
 #include <array/ConstantDescriptor.h>
 #include <helpers/ConstantShapeHelper.h>
 #include <array/ConstantDataBuffer.h>
+#include <array/InteropDataBuffer.h>
 #include <helpers/ConstantHelper.h>
 #include <array/TadPack.h>
 #include <graph/VariablesSet.h>
@@ -1725,7 +1726,7 @@ ND4J_EXPORT Nd4jLong getConstantDataBufferSizeOf(OpaqueConstantDataBuffer* dbf);
 ND4J_EXPORT void deleteShapeBuffer(OpaqueConstantDataBuffer* ptr);
 
 typedef nd4j::graph::Context OpaqueContext;
-typedef nd4j::DataBuffer OpaqueDataBuffer;
+typedef nd4j::InteropDataBuffer OpaqueDataBuffer;
 typedef nd4j::graph::RandomGenerator OpaqueRandomGenerator;
 
 ND4J_EXPORT OpaqueContext* createGraphContext(int nodeId);
@@ -1763,7 +1764,7 @@ ND4J_EXPORT Nd4jPointer lcCopyStream(OpaqueLaunchContext* lc);
 ND4J_EXPORT Nd4jPointer lcBlasHandle(OpaqueLaunchContext* lc);
 ND4J_EXPORT Nd4jPointer lcSolverHandle(OpaqueLaunchContext* lc);
 
-ND4J_EXPORT OpaqueDataBuffer* allocateDataBuffer(Nd4jLong numBytes, bool allocatePrimary, bool allocateSpecial);
+ND4J_EXPORT OpaqueDataBuffer* allocateDataBuffer(Nd4jLong elements, int dataType, bool allocateBoth);
 ND4J_EXPORT Nd4jPointer dbPrimaryBuffer(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT Nd4jPointer dbSpecialBuffer(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void dbSetPrimaryBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer primaryBuffer, Nd4jLong numBytes);

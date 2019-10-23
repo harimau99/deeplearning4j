@@ -1241,11 +1241,14 @@ TEST_F(JavaInteropTests, test_expandable_array_op_1) {
     auto exp0 = NDArrayFactory::create<Nd4jLong>({0,0, 0,1, 1,0});
     auto exp1 = NDArrayFactory::string('c', {3}, {"first", "string", "second"});
 
+    InteropDataBuffer iz0(z0.dataBuffer());
+    InteropDataBuffer iz1(z1.dataBuffer());
+
     Context ctx(1);
     ctx.setInputArray(0, x.buffer(), x.shapeInfo(), x.specialBuffer(), x.specialShapeInfo());
     ctx.setInputArray(1, d.buffer(), d.shapeInfo(), d.specialBuffer(), d.specialShapeInfo());
-    ctx.setOutputArray(0, z0.dataBuffer().get(), z0.shapeInfo(), z0.specialShapeInfo());
-    ctx.setOutputArray(1, z1.dataBuffer().get(), z1.shapeInfo(), z1.specialShapeInfo());
+    ctx.setOutputArray(0, &iz0, z0.shapeInfo(), z0.specialShapeInfo());
+    ctx.setOutputArray(1, &iz1, z1.shapeInfo(), z1.specialShapeInfo());
 
     nd4j::ops::compat_string_split op;
     auto status = op.execute(&ctx);
