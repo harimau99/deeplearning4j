@@ -3841,16 +3841,6 @@ public class Nd4j {
         return create(shape, stride);
     }
 
-    /**
-     * Creates an ndarray with the specified shape
-     *
-     * @param rows    the rows of the ndarray
-     * @param columns the columns of the ndarray
-     * @return the instance
-     */
-    public static INDArray create(int rows, int columns) {
-        return create(rows, columns, order());
-    }
 
     /**
      * Creates an ndarray with the specified shape
@@ -4301,13 +4291,6 @@ public class Nd4j {
     }
 
     /**
-     * See {@link #createUninitialized(long)}
-     */
-    public static INDArray createUninitialized(int length) {
-        return createUninitialized((long)length);
-    }
-
-    /**
      * This method creates an *uninitialized* ndarray of specified length and default ordering.
      *
      * PLEASE NOTE: Do not use this method unless you're 100% sure why you use it.
@@ -4342,37 +4325,6 @@ public class Nd4j {
 
     ////////////////////// OTHER ///////////////////////////////
 
-    /**
-     * Creates a 2D array with specified number of rows, columns initialized with zero.
-     *
-     * @param rows    number of rows.
-     * @param columns number of columns.
-     * @return the created array.
-     */
-    public static INDArray zeros(long rows, long columns) {
-        return  INSTANCE.zeros(rows, columns);
-    }
-
-    /**
-     * Creates a 1D array with the specified number of columns initialized with zero.
-     *
-     * @param columns number of columns.
-     * @return the created array
-     */
-    public static INDArray zeros(int columns) {
-        return INSTANCE.zeros(columns);
-    }
-
-    /**
-     * Creates a 1D array with the specified data tyoe and number of columns initialized with zero.
-     *
-     * @param dataType data type.
-     * @param columns number of columns.
-     * @return the created array.
-     */
-    public static INDArray zeros(DataType dataType, int columns) {
-        return INSTANCE.create(dataType, new long[]{columns}, 'c', Nd4j.getMemoryManager().getCurrentWorkspace());
-    }
 
     /**
      * Creates an array with the specified data tyoe and shape initialized with zero.
@@ -4382,7 +4334,10 @@ public class Nd4j {
      * @return the created array.
      */
     public static INDArray zeros(DataType dataType, @NonNull long... shape) {
-        return INSTANCE.create(dataType, shape, 'c', Nd4j.getMemoryManager().getCurrentWorkspace());
+        if(shape.length == 0)
+            return Nd4j.scalar(dataType, 0);
+
+        return INSTANCE.create(dataType, shape, Nd4j.order(), Nd4j.getMemoryManager().getCurrentWorkspace());
     }
 
     /**
@@ -4500,31 +4455,6 @@ public class Nd4j {
      */
     public static INDArray valueArrayOf(long rows, long columns, double value) {
         return INSTANCE.valueArrayOf(rows, columns, value);
-    }
-
-    /**
-     * Creates a row vector with the specified number of columns
-     *
-     * @param rows    the number of rows in the matrix
-     * @param columns the columns of the ndarray
-     * @return the created ndarray
-     */
-    public static INDArray ones(int rows, int columns) {
-        return INSTANCE.ones(rows, columns);
-    }
-
-    /**
-     * Create a 2D array with the given rows, columns and data type initialised with ones.
-     *
-     * @param dataType data type
-     * @param rows rows of the new array.
-     * @param columns columns of the new arrau.
-     * @return the created array
-     */
-    public static INDArray ones(DataType dataType, int rows, int columns) {
-        INDArray ret = INSTANCE.createUninitialized(dataType, new long[]{rows, columns}, Nd4j.order(), Nd4j.getMemoryManager().getCurrentWorkspace());
-        ret.assign(1);
-        return ret;
     }
 
     /**

@@ -190,7 +190,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
                 fillPointerWithZero();
         } else if (dataType() == DataType.BFLOAT16) {
             ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * 2, true, false);
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer)).asShortPointer();
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
 
             setIndexer(Bfloat16Indexer.create((ShortPointer) pointer));
 
@@ -295,6 +295,9 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         if (length < 0)
             throw new IllegalArgumentException("Unable to create a buffer of length <= 0");
 
+        // creating empty native DataBuffer
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length * getElementSize(), false, false);
+
         if (dataType() == DataType.DOUBLE) {
             attached = true;
             parentWorkspace = workspace;
@@ -390,6 +393,12 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             setIndexer(LongIndexer.create((LongPointer) pointer));
         }
 
+        // storing pointer into native DataBuffer
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, length * getElementSize());
+
+        // adding deallocator reference
+        Nd4j.getDeallocatorService().pickObject(this);
+
         workspaceGenerationId = workspace.getGenerationId();
     }
 
@@ -429,6 +438,11 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         initTypeAndSize();
 
         pointer = new FloatPointer(data);
+
+        // creating & registering native DataBuffer
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(data.length * getElementSize(), false, false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, data.length * getElementSize());
+        Nd4j.getDeallocatorService().pickObject(this);
 
         setIndexer(FloatIndexer.create((FloatPointer) pointer));
         //wrappedBuffer = pointer.asByteBuffer();
@@ -539,7 +553,11 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
         pointer = new DoublePointer(data);
         indexer = DoubleIndexer.create((DoublePointer) pointer);
-        //wrappedBuffer = pointer.asByteBuffer();
+
+        // creating & registering native DataBuffer
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(data.length * getElementSize(), false, false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, data.length * getElementSize());
+        Nd4j.getDeallocatorService().pickObject(this);
 
         length = data.length;
         underlyingLength = data.length;
@@ -571,10 +589,13 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         pointer = new IntPointer(data);
         setIndexer(IntIndexer.create((IntPointer) pointer));
 
+        // creating & registering native DataBuffer
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(data.length * getElementSize(), false, false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, data.length * getElementSize());
+        Nd4j.getDeallocatorService().pickObject(this);
+
         length = data.length;
         underlyingLength = data.length;
-
-        // // log.info("Creating new buffer of size: {}; dtype: {}; B", data.length, dataType());
     }
 
     /**
@@ -588,6 +609,11 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
         pointer = new LongPointer(data);
         setIndexer(LongIndexer.create((LongPointer) pointer));
+
+        // creating & registering native DataBuffer
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(data.length * getElementSize(), false, false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, data.length * getElementSize());
+        Nd4j.getDeallocatorService().pickObject(this);
 
         length = data.length;
         underlyingLength = data.length;

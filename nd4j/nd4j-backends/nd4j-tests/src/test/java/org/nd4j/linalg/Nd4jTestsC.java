@@ -2091,22 +2091,6 @@ public class Nd4jTestsC extends BaseNd4jTest {
     }
 
     @Test
-    public void testNullPointerDataBuffer() {
-        DataType initialType = Nd4j.dataType();
-
-        Nd4j.setDataType(DataType.FLOAT);
-
-        ByteBuffer allocate = ByteBuffer.allocateDirect(10 * 4).order(ByteOrder.nativeOrder());
-        allocate.asFloatBuffer().put(new float[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
-        DataBuffer buff = Nd4j.createBuffer(allocate, DataType.FLOAT, 10);
-        float sum = Nd4j.create(buff).sumNumber().floatValue();
-        System.out.println(sum);
-        assertEquals(55f, sum, 0.001f);
-
-        Nd4j.setDataType(initialType);
-    }
-
-    @Test
     public void testEps() {
         INDArray ones = Nd4j.ones(5);
         val res = Nd4j.create(DataType.BOOL, 5);
