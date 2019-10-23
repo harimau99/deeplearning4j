@@ -62,11 +62,20 @@ public class Utf8Buffer extends BaseCpuDataBuffer {
     }
 
     public Utf8Buffer(long length, boolean initialize) {
-        super(length, initialize);
+        /**
+         * Special case: we're creating empty buffer for length strings, each of 0 chars
+         */
+        super((length + 1) * 8, true);
+        numWords = length;
     }
 
     public Utf8Buffer(long length, boolean initialize, MemoryWorkspace workspace) {
-        super(length, initialize, workspace);
+        /**
+         * Special case: we're creating empty buffer for length strings, each of 0 chars
+         */
+
+        super((length + 1) * 8, true, workspace);
+        numWords = length;
     }
 
     public Utf8Buffer(int[] ints, boolean copy, MemoryWorkspace workspace) {

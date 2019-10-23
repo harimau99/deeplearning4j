@@ -278,6 +278,8 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
                 return new Int8Buffer(length, initialize);
             case BOOL:
                 return new BoolBuffer(length, initialize);
+            case UTF8:
+                return new Utf8Buffer(length, true);
             default:
                 throw new IllegalStateException("Unknown datatype used: [" + dataType + "]");
 
