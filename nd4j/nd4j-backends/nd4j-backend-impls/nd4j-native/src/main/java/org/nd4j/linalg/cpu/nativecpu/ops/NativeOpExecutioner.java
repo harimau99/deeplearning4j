@@ -1704,7 +1704,8 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
 
             // check if output needs update
             for (val out:op.outputArguments()) {
-                ((BaseCpuDataBuffer) out.data()).actualizePointerAndIndexer();
+                if (!out.isEmpty())
+                    ((BaseCpuDataBuffer) out.data()).actualizePointerAndIndexer();
             }
 
             // pulling states back

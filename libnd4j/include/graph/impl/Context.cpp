@@ -433,7 +433,11 @@ namespace nd4j {
             if (_fastpath_in.size() < index + 1)
                 _fastpath_in.resize(index+1);
 
-            auto array = new NDArray(dataBuffer->dataBuffer(), reinterpret_cast<Nd4jLong *>(shapeInfo));
+            NDArray *array;
+            if (dataBuffer != nullptr)
+                array = new NDArray(dataBuffer->dataBuffer(), reinterpret_cast<Nd4jLong *>(shapeInfo));
+            else
+                array = new NDArray(nullptr, nullptr, reinterpret_cast<Nd4jLong *>(shapeInfo));
 
             _fastpath_in[index] = array;
             _handles.emplace_back(array);
@@ -448,7 +452,11 @@ namespace nd4j {
             if (_fastpath_out.size() < index + 1)
                 _fastpath_out.resize(index+1);
 
-            auto array = new NDArray(dataBuffer->dataBuffer(), reinterpret_cast<Nd4jLong *>(shapeInfo));
+            NDArray *array;
+            if (dataBuffer != nullptr)
+                array = new NDArray(dataBuffer->dataBuffer(), reinterpret_cast<Nd4jLong *>(shapeInfo));
+            else
+                array = new NDArray(nullptr, nullptr, reinterpret_cast<Nd4jLong *>(shapeInfo));
 
             _fastpath_out[index] = array;
             _handles.emplace_back(array);

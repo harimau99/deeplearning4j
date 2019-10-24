@@ -52,8 +52,9 @@ public class ExpandableOpsTests {
     @Test
     public void test() {
         val arr = Nd4j.linspace(DataType.INT32, 0, 9, 1).reshape(3, 3);
-        val row = arr.getRow(1);
+        Nd4j.exec(new PrintVariable(arr));
 
+        val row = arr.getRow(1);
         Nd4j.exec(new PrintVariable(row));
     }
 }

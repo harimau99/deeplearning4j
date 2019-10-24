@@ -80,7 +80,7 @@ public class CpuOpContext extends BaseOpContext implements OpContext {
     @Override
     public void setInputArray(int index, @NonNull INDArray array) {
         //nativeOps.setGraphContextInputArray(context, index, array.isEmpty() ? null : array.data().addressPointer(), array.shapeInfoDataBuffer().addressPointer(), null, null);
-        nativeOps.setGraphContextInputBuffer(context, index, ((BaseCpuDataBuffer) array.data()).getOpaqueDataBuffer(), array.shapeInfoDataBuffer().addressPointer(), null);
+        nativeOps.setGraphContextInputBuffer(context, index, array.isEmpty() ? null : ((BaseCpuDataBuffer) array.data()).getOpaqueDataBuffer(), array.shapeInfoDataBuffer().addressPointer(), null);
 
         super.setInputArray(index, array);
     }
@@ -88,7 +88,7 @@ public class CpuOpContext extends BaseOpContext implements OpContext {
     @Override
     public void setOutputArray(int index, @NonNull INDArray array) {
         //nativeOps.setGraphContextOutputArray(context, index, array.isEmpty() ? null : array.data().addressPointer(), array.shapeInfoDataBuffer().addressPointer(), null, null);
-        nativeOps.setGraphContextOutputBuffer(context, index, ((BaseCpuDataBuffer) array.data()).getOpaqueDataBuffer(), array.shapeInfoDataBuffer().addressPointer(), null);
+        nativeOps.setGraphContextOutputBuffer(context, index, array.isEmpty() ? null : ((BaseCpuDataBuffer) array.data()).getOpaqueDataBuffer(), array.shapeInfoDataBuffer().addressPointer(), null);
 
         super.setOutputArray(index, array);
     }
