@@ -45,5 +45,12 @@ namespace nd4j {
 
             return Status::OK();
         }
+
+        DECLARE_TYPES(print_variable) {
+            getOpDescriptor()
+                    ->setAllowedInputTypes(0, nd4j::DataType::ANY)
+                    ->setAllowedInputTypes(1, {ALL_STRINGS})
+                    ->setAllowedOutputTypes(0, nd4j::DataType::ANY);
+        }
     }
 }

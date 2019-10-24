@@ -21,6 +21,7 @@ import lombok.val;
 import org.junit.Test;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ops.compat.CompatStringSplit;
+import org.nd4j.linalg.api.ops.util.PrintVariable;
 import org.nd4j.linalg.factory.Nd4j;
 
 import static org.junit.Assert.assertEquals;
@@ -50,17 +51,9 @@ public class ExpandableOpsTests {
 
     @Test
     public void test() {
-        int width = 0;
-        val t = DataType.BFLOAT16;
-        val f = DataType.FLOAT;
+        val arr = Nd4j.linspace(DataType.INT32, 0, 9, 1).reshape(3, 3);
+        val row = arr.getRow(1);
 
-        for (int e = 0; e < 100000; e++)
-            width += t.width();
-
-        val timeStart = System.nanoTime();
-        width = f.width();
-        val timeEnd = System.nanoTime();
-
-        log.info("T: {}; Width: {}", timeEnd - timeStart, width);
+        Nd4j.exec(new PrintVariable(row));
     }
 }
