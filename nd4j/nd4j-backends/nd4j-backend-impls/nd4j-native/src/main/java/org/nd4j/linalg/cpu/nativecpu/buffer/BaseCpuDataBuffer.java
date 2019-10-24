@@ -16,6 +16,7 @@
 
 package org.nd4j.linalg.cpu.nativecpu.buffer;
 
+import lombok.val;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.indexer.*;
 import org.nd4j.linalg.api.buffer.BaseDataBuffer;
@@ -32,6 +33,9 @@ import org.nd4j.nativeblas.NativeOpsHolder;
 import org.nd4j.nativeblas.OpaqueDataBuffer;
 
 import java.nio.ByteBuffer;
+
+import static org.nd4j.linalg.api.buffer.DataType.INT16;
+import static org.nd4j.linalg.api.buffer.DataType.INT8;
 
 /**
  * Base implementation for DataBuffer for CPU-like backend
@@ -255,7 +259,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UTF8) {
-            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length(), DataType.INT64.toInt(), false);
+            // we are allocating buffer as INT8 intentionally
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length(), INT8.toInt(), false);
             pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length()).asBytePointer();
 
             setIndexer(ByteIndexer.create((BytePointer) pointer));
@@ -265,6 +270,60 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         }
 
         Nd4j.getDeallocatorService().pickObject(this);
+    }
+
+    public void actualizePointerAndIndexer() {
+        val cptr = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer);
+
+        // skip update if pointers are equal
+        if (cptr != null && pointer != null && cptr.address() == pointer.address())
+            return;
+
+        val t = dataType();
+        if (t == DataType.BOOL) {
+            pointer = new PagedPointer(cptr, length).asBoolPointer();
+            setIndexer(BooleanIndexer.create((BooleanPointer) pointer));
+        } else if (t == DataType.UBYTE) {
+            pointer = new PagedPointer(cptr, length).asBytePointer();
+            setIndexer(UByteIndexer.create((BytePointer) pointer));
+        } else if (t == DataType.BYTE) {
+            pointer = new PagedPointer(cptr, length).asBytePointer();
+            setIndexer(ByteIndexer.create((BytePointer) pointer));
+        } else if (t == DataType.UINT16) {
+            pointer = new PagedPointer(cptr, length).asShortPointer();
+            setIndexer(UShortIndexer.create((ShortPointer) pointer));
+        } else if (t == DataType.SHORT) {
+            pointer = new PagedPointer(cptr, length).asShortPointer();
+            setIndexer(ShortIndexer.create((ShortPointer) pointer));
+        } else if (t == DataType.UINT32) {
+            pointer = new PagedPointer(cptr, length).asIntPointer();
+            setIndexer(IntIndexer.create((IntPointer) pointer));
+        } else if (t == DataType.INT) {
+            pointer = new PagedPointer(cptr, length).asIntPointer();
+            setIndexer(IntIndexer.create((IntPointer) pointer));
+        } else if (t == DataType.UINT64) {
+            pointer = new PagedPointer(cptr, length).asLongPointer();
+            setIndexer(LongIndexer.create((LongPointer) pointer));
+        } else if (t == DataType.LONG) {
+            pointer = new PagedPointer(cptr, length).asLongPointer();
+            setIndexer(LongIndexer.create((LongPointer) pointer));
+        } else if (t == DataType.BFLOAT16) {
+            pointer = new PagedPointer(cptr, length).asShortPointer();
+            setIndexer(Bfloat16Indexer.create((ShortPointer) pointer));
+        } else if (t == DataType.HALF) {
+            pointer = new PagedPointer(cptr, length).asShortPointer();
+            setIndexer(HalfIndexer.create((ShortPointer) pointer));
+        } else if (t == DataType.FLOAT) {
+            pointer = new PagedPointer(cptr, length).asFloatPointer();
+            setIndexer(FloatIndexer.create((FloatPointer) pointer));
+        } else if (t == DataType.DOUBLE) {
+            pointer = new PagedPointer(cptr, length).asDoublePointer();
+            setIndexer(DoubleIndexer.create((DoublePointer) pointer));
+        } else if (t == DataType.UTF8) {
+            pointer = new PagedPointer(cptr, length()).asBytePointer();
+            setIndexer(ByteIndexer.create((BytePointer) pointer));
+        } else
+            throw new IllegalArgumentException("Unknown datatype: " + dataType());
     }
 
     protected BaseCpuDataBuffer(long length, boolean initialize, MemoryWorkspace workspace) {

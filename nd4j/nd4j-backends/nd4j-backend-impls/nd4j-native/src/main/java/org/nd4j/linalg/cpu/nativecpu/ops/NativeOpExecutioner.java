@@ -56,6 +56,7 @@ import org.nd4j.linalg.compression.CompressionDescriptor;
 import org.nd4j.linalg.compression.CompressionType;
 import org.nd4j.linalg.compression.ThresholdCompression;
 import org.nd4j.linalg.cpu.nativecpu.CpuTADManager;
+import org.nd4j.linalg.cpu.nativecpu.buffer.BaseCpuDataBuffer;
 import org.nd4j.linalg.cpu.nativecpu.buffer.LongBuffer;
 import org.nd4j.linalg.cpu.nativecpu.buffer.Utf8Buffer;
 import org.nd4j.linalg.cpu.nativecpu.rng.CpuNativeRandom;
@@ -1685,6 +1686,8 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
         val name = op.opName();
         try (val context = buildContext()) {
 
+            val outputs = op.outputArguments();
+
             context.markInplace(op.isInplaceCall());
 
             // transferring rng state
@@ -1692,7 +1695,7 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
 
             //transferring input/output arrays
             context.setInputArrays(op.inputArguments());
-            context.setOutputArrays(op.outputArguments());
+            context.setOutputArrays(outputs);
 
             // transferring static args
             context.setBArguments(op.bArgs());
@@ -1701,6 +1704,11 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
 
             val result = exec(op, context);
             val states = context.getRngStates();
+
+            // check if output needs update
+            for (val out:outputs) {
+                ((BaseCpuDataBuffer) out.data()).actualizePointerAndIndexer();
+            }
 
             // pulling states back
             Nd4j.getRandom().setStates(states.getFirst(), states.getSecond());
