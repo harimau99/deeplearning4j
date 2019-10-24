@@ -1685,9 +1685,6 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
 
         val name = op.opName();
         try (val context = buildContext()) {
-
-            val outputs = op.outputArguments();
-
             context.markInplace(op.isInplaceCall());
 
             // transferring rng state
@@ -1695,7 +1692,7 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
 
             //transferring input/output arrays
             context.setInputArrays(op.inputArguments());
-            context.setOutputArrays(outputs);
+            context.setOutputArrays(op.outputArguments());
 
             // transferring static args
             context.setBArguments(op.bArgs());
@@ -1706,7 +1703,7 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
             val states = context.getRngStates();
 
             // check if output needs update
-            for (val out:outputs) {
+            for (val out:op.outputArguments()) {
                 ((BaseCpuDataBuffer) out.data()).actualizePointerAndIndexer();
             }
 
