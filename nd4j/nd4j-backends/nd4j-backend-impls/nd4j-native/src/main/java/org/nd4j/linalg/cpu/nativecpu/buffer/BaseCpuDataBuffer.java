@@ -123,6 +123,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
             setIndexer(LongIndexer.create((LongPointer) pointer));
         }
+
+        Nd4j.getDeallocatorService().pickObject(this);
     }
 
     /**
