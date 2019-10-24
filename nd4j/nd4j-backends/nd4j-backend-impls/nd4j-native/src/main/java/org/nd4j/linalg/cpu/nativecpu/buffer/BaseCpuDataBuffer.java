@@ -46,13 +46,16 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
     private OpaqueDataBuffer ptrDataBuffer;
 
+    private final long instanceId = Nd4j.getDeallocatorService().nextValue();
+
     protected BaseCpuDataBuffer() {
 
     }
 
+
     @Override
     public String getUniqueId() {
-        return "BCDB" + Nd4j.getDeallocatorService().nextValue();
+        return "BCDB_" + instanceId;
     }
 
     @Override
