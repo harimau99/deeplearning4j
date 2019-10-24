@@ -196,4 +196,8 @@ public class CompressedDataBuffer extends BaseDataBuffer {
     public DataBuffer create(int[] data) {
         throw new UnsupportedOperationException("This operation isn't supported for CompressedDataBuffer");
     }
+
+    public void pointerIndexerByCurrentType(DataType currentType) {
+        throw new UnsupportedOperationException("This operation isn't supported for CompressedDataBuffer");
+    }
 }

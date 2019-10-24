@@ -148,6 +148,16 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         Nd4j.getDeallocatorService().pickObject(this);
     }
 
+    @Override
+    public void pointerIndexerByCurrentType(DataType currentType) {
+
+        type = currentType;
+
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length(), type.toInt(), false);
+        actualizePointerAndIndexer();
+        Nd4j.getDeallocatorService().pickObject(this);
+    }
+
     /**
      * Instantiate a buffer with the given length
      *
