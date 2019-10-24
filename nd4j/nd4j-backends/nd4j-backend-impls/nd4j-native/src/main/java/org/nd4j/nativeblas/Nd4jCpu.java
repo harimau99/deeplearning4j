@@ -12445,6 +12445,7 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
 // #include <ops/declarable/headers/tests.h>
 // #include <ops/declarable/headers/strings.h>
 // #include <ops/declarable/headers/compat.h>
+// #include <ops/declarable/headers/util.h>
 // #include <ops/declarable/headers/BarnesHutTsne.h>
 // #include <dll.h>
 // #include <helpers/shape.h>

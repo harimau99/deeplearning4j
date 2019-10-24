@@ -203,7 +203,6 @@ public abstract class BaseDataBuffer implements DataBuffer {
             this.originalOffset = offset; // + underlyingBuffer.originalOffset();
         }
 
-
         pointer = underlyingBuffer.pointer();
         setIndexer(underlyingBuffer.indexer());
     }

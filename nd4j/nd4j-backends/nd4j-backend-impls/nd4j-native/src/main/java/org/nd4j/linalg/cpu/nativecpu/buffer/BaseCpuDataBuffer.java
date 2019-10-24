@@ -141,6 +141,11 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
     protected BaseCpuDataBuffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
+
+        // for vew we need "externally managed" pointer and deallocator registration
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, underlyingBuffer.dataType().toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, new PagedPointer(this.addressPointer()), length);
+        Nd4j.getDeallocatorService().pickObject(this);
     }
 
     /**
