@@ -2195,15 +2195,15 @@ public class CudaExecutioner extends DefaultOpExecutioner {
             return Collections.emptyList();
         }
 
-        val inputBuffers = new PointerPointer<>(op.inputArguments().length * 2);
-        val inputShapes = new PointerPointer<>(op.inputArguments().length);
+        val inputBuffers = new PointerPointer<>(op.inputArguments().size() * 2);
+        val inputShapes = new PointerPointer<>(op.inputArguments().size());
 
         int cnt= 0;
         for (val in: op.inputArguments()) {
             // NOT A TYPO: shape functions work on host side only
             if (!in.isEmpty()) {
                 inputBuffers.put(cnt, in.data().addressPointer());
-                inputBuffers.put(cnt + op.inputArguments().length, AtomicAllocator.getInstance().getPointer(in.data()));
+                inputBuffers.put(cnt + op.inputArguments().size(), AtomicAllocator.getInstance().getPointer(in.data()));
             }
 
             inputShapes.put(cnt++, in.shapeInfoDataBuffer().addressPointer());
@@ -2228,7 +2228,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
         for (val t: op.tArgs())
             tArgs.put(cnt++, (float) t);
 
-        OpaqueShapeList ptrptr = nativeOps.calculateOutputShapes2(null, hash, inputBuffers, inputShapes, op.inputArguments().length, tArgs, op.tArgs().length, iArgs, op.iArgs().length, bArgs, op.numBArguments());
+        OpaqueShapeList ptrptr = nativeOps.calculateOutputShapes2(null, hash, inputBuffers, inputShapes, op.inputArguments().size(), tArgs, op.tArgs().length, iArgs, op.iArgs().length, bArgs, op.numBArguments());
 
         if (nativeOps.lastErrorCode() != 0)
             throw new RuntimeException(nativeOps.lastErrorMessage());
@@ -2497,7 +2497,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
         for (val arr:op.outputArguments())
             AtomicAllocator.getInstance().registerAction(ctx, arr);
 
-        AtomicAllocator.getInstance().registerAction(ctx, null, op.inputArguments());
+        AtomicAllocator.getInstance().registerAction(ctx, null, op.inputArguments().toArray(new INDArray[0]));
 
         profilingConfigurableHookOut(op, st);
 

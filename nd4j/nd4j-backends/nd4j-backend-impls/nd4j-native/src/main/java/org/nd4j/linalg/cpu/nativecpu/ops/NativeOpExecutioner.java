@@ -1792,10 +1792,10 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
             } catch (Throwable t){
                 StringBuilder sb = new StringBuilder();
                 sb.append("Inputs: [(");
-                for( int i=0; i<inputArgs.length; i++ ){
+                for( int i=0; i<inputArgs.size(); i++ ){
                     if(i > 0)
                         sb.append("), (");
-                    sb.append(Shape.shapeToStringShort(inputArgs[i]));
+                    sb.append(Shape.shapeToStringShort(inputArgs.get(i)));
                 }
                 sb.append(")]");
                 if(op instanceof DifferentialFunction && ((DifferentialFunction)op).getSameDiff() != null){

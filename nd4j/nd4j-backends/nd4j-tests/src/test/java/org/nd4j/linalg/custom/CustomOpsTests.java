@@ -411,7 +411,7 @@ public class CustomOpsTests extends BaseNd4jTest {
 
         Nd4j.getExecutioner().exec(op);
 
-        assertEquals(1, op.outputArguments().length);
+        assertEquals(1, op.outputArguments().size());
         val output = op.getOutputArgument(0);
 
         assertArrayEquals(new long[]{5, 10}, output.shape());
@@ -427,7 +427,7 @@ public class CustomOpsTests extends BaseNd4jTest {
 
         Nd4j.getExecutioner().exec(op);
 
-        assertEquals(1, op.outputArguments().length);
+        assertEquals(1, op.outputArguments().size());
         val output = op.getOutputArgument(0);
 
         assertArrayEquals(new long[]{5, 10}, output.shape());

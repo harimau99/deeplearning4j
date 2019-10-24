@@ -19,6 +19,7 @@ package org.nd4j.linalg.custom;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.Test;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ops.compat.CompatStringSplit;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -45,5 +46,21 @@ public class ExpandableOpsTests {
 
         assertEquals(exp0, results[0]);
         assertEquals(exp1, results[1]);
+    }
+
+    @Test
+    public void test() {
+        int width = 0;
+        val t = DataType.BFLOAT16;
+        val f = DataType.FLOAT;
+
+        for (int e = 0; e < 100000; e++)
+            width += t.width();
+
+        val timeStart = System.nanoTime();
+        width = f.width();
+        val timeEnd = System.nanoTime();
+
+        log.info("T: {}; Width: {}", timeEnd - timeStart, width);
     }
 }

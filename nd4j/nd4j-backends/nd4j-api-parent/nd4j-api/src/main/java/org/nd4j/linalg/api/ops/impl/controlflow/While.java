@@ -494,13 +494,13 @@ public class While extends DifferentialFunction implements CustomOp {
     }
 
     @Override
-    public INDArray[] outputArguments() {
-        return new INDArray[0];
+    public List<INDArray> outputArguments() {
+        return Collections.emptyList();
     }
 
     @Override
-    public INDArray[] inputArguments() {
-        return new INDArray[0];
+    public List<INDArray> inputArguments() {
+        return Collections.emptyList();
     }
 
     @Override

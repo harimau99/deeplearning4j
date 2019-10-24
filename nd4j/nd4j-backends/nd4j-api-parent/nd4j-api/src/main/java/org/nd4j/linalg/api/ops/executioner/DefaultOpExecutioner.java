@@ -171,7 +171,7 @@ public class DefaultOpExecutioner implements OpExecutioner {
 
     @Override
     public INDArray[] exec(CustomOp op) {
-        return execAndReturn(op).outputArguments();
+        return execAndReturn(op).outputArguments().toArray(new INDArray[0]);
     }
 
     @Override

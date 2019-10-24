@@ -146,9 +146,9 @@ public class Concat extends DynamicCustomOp {
         }
 
         //don't pass both iArg and last axis down to libnd4j
-        if(inputArguments().length == nodeDef.getInputCount()) {
+        if(inputArguments().size() == nodeDef.getInputCount()) {
             val inputArgs = inputArguments();
-            removeInputArgument(inputArgs[inputArguments().length - 1]);
+            removeInputArgument(inputArgs.get(inputArguments().size() - 1));
         }
 
         sameDiff.removeArgFromOp(input,this);

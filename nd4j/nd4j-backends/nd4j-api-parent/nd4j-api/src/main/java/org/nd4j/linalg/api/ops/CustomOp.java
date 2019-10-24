@@ -50,9 +50,9 @@ public interface CustomOp {
 
 
 
-    INDArray[] outputArguments();
+    List<INDArray> outputArguments();
 
-    INDArray[] inputArguments();
+    List<INDArray> inputArguments();
 
     long[] iArgs();
 
