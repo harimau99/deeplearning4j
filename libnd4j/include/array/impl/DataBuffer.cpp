@@ -20,6 +20,8 @@
 //
 
 #include <array/DataBuffer.h>
+#include <helpers/logger.h>
+#include <array/DataTypeUtils.h>
 
 namespace nd4j {
     ///// IMLEMENTATION OF COMMON METHODS /////
@@ -268,5 +270,6 @@ namespace nd4j {
 
     void DataBuffer::setSpecialBuffer(void *buffer, size_t length) {
         this->setSpecial(buffer, false);
+        _lenInBytes = length * DataTypeUtils::sizeOf(_dataType);
     }
 }
