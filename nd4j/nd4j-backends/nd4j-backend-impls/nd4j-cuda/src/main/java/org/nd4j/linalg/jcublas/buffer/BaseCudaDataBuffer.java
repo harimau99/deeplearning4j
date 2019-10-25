@@ -38,6 +38,7 @@ import org.nd4j.linalg.api.memory.Deallocatable;
 import org.nd4j.linalg.api.memory.Deallocator;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.enums.MemoryKind;
+import org.nd4j.linalg.api.memory.pointers.PagedPointer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.performance.PerformanceTracker;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
@@ -443,7 +444,11 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.allocationPoint = ((BaseCudaDataBuffer) underlyingBuffer).allocationPoint;
 
         // in case of view creation, we initialize underlying buffer regardless of anything
-        ((BaseCudaDataBuffer) underlyingBuffer).lazyAllocateHostPointer();;
+        ((BaseCudaDataBuffer) underlyingBuffer).lazyAllocateHostPointer();
+
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, underlyingBuffer.dataType().toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, new PagedPointer(allocationPoint.getPointers().getHostPointer().address() + offset * underlyingBuffer.getElementSize()), length);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, new PagedPointer(allocationPoint.getPointers().getDevicePointer().address() + offset * underlyingBuffer.getElementSize()), length);
 
         switch (underlyingBuffer.dataType()) {
             case DOUBLE:

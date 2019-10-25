@@ -47,9 +47,6 @@ public interface CustomOp {
      */
     boolean isInplaceCall();
 
-
-
-
     List<INDArray> outputArguments();
 
     List<INDArray> inputArguments();
