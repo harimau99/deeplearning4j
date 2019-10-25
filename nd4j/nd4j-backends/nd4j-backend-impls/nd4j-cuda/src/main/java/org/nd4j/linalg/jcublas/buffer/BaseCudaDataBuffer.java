@@ -48,6 +48,7 @@ import org.nd4j.linalg.memory.abstracts.DummyWorkspace;
 import org.nd4j.linalg.util.ArrayUtil;
 import org.nd4j.linalg.util.LongUtils;
 import org.nd4j.nativeblas.NativeOpsHolder;
+import org.nd4j.nativeblas.OpaqueDataBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,7 @@ import java.util.Collection;
  * @author raver119@gmail.com
  */
 public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCudaBuffer, Deallocatable {
+    private OpaqueDataBuffer ptrDataBuffer;
 
     @Getter
     protected transient volatile AllocationPoint allocationPoint;
@@ -87,6 +89,11 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
     public BaseCudaDataBuffer() {
 
     }
+
+    public OpaqueDataBuffer getOpaqueDataBuffer() {
+        return ptrDataBuffer;
+    }
+
 
     public BaseCudaDataBuffer(@NonNull Pointer pointer, @NonNull Pointer specialPointer, @NonNull Indexer indexer, long length) {
         this.allocationPoint = AtomicAllocator.getInstance().pickExternalBuffer(this);
@@ -302,6 +309,8 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.offset = 0;
         this.originalOffset = 0;
 
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, type.toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, this.allocationPoint.getDevicePointer(), this.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         // if only host
@@ -330,6 +339,8 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.offset = 0;
         this.originalOffset = 0;
 
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, type.toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, this.allocationPoint.getDevicePointer(), this.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         workspaceGenerationId = workspace.getGenerationId();

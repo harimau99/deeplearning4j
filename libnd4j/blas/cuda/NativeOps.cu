@@ -3628,9 +3628,9 @@ void deleteDataBuffer(OpaqueDataBuffer *dataBuffer) {
 }
 
 void dbSetPrimaryBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer primaryBuffer, Nd4jLong numBytes) {
-    dataBuffer->dataBuffer()->setPrimaryBuffer(primaryBuffer, numBytes);
+    dataBuffer->setPrimary(primaryBuffer, numBytes);
 }
 
 void dbSetSpecialBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer specialBuffer, Nd4jLong numBytes) {
-    dataBuffer->dataBuffer()->setSpecialBuffer(specialBuffer, numBytes);
+    dataBuffer->setSpecial(specialBuffer, numBytes);
 }
