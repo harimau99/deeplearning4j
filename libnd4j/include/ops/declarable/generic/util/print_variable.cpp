@@ -30,12 +30,10 @@ namespace nd4j {
             // optionally add message to the print out
             if (block.width() == 2) {
                 auto message = INPUT_VARIABLE(1);
+                REQUIRE_TRUE(message->isS(), 0, "print_variable: message variable must be a String");
 
-                if (message->isS()) {
-                    auto str = message->e<std::string>(0);
-
-                    input->printIndexedBuffer(str.c_str());
-                }
+                auto str = message->e<std::string>(0);
+                input->printIndexedBuffer(str.c_str());
             } else {
                 input->printIndexedBuffer();
             }
