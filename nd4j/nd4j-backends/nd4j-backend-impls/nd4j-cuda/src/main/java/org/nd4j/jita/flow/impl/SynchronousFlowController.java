@@ -172,7 +172,7 @@ public class SynchronousFlowController implements FlowController {
         val cId = allocator.getDeviceId();
 
 
-        if (result != null && !result.isEmpty() && !result.isS()) {
+        if (result != null && !result.isEmpty()) {
             Nd4j.getCompressor().autoDecompress(result);
             prepareDelayedMemory(result);
             val pointData = allocator.getAllocationPoint(result);

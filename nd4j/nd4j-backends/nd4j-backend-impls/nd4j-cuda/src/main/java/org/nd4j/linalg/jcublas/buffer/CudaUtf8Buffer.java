@@ -24,6 +24,7 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.LongPointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.indexer.Indexer;
+import org.nd4j.jita.allocator.impl.AtomicAllocator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
@@ -123,6 +124,7 @@ public class CudaUtf8Buffer extends BaseCudaDataBuffer {
 
     public CudaUtf8Buffer(@NonNull Collection<String> strings) {
         super(CudaUtf8Buffer.stringBufferRequiredLength(strings), 1, false);
+        lazyAllocateHostPointer();
 
         // at this point we should have fully allocated buffer, time to fill length
         val headerLength = (strings.size() + 1) * 8;
@@ -148,6 +150,7 @@ public class CudaUtf8Buffer extends BaseCudaDataBuffer {
             currentLength += length;
         }
         headerPointer.put(cnt, currentLength);
+        allocationPoint.tickHostWrite();
     }
 
     public String getString(long index) {

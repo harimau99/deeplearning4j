@@ -295,6 +295,10 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 this.pointer = new CudaPointer(allocationPoint.getPointers().getHostPointer(), length, 0).asBooleanPointer();
                 indexer = BooleanIndexer.create((BooleanPointer) pointer);
                 break;
+            case UTF8:
+                this.pointer = new CudaPointer(allocationPoint.getPointers().getHostPointer(), length, 0).asBytePointer();
+                indexer = ByteIndexer.create((BytePointer) pointer);
+                break;
             default:
                 throw new UnsupportedOperationException();
         }

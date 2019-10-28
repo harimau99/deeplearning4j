@@ -19,6 +19,7 @@ package org.nd4j.linalg.api.ops.util;
 import org.nd4j.base.Preconditions;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.DynamicCustomOp;
+import org.nd4j.linalg.factory.Nd4j;
 
 /**
  * This is a wrapper for PrintVariable op that just prints out Variable to the stdout
@@ -35,9 +36,13 @@ public class PrintVariable extends DynamicCustomOp {
         inputArguments.add(array);
     }
 
+    public PrintVariable(INDArray array, String message) {
+        this(array, Nd4j.create(message));
+    }
+
     public PrintVariable(INDArray array, INDArray message) {
         this(array);
-        Preconditions.checkArgument(array.isS(), "Message argument should have String data type");
+        Preconditions.checkArgument(message.isS(), "Message argument should have String data type, but got [" + message.dataType() +"] instead");
         inputArguments.add(message);
     }
 

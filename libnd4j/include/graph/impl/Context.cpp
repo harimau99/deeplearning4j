@@ -439,6 +439,9 @@ namespace nd4j {
             else
                 array = new NDArray(nullptr, nullptr, reinterpret_cast<Nd4jLong *>(shapeInfo));
 
+            // we want to tick array as written on device
+            NDArray::registerSpecialUse({array}, {});
+
             _fastpath_in[index] = array;
             _handles.emplace_back(array);
 

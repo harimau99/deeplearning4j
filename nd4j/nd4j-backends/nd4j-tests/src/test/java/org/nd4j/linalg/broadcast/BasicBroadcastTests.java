@@ -26,6 +26,7 @@ import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic.AddOp;
 import org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic.RealDivOp;
+import org.nd4j.linalg.api.ops.util.PrintVariable;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 
@@ -61,6 +62,9 @@ public class BasicBroadcastTests extends BaseNd4jTest {
         val x = Nd4j.create(DataType.FLOAT, 3, 1, 2);
         val y = Nd4j.createFromArray(new float[]{1.f, 1.f, 1.f, 1.f}).reshape(2, 2);
         val e = Nd4j.create(DataType.FLOAT, 3, 2, 2).assign(1.f);
+
+        //Nd4j.exec(new PrintVariable(x, "X array"));
+        //Nd4j.exec(new PrintVariable(y, "Y array"));
 
         val z = x.add(y);
 
