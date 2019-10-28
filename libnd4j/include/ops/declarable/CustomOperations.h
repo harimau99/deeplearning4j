@@ -39,6 +39,7 @@
 #include <ops/declarable/headers/datatypes.h>
 #include <ops/declarable/headers/third_party.h>
 #include <ops/declarable/headers/tests.h>
+#include <ops/declarable/headers/kernels.h>
 #include <ops/declarable/headers/strings.h>
 #include <ops/declarable/headers/compat.h>
 #include <ops/declarable/headers/util.h>

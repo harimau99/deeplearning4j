@@ -223,7 +223,7 @@ public class DynamicCustomOp extends DifferentialFunction implements CustomOp {
                 if (args().length >= 1) {
                     val arr = args()[0].getArr();
                     if (arr != null) {
-                        sameDiff.setArrayForVariable(newVars[0].getVarName(), arr);
+                        sameDiff.setArrayForVariable(newVars[0].name(), arr);
                         addOutputArgument(arr);
                     }
                 }
@@ -383,6 +383,13 @@ public class DynamicCustomOp extends DifferentialFunction implements CustomOp {
     }
 
     public void setInputArgument(int index, INDArray input) {
+        if(index >= inputArguments.size() ){
+            List<INDArray> oldArgs = inputArguments;
+            inputArguments = new ArrayList<>(index+1);
+            inputArguments.addAll(oldArgs);
+            while(inputArguments.size() <= index)
+                inputArguments.add(null);
+        }
         inputArguments.set(index, input);
     }
 
@@ -394,12 +401,12 @@ public class DynamicCustomOp extends DifferentialFunction implements CustomOp {
     }
 
     public void setOutputArgument(int index, INDArray output) {
-        if(index == outputArguments.size()){
-            //For example, setOutputArgument(0,arr) on empty list
-            outputArguments.add(output);
-        } else {
-            outputArguments.set(index, output);
+        while(index >= outputArguments.size()){
+            //Resize list, in case we want to specify arrays not in order they are defined
+            //For example, index 1 on empty list, then index 0
+            outputArguments.add(null);
         }
+        outputArguments.set(index, output);
     }
 
     @Override
@@ -600,6 +607,12 @@ public class DynamicCustomOp extends DifferentialFunction implements CustomOp {
     @Override
     public void initFromOnnx(Onnx.NodeProto node, SameDiff initWith, Map<String, Onnx.AttributeProto> attributesForNode, Onnx.GraphProto graph) {
 
+    }
+
+    @Override
+    public void clearArrays(){
+        inputArguments.clear();
+        outputArguments.clear();
     }
 
     protected static INDArray[] wrapOrNull(INDArray in){

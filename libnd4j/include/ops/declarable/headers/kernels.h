@@ -14,18 +14,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.imports.graphmapper;
+//
+//  @author raver119@gmail.com
+//
 
-import lombok.Data;
-import org.nd4j.autodiff.samediff.SameDiff;
+#ifndef LIBND4J_KERNELS_H
+#define LIBND4J_KERNELS_H
 
-import java.util.Map;
+#include <ops/declarable/headers/common.h>
 
-@Data
-public class ImportState<GRAPH_TYPE,TENSOR_TYPE> {
-    private SameDiff sameDiff;
-    private GRAPH_TYPE graph;
-    private Map<String,TENSOR_TYPE> variables;
-
-
+namespace nd4j {
+    namespace ops {
+    #if NOT_EXCLUDED(OP_knn_mindistance)
+        DECLARE_CUSTOM_OP(knn_mindistance, 3, 1, false, 0, 0);
+    #endif
+    }
 }
+
+#endif //LIBND4J_KERNELS_H

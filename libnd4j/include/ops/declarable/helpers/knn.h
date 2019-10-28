@@ -14,19 +14,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package org.nd4j.linalg.api.ops.impl.controlflow;
+//
+// @author raver119@gmail.com
+//
 
-import lombok.Builder;
-import lombok.Data;
-import org.tensorflow.framework.NodeDef;
+#ifndef SAMEDIFF_KNN_H
+#define SAMEDIFF_KNN_H
 
-import java.util.List;
+#include <ops/declarable/helpers/helpers.h>
 
-@Builder
-@Data
-public class IfImportState {
-    private List<NodeDef> condNodes;
-    private List<NodeDef> trueNodes;
-    private List<NodeDef> falseNodes;
-    private String falseBodyScopeName,trueBodyScopeName,conditionBodyScopeName;
+namespace nd4j {
+    namespace ops {
+        namespace helpers {
+            void knn_mindistance(const NDArray &input, const NDArray &lowest, const NDArray &highest, NDArray &output);
+        }
+    }
 }
+
+#endif //SAMEDIFF_KNN_H
