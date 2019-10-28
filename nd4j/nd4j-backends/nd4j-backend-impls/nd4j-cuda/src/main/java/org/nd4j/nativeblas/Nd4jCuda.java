@@ -743,6 +743,10 @@ public class Nd4jCuda extends org.nd4j.nativeblas.Nd4jCudaHelper {
 
         public native @Cast("bool") boolean isCPU();
 
+        public native int blasMajorVersion();
+        public native int blasMinorVersion();
+        public native int blasPatchVersion();
+
         public native @StdVector Pair capabilities();
     }
 
@@ -10705,6 +10709,7 @@ public static final int PREALLOC_SIZE = 33554432;
 // #include <ops/declarable/headers/datatypes.h>
 // #include <ops/declarable/headers/third_party.h>
 // #include <ops/declarable/headers/tests.h>
+// #include <ops/declarable/headers/kernels.h>
 // #include <ops/declarable/headers/strings.h>
 // #include <ops/declarable/headers/compat.h>
 // #include <ops/declarable/headers/util.h>

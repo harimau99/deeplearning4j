@@ -462,7 +462,7 @@ public class InferenceSession extends AbstractSession<INDArray, SameDiffOp> {
         } else if (op instanceof CustomOp) {
             CustomOp c = (CustomOp) op;
             Nd4j.exec(c);
-            return c.outputArguments();
+            return c.outputArguments().toArray(new INDArray[0]);
         } else if (op instanceof Op) {
             Op o = (Op) op;
             Nd4j.exec(o);

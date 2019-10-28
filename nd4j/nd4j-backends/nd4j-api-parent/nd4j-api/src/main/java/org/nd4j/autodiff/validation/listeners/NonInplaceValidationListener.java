@@ -53,9 +53,9 @@ public class NonInplaceValidationListener extends BaseListener {
         } else if(op.getOp() instanceof DynamicCustomOp){
             val arr = ((DynamicCustomOp) op.getOp()).inputArguments();
             opInputs = new INDArray[arr.size()];
-            opInputsOrig = new INDArray[arr.length];
+            opInputsOrig = new INDArray[arr.size()];
             for( int i=0; i<arr.size(); i++ ){
-                opInputsOrig[i] = arr[i];
+                opInputsOrig[i] = arr.get(i);
                 opInputs[i] = arr.get(i).dup();
             }
         } else {

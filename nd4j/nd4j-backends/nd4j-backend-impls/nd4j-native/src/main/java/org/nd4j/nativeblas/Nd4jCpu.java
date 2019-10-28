@@ -258,11 +258,156 @@ public class Nd4jCpu extends org.nd4j.nativeblas.Nd4jCpuHelper {
         QINT16 = 16,
         BFLOAT16 = 17,
         UTF8 = 50,
+        UTF16 = 51,
+        UTF32 = 52,
         ANY = 100,
         AUTO = 200;
 
 
 // #endif
+
+// Parsed from array/DataBuffer.h
+
+/*******************************************************************************
+ * Copyright (c) 2015-2018 Skymind, Inc.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ******************************************************************************/
+
+//
+// @author raver119@gmail.com
+// @author Yurii Shyrma (iuriish@yahoo.com)
+//
+
+// #ifndef DEV_TESTS_DATABUFFER_H
+// #define DEV_TESTS_DATABUFFER_H
+
+// #include <cstring>
+// #include <op_boilerplate.h>
+// #include <dll.h>
+// #include <pointercast.h>
+// #include <array/DataType.h>
+// #include <memory/Workspace.h>
+// #include <execution/LaunchContext.h>
+
+@Namespace("nd4j") @NoOffset public static class DataBuffer extends Pointer {
+    static { Loader.load(); }
+    /** Pointer cast constructor. Invokes {@link Pointer#Pointer(Pointer)}. */
+    public DataBuffer(Pointer p) { super(p); }
+    /** Native array allocator. Access with {@link Pointer#position(long)}. */
+    public DataBuffer(long size) { super((Pointer)null); allocateArray(size); }
+    private native void allocateArray(long size);
+    @Override public DataBuffer position(long position) {
+        return (DataBuffer)super.position(position);
+    }
+
+
+        public DataBuffer(Pointer primary, Pointer special,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
+                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/, @Cast("const bool") boolean isOwnerSpecial/*=false*/,
+                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(primary, special, lenInBytes, dataType, isOwnerPrimary, isOwnerSpecial, workspace); }
+        private native void allocate(Pointer primary, Pointer special,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
+                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/, @Cast("const bool") boolean isOwnerSpecial/*=false*/,
+                                       Workspace workspace/*=nullptr*/);
+        public DataBuffer(Pointer primary, Pointer special,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(primary, special, lenInBytes, dataType); }
+        private native void allocate(Pointer primary, Pointer special,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
+
+        public DataBuffer(Pointer primary,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
+                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/,
+                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(primary, lenInBytes, dataType, isOwnerPrimary, workspace); }
+        private native void allocate(Pointer primary,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
+                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/,
+                                       Workspace workspace/*=nullptr*/);
+        public DataBuffer(Pointer primary,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(primary, lenInBytes, dataType); }
+        private native void allocate(Pointer primary,
+                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
+
+        public DataBuffer(@Const Pointer hostBuffer,
+                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes,
+                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(hostBuffer, dataType, lenInBytes, workspace); }
+        private native void allocate(@Const Pointer hostBuffer,
+                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes,
+                                       Workspace workspace/*=nullptr*/);
+        public DataBuffer(@Const Pointer hostBuffer,
+                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes) { super((Pointer)null); allocate(hostBuffer, dataType, lenInBytes); }
+        private native void allocate(@Const Pointer hostBuffer,
+                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes);
+
+        public DataBuffer(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType, Workspace workspace/*=nullptr*/, @Cast("const bool") boolean allocBoth/*=false*/) { super((Pointer)null); allocate(lenInBytes, dataType, workspace, allocBoth); }
+        private native void allocate(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType, Workspace workspace/*=nullptr*/, @Cast("const bool") boolean allocBoth/*=false*/);
+        public DataBuffer(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(lenInBytes, dataType); }
+        private native void allocate(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
+
+        public DataBuffer(@Const @ByRef DataBuffer other) { super((Pointer)null); allocate(other); }
+        private native void allocate(@Const @ByRef DataBuffer other);
+        public DataBuffer() { super((Pointer)null); allocate(); }
+        private native void allocate();
+
+        public native @ByRef @Name("operator =") DataBuffer put(@Const @ByRef DataBuffer other);
+
+        public native @Cast("nd4j::DataType") int getDataType();
+        public native @Cast("size_t") long getLenInBytes();
+
+        public native Pointer primary();
+        public native Pointer special();
+
+        public native void allocatePrimary();
+        public native void allocateSpecial();
+
+        public native void writePrimary();
+        public native void writeSpecial();
+        public native void readPrimary();
+        public native void readSpecial();
+        public native @Cast("bool") boolean isPrimaryActual();
+        public native @Cast("bool") boolean isSpecialActual();
+
+        public native void expand(@Cast("const uint64_t") long size);
+
+        public native void migrate();
+
+        public native void syncToPrimary(@Const LaunchContext context, @Cast("const bool") boolean forceSync/*=false*/);
+        public native void syncToPrimary(@Const LaunchContext context);
+        public native void syncToSpecial(@Cast("const bool") boolean forceSync/*=false*/);
+        public native void syncToSpecial();
+
+        public native void setToZeroBuffers(@Cast("const bool") boolean both/*=false*/);
+        public native void setToZeroBuffers();
+
+        public native void copyBufferFrom(@Const @ByRef DataBuffer other, @Cast("size_t") long sizeToCopyinBytes/*=0*/, @Cast("const Nd4jLong") long offsetThis/*=0*/, @Cast("const Nd4jLong") long offsetOther/*=0*/);
+        public native void copyBufferFrom(@Const @ByRef DataBuffer other);
+
+        public native void setPrimaryBuffer(Pointer buffer, @Cast("size_t") long length);
+        public native void setSpecialBuffer(Pointer buffer, @Cast("size_t") long length);
+}
+///// IMLEMENTATION OF INLINE METHODS /////
+
+////////////////////////////////////////////////////////////////////////
+    
+
+////////////////////////////////////////////////////////////////////////
+    
+
+
+
+
+// #endif //DEV_TESTS_DATABUFFER_H
+
 
 // Parsed from array/ConstantDataBuffer.h
 
@@ -598,6 +743,10 @@ public class Nd4jCpu extends org.nd4j.nativeblas.Nd4jCpuHelper {
 
         public native @Cast("bool") boolean isCPU();
 
+        public native int blasMajorVersion();
+        public native int blasMinorVersion();
+        public native int blasPatchVersion();
+
         public native @StdVector Pair capabilities();
     }
 
@@ -741,6 +890,7 @@ bool verbose = false;
 // #include <array/ConstantDescriptor.h>
 // #include <helpers/ConstantShapeHelper.h>
 // #include <array/ConstantDataBuffer.h>
+// #include <array/InteropDataBuffer.h>
 // #include <helpers/ConstantHelper.h>
 // #include <array/TadPack.h>
 // #include <graph/VariablesSet.h>
@@ -3088,6 +3238,8 @@ public native void markGraphContextInplace(OpaqueContext ptr, @Cast("bool") bool
 public native void setGraphContextCudaContext(OpaqueContext ptr, Pointer stream, Pointer reductionPointer, Pointer allocationPointer);
 public native void setGraphContextInputArray(OpaqueContext ptr, int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
 public native void setGraphContextOutputArray(OpaqueContext ptr, int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
+public native void setGraphContextInputBuffer(OpaqueContext ptr, int index, OpaqueDataBuffer buffer, Pointer shapeInfo, Pointer specialShapeInfo);
+public native void setGraphContextOutputBuffer(OpaqueContext ptr, int index, OpaqueDataBuffer buffer, Pointer shapeInfo, Pointer specialShapeInfo);
 public native void setGraphContextTArguments(OpaqueContext ptr, DoublePointer arguments, int numberOfArguments);
 public native void setGraphContextTArguments(OpaqueContext ptr, DoubleBuffer arguments, int numberOfArguments);
 public native void setGraphContextTArguments(OpaqueContext ptr, double[] arguments, int numberOfArguments);
@@ -3119,6 +3271,13 @@ public native @Cast("Nd4jPointer") Pointer lcExecutionStream(OpaqueLaunchContext
 public native @Cast("Nd4jPointer") Pointer lcCopyStream(OpaqueLaunchContext lc);
 public native @Cast("Nd4jPointer") Pointer lcBlasHandle(OpaqueLaunchContext lc);
 public native @Cast("Nd4jPointer") Pointer lcSolverHandle(OpaqueLaunchContext lc);
+
+public native OpaqueDataBuffer allocateDataBuffer(@Cast("Nd4jLong") long elements, int dataType, @Cast("bool") boolean allocateBoth);
+public native @Cast("Nd4jPointer") Pointer dbPrimaryBuffer(OpaqueDataBuffer dataBuffer);
+public native @Cast("Nd4jPointer") Pointer dbSpecialBuffer(OpaqueDataBuffer dataBuffer);
+public native void dbSetPrimaryBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer primaryBuffer, @Cast("Nd4jLong") long numBytes);
+public native void dbSetSpecialBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer specialBuffer, @Cast("Nd4jLong") long numBytes);
+public native void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
 
 
 public native int binaryLevel();
@@ -3615,6 +3774,7 @@ public native @Cast("bool") boolean isOptimalRequirementsMet();
 // #include <helpers/ConstantShapeHelper.h>
 // #include <array/DataBuffer.h>
 // #include <execution/AffinityManager.h>
+// #include <memory>
 
 
     @Namespace("nd4j") public static native @ByVal @Name("operator -") NDArray subtract(float arg0, @Const @ByRef NDArray arg1);
@@ -6722,10 +6882,12 @@ NDArray& NDArray::operator()(const Nd4jLong* idx) {
             public native void setInputArray(int index, NDArray array, @Cast("bool") boolean removable/*=false*/);
             public native void setInputArray(int index, NDArray array);
             public native void setInputArray(int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
+            public native void setInputArray(int index, Pointer databuffer, Pointer shapeInfo, Pointer specialShapeInfo);
 
             public native void setOutputArray(int index, NDArray array, @Cast("bool") boolean removable/*=false*/);
             public native void setOutputArray(int index, NDArray array);
             public native void setOutputArray(int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
+            public native void setOutputArray(int index, Pointer databuffer, Pointer shapeInfo, Pointer specialShapeInfo);
 
             public native void setTArguments(DoublePointer arguments, int numberOfArguments);
             public native void setTArguments(DoubleBuffer arguments, int numberOfArguments);
@@ -9876,7 +10038,7 @@ public static final int PREALLOC_SIZE = 33554432;
 // #define BROADCAST(NAME) nd4j::BroadcastOpsTuple::custom(nd4j::scalar::NAME, nd4j::pairwise::NAME, nd4j::broadcast::NAME)
 // #define BROADCAST_BOOL(NAME) nd4j::BroadcastBoolOpsTuple::custom(nd4j::scalar::NAME, nd4j::pairwise::NAME, nd4j::broadcast::NAME)
 
-
+public static final int ALL_STRINGS =UTF32;
 public static final int ALL_INDICES =INT64;
 public static final int ALL_INTS =UINT64;
 public static final int ALL_FLOATS =BFLOAT16;
@@ -11436,6 +11598,10 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
 
 // #define PARAMETRIC_D() [&] (Parameters &p) -> Context*
 
+
+// #ifdef __CUDABLAS__
+// #endif
+
 // #endif
 
 
@@ -12281,6 +12447,10 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
 // #include <ops/declarable/headers/datatypes.h>
 // #include <ops/declarable/headers/third_party.h>
 // #include <ops/declarable/headers/tests.h>
+// #include <ops/declarable/headers/kernels.h>
+// #include <ops/declarable/headers/strings.h>
+// #include <ops/declarable/headers/compat.h>
+// #include <ops/declarable/headers/util.h>
 // #include <ops/declarable/headers/BarnesHutTsne.h>
 // #include <dll.h>
 // #include <helpers/shape.h>
@@ -21398,12 +21568,12 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
                                                                                     private native void allocate();
                                                                                     public native ShapeList calculateOutputShape(ShapeList inputShape, @ByRef Context block);
                                                                                 }
-//         #endif       
+//         #endif
 
         /**
          * Local response normalization implementation as TF.
          * input: 4D array
-         * 
+         *
          * T args:
          *
          * 0: bias
@@ -21411,8 +21581,8 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
          * 2: beta
          *
          * Int arg: depth - optional local radius
-         * 
-         * output - 4D array 
+         *
+         * output - 4D array
          */
 //         #if NOT_EXCLUDED(OP_lrn)
         @Namespace("nd4j::ops") public static class lrn extends DeclarableOp {
@@ -21434,10 +21604,10 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
 
         /**
          * Local response normalization - backprop variant.
-         * input: 
+         * input:
          *  0 - 4D array of data
          *  1 - epsilon - 4D array of approximation
-         * 
+         *
          * T args:
          *
          * 0: bias
@@ -21467,21 +21637,21 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
 //         #endif
 
         /**
-        * Batch normalization implementation. 
+        * Batch normalization implementation.
         * Reference: https://arxiv.org/abs/1502.03167v3
-        * 
+        *
         * Expected arguments:
         * input: input array (any number of dimensions)
         * mean:
         * variance:
         * gamma:
         * beta:
-        * 
+        *
         * Int args:
         * 0: apply scale
         * 1: apply offset
-        * 
-        * 
+        *
+        *
         * T args:
         * 0: epsilon
         */
@@ -21502,27 +21672,10 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
                                                                                     public native ShapeList calculateOutputShape(ShapeList inputShape, @ByRef Context block);
                                                                                 }
 //         #endif
-//         #if NOT_EXCLUDED(OP_batchnorm_new)
-        @Namespace("nd4j::ops") public static class batchnorm_new extends DeclarableCustomOp {
-            static { Loader.load(); }
-            /** Pointer cast constructor. Invokes {@link Pointer#Pointer(Pointer)}. */
-            public batchnorm_new(Pointer p) { super(p); }
-            /** Native array allocator. Access with {@link Pointer#position(long)}. */
-            public batchnorm_new(long size) { super((Pointer)null); allocateArray(size); }
-            private native void allocateArray(long size);
-            @Override public batchnorm_new position(long position) {
-                return (batchnorm_new)super.position(position);
-            }
-        
-                                                                                    public batchnorm_new() { super((Pointer)null); allocate(); }
-                                                                                    private native void allocate();
-                                                                                    public native ShapeList calculateOutputShape(ShapeList inputShape, @ByRef Context block);
-                                                                                }
-//         #endif
 
         /**
         * back prop in batch normalization
-        * 
+        *
         * Expected arguments:
         * input: input array (any number of dimensions)
         * mean:
@@ -21530,11 +21683,11 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
         * gamma: optional
         * beta: optional
         * dLdOut: next epsilon
-        * 
+        *
         * Int args:
         * 0: apply scale
-        * 1: apply offset 
-        * 
+        * 1: apply offset
+        *
         * T args:
         * 0: epsilon
         *
@@ -21542,8 +21695,8 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
         * dL/dInput
         * dL/dMean
         * dL/dVariance
-        * dL/dGamma
-        * dL/dBeta
+        * dL/dGamma, optional
+        * dL/dBeta, optional
         */
 //         #if NOT_EXCLUDED(OP_batchnorm)
         @Namespace("nd4j::ops") public static class batchnorm_bp extends DeclarableCustomOp {
@@ -21570,7 +21723,7 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
          * x: parameters, any shape
          * y: gradients. same shape as x
          * lr: optional, learning rate
-         * 
+         *
          * T args:
          * 0: optional, learning rate
          */
@@ -21589,25 +21742,25 @@ public static final int TAD_THRESHOLD = TAD_THRESHOLD();
                                                                                     public apply_sgd() { super((Pointer)null); allocate(); }
                                                                                     private native void allocate();
                                                                                     public native ShapeList calculateOutputShape(ShapeList inputShape, @ByRef Context block);
-                                                                                }   
+                                                                                }
 //         #endif
 
         /**
          * This operation performs batch normalization of layer, it is based on following article http://arxiv.org/abs/1502.03167.
          * Expected arguments:
          * x: input 4D array of shape [bS,iH,iW,iD] (data format = NHWC) or [bS,iD,iH,iW] (data format = NCHW), where
-         *    bS - batch size 
-         *    iH - input height    
-         *    iW - input width 
+         *    bS - batch size
+         *    iH - input height
+         *    iW - input width
          *    iD - input depth (or number of channels)
          * scale:  1D input array of scale factors, shape [iD]
          * offset: 1D input array of offsets (shifts), shape [iD]
          * mean: 1D input array of population mean used for inference, shape [iD], this array is required only if isTraining = false
          * variance: 1D input array of population mean used for inference, shape [iD], this array is required only if isTraining = false
-         * 
+         *
          * T input arguments:
          * 0: epsilon, it is optional argument, default value is 0.001, this is small number to be added to the variance of x
-         * 
+         *
          * integer input arguments:
          * 0: dataFormat, may have two values: zero -> NHWC, unity -> NCHW
          * 1: isTraining, may have two values: zero -> inference, unity -> training
