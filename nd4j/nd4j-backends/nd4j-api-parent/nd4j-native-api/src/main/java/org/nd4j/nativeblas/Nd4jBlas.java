@@ -52,7 +52,8 @@ public abstract class Nd4jBlas implements Blas {
                 setMaxThreads(numThreads);
             }
 
-            log.info("Number of threads used for OpenMP BLAS: {}", getMaxThreads());
+            if (getMaxThreads() > 0)
+                log.info("Number of threads used for OpenMP BLAS: {}", getMaxThreads());
         }
     }
 

@@ -19,27 +19,48 @@
 //
 
 #include <ops/declarable/CustomOperations.h>
+#include <ops/declarable/helpers/print_variable.h>
 
 namespace nd4j {
     namespace ops {
-        OP_IMPL(print_variable, 1, 1, true) {
+        CONFIGURABLE_OP_IMPL(print_variable, 1, 1, true, 0, 0) {
             // TODO: make this op compatible with ArrayList etc
             auto input = INPUT_VARIABLE(0);
             auto output = OUTPUT_VARIABLE(0);
-
-            // optionally add message to the print out
+            std::string str;
             if (block.width() == 2) {
                 auto message = INPUT_VARIABLE(1);
                 REQUIRE_TRUE(message->isS(), 0, "print_variable: message variable must be a String");
 
-                auto str = message->e<std::string>(0);
-                input->printIndexedBuffer(str.c_str());
-            } else {
-                input->printIndexedBuffer();
+                str = message->e<std::string>(0);
             }
+
+            bool printSpecial = false;
+            if (block.numB() > 0)
+                printSpecial = B_ARG(0);
+
+            nd4j_printf("Actuality: %i/%i\n", input->isActualOnHostSide(), input->isActualOnDeviceSide());
+
+            if (printSpecial && !nd4j::Environment::getInstance()->isCPU()) {
+                // only specific backends support special printout. for cpu-based backends it's the same as regular print
+                if (block.width() == 2)
+                    helpers::print_special(*block.launchContext(), *input, str);
+                else
+                    helpers::print_special(*block.launchContext(), *input);
+            } else {
+                // optionally add message to the print out
+                if (block.width() == 2) {
+                    input->printIndexedBuffer(str.c_str());
+                } else {
+                    input->printIndexedBuffer();
+            }
+            }
+
+            nd4j_printf("Actuality: %i/%i\n", input->isActualOnHostSide(), input->isActualOnDeviceSide());
 
             if (!block.isInplace())
                 output->assign(input);
+
 
             return Status::OK();
         }

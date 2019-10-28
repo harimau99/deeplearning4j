@@ -32,18 +32,31 @@ public class PrintVariable extends DynamicCustomOp {
         //
     }
 
-    public PrintVariable(INDArray array) {
+    public PrintVariable(INDArray array, boolean printSpecial) {
         inputArguments.add(array);
+        bArguments.add(printSpecial);
+    }
+
+    public PrintVariable(INDArray array) {
+        this(array, false);
+    }
+
+    public PrintVariable(INDArray array, String message, boolean printSpecial) {
+        this(array, Nd4j.create(message), printSpecial);
     }
 
     public PrintVariable(INDArray array, String message) {
-        this(array, Nd4j.create(message));
+        this(array, Nd4j.create(message), false);
+    }
+
+    public PrintVariable(INDArray array, INDArray message, boolean printSpecial) {
+        this(array, printSpecial);
+        Preconditions.checkArgument(message.isS(), "Message argument should have String data type, but got [" + message.dataType() +"] instead");
+        inputArguments.add(message);
     }
 
     public PrintVariable(INDArray array, INDArray message) {
-        this(array);
-        Preconditions.checkArgument(message.isS(), "Message argument should have String data type, but got [" + message.dataType() +"] instead");
-        inputArguments.add(message);
+        this(array, message, false);
     }
 
     @Override

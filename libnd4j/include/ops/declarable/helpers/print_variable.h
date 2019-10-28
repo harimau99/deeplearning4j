@@ -18,17 +18,17 @@
 //  @author raver119@gmail.com
 //
 
-#ifndef LIBND4J_UTILS_H
-#define LIBND4J_UTILS_H
+#ifndef LIBND4J_PRINT_VARIABLE_H
+#define LIBND4J_PRINT_VARIABLE_H
 
-#include <ops/declarable/headers/common.h>
+#include <ops/declarable/helpers/helpers.h>
 
 namespace nd4j {
     namespace ops {
-    #if NOT_EXCLUDED(OP_print_variable)
-        DECLARE_CONFIGURABLE_OP(print_variable, 1, 1, true, 0, 0);
-    #endif
+        namespace helpers {
+            void print_special(LaunchContext &ctx, const NDArray &array, const std::string &message = {});
+        }
     }
 }
 
-#endif //LIBND4J_UTILS_H
+#endif //LIBND4J_PRINT_VARIABLE_H

@@ -81,6 +81,7 @@ import org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic.Axpy;
 import org.nd4j.linalg.api.ops.impl.transforms.same.Sign;
 import org.nd4j.linalg.api.ops.impl.transforms.strict.ACosh;
 import org.nd4j.linalg.api.ops.impl.transforms.strict.Tanh;
+import org.nd4j.linalg.api.ops.util.PrintVariable;
 import org.nd4j.linalg.api.shape.LongShapeDescriptor;
 import org.nd4j.linalg.api.shape.Shape;
 import org.nd4j.linalg.checkutil.NDArrayCreationUtil;
@@ -6158,6 +6159,9 @@ public class Nd4jTestsC extends BaseNd4jTest {
     public void testVectorScalarConcat() {
         val vector = Nd4j.createFromArray(new float[] {1, 2});
         val scalar = Nd4j.scalar(3.0f);
+
+        Nd4j.exec(new PrintVariable(scalar, true));
+        Nd4j.exec(new PrintVariable(scalar, "host", false));
 
         val output = Nd4j.createFromArray(new float[]{0, 0, 0});
         val exp = Nd4j.createFromArray(new float[]{1, 2, 3});

@@ -4661,8 +4661,7 @@ public class Nd4j {
 
         for (int idx : indexes) {
             if (idx < 0 || idx >= source.shape()[source.rank() - sourceDimension - 1]) {
-                throw new IllegalStateException(
-                        "Index can't be < 0 and >= " + source.shape()[source.rank() - sourceDimension - 1]);
+                throw new IllegalStateException("Index can't be < 0 and >= " + source.shape()[source.rank() - sourceDimension - 1]);
             }
         }
 
