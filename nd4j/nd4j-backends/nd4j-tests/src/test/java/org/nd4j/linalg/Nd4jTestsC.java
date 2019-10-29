@@ -6160,9 +6160,6 @@ public class Nd4jTestsC extends BaseNd4jTest {
         val vector = Nd4j.createFromArray(new float[] {1, 2});
         val scalar = Nd4j.scalar(3.0f);
 
-        Nd4j.exec(new PrintVariable(scalar, true));
-        Nd4j.exec(new PrintVariable(scalar, "host", false));
-
         val output = Nd4j.createFromArray(new float[]{0, 0, 0});
         val exp = Nd4j.createFromArray(new float[]{1, 2, 3});
 
@@ -6179,6 +6176,14 @@ public class Nd4jTestsC extends BaseNd4jTest {
 
         assertArrayEquals(exp.shape(), output.shape());
         assertEquals(exp, output);
+    }
+
+
+    @Test
+    public void testScalarPrint_1() {
+        val scalar = Nd4j.scalar(3.0f);
+
+        Nd4j.exec(new PrintVariable(scalar, true));
     }
 
 

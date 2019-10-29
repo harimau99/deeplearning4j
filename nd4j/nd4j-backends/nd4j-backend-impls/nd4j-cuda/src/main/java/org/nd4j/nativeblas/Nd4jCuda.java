@@ -344,6 +344,7 @@ public class Nd4jCuda extends org.nd4j.nativeblas.Nd4jCudaHelper {
         public native @ByRef @Name("operator =") DataBuffer put(@Const @ByRef DataBuffer other);
 
         public native @Cast("nd4j::DataType") int getDataType();
+        public native void setDataType(@Cast("nd4j::DataType") int dataType);
         public native @Cast("size_t") long getLenInBytes();
 
         public native Pointer primary();
