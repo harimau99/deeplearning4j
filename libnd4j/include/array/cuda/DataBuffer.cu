@@ -66,12 +66,8 @@ void DataBuffer::allocateSpecial() {
 ////////////////////////////////////////////////////////////////////////
 void DataBuffer::syncToPrimary(const LaunchContext* context, const bool forceSync) {
     if(isPrimaryActual() && !forceSync) {
-        nd4j_printf("Skipping syncToPrimary\n","");
         return;
     }
-
-    nd4j_printf("Starting syncToPrimary: %i bytes\n", getLenInBytes());
-
 
     allocatePrimary();
 
