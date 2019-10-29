@@ -39,10 +39,9 @@ namespace nd4j {
             if (block.numB() > 0)
                 printSpecial = B_ARG(0);
 
-            nd4j_printf("Actuality: %i/%i\n", input->isActualOnHostSide(), input->isActualOnDeviceSide());
-
             if (printSpecial && !nd4j::Environment::getInstance()->isCPU()) {
                 // only specific backends support special printout. for cpu-based backends it's the same as regular print
+
                 if (block.width() == 2)
                     helpers::print_special(*block.launchContext(), *input, str);
                 else
@@ -53,14 +52,11 @@ namespace nd4j {
                     input->printIndexedBuffer(str.c_str());
                 } else {
                     input->printIndexedBuffer();
+                }
             }
-            }
-
-            nd4j_printf("Actuality: %i/%i\n", input->isActualOnHostSide(), input->isActualOnDeviceSide());
 
             if (!block.isInplace())
                 output->assign(input);
-
 
             return Status::OK();
         }

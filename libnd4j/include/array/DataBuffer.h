@@ -90,6 +90,7 @@ class ND4J_EXPORT DataBuffer {
         DataBuffer& operator=(DataBuffer&& other) noexcept;
 
         DataType getDataType();
+        void setDataType(DataType dataType);
         size_t getLenInBytes() const;
 
         void* primary();

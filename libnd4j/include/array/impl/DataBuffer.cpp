@@ -266,10 +266,15 @@ namespace nd4j {
         }
         _primaryBuffer = buffer;
         _isOwnerPrimary = false;
+        _lenInBytes = length * DataTypeUtils::sizeOf(_dataType);
     }
 
     void DataBuffer::setSpecialBuffer(void *buffer, size_t length) {
         this->setSpecial(buffer, false);
         _lenInBytes = length * DataTypeUtils::sizeOf(_dataType);
+    }
+
+    void DataBuffer::setDataType(DataType dataType) {
+        _dataType = dataType;
     }
 }

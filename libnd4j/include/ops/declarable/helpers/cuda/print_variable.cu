@@ -19,6 +19,7 @@
 //
 
 #include <ops/declarable/helpers/print_variable.h>
+#include <helpers/PointersManager.h>
 
 namespace nd4j {
     namespace ops {
@@ -47,7 +48,13 @@ namespace nd4j {
             }
 
             void print_special(LaunchContext &ctx, const NDArray &array, const std::string &message) {
+                NDArray::prepareSpecialUse({}, {&array});
+
+                PointersManager pm(&ctx, "print_device");
                 BUILD_SINGLE_SELECTOR(array.dataType(), exec_print_device, (ctx, array.getSpecialBuffer(), array.getSpecialShapeInfo()), LIBND4J_TYPES)
+                pm.synchronize();
+
+                NDArray::registerSpecialUse({}, {&array});
             }
         }
     }

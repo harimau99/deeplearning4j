@@ -28,6 +28,7 @@ namespace nd4j {
     InteropDataBuffer::InteropDataBuffer(size_t elements, nd4j::DataType dtype, bool allocateBoth) {
         if (elements == 0) {
             _dataBuffer = std::make_shared<DataBuffer>();
+            _dataBuffer->setDataType(dtype);
         } else {
             _dataBuffer = std::make_shared<DataBuffer>(elements, dtype, nullptr, allocateBoth);
         }
