@@ -21,6 +21,11 @@
 #include <array/InteropDataBuffer.h>
 
 namespace nd4j {
+    InteropDataBuffer::InteropDataBuffer(InteropDataBuffer &dataBuffer, Nd4jLong offset) {
+        _dataBuffer = dataBuffer.getDataBuffer();
+        _offset = offset + dataBuffer.offset();
+    }
+
     InteropDataBuffer::InteropDataBuffer(std::shared_ptr<DataBuffer> databuffer) {
         _dataBuffer = databuffer;
     }
@@ -56,5 +61,13 @@ namespace nd4j {
 
     void InteropDataBuffer::setSpecial(void* ptr, size_t length) {
         _dataBuffer->setSpecialBuffer(ptr, length);
+    }
+
+    uint64_t InteropDataBuffer::offset() {
+        return _offset;
+    }
+
+    void InteropDataBuffer::setOffset(uint64_t offset) {
+        _offset = offset;
     }
 }
