@@ -3637,3 +3637,15 @@ void dbSetPrimaryBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer primaryBuffer,
 void dbSetSpecialBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer specialBuffer, Nd4jLong numBytes) {
     dataBuffer->setSpecial(specialBuffer, numBytes);
 }
+
+void dbAllocatePrimaryBuffer(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->allocatePrimary();
+}
+
+void dbAllocateSpecialBuffer(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->allocateSpecial();
+}
+
+void dbExpandBuffer(OpaqueDataBuffer *dataBuffer, Nd4jLong elements) {
+    dataBuffer->dataBuffer()->expand(elements * DataTypeUtils::sizeOf(dataBuffer->dataBuffer()->getDataType()));
+}
