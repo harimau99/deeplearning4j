@@ -3276,6 +3276,9 @@ public native @Cast("Nd4jPointer") Pointer lcSolverHandle(OpaqueLaunchContext lc
 public native OpaqueDataBuffer allocateDataBuffer(@Cast("Nd4jLong") long elements, int dataType, @Cast("bool") boolean allocateBoth);
 public native @Cast("Nd4jPointer") Pointer dbPrimaryBuffer(OpaqueDataBuffer dataBuffer);
 public native @Cast("Nd4jPointer") Pointer dbSpecialBuffer(OpaqueDataBuffer dataBuffer);
+public native void dbExpandBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jLong") long elements);
+public native void dbAllocatePrimaryBuffer(OpaqueDataBuffer dataBuffer);
+public native void dbAllocateSpecialBuffer(OpaqueDataBuffer dataBuffer);
 public native void dbSetPrimaryBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer primaryBuffer, @Cast("Nd4jLong") long numBytes);
 public native void dbSetSpecialBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer specialBuffer, @Cast("Nd4jLong") long numBytes);
 public native void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
