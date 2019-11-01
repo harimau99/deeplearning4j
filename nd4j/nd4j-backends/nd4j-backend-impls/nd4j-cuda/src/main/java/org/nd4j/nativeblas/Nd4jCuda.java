@@ -240,157 +240,11 @@ public class Nd4jCuda extends org.nd4j.nativeblas.Nd4jCudaHelper {
         QINT16 = 16,
         BFLOAT16 = 17,
         UTF8 = 50,
-        UTF16 = 51,
-        UTF32 = 52,
         ANY = 100,
         AUTO = 200;
 
 
 // #endif
-
-// Parsed from array/DataBuffer.h
-
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
-
-//
-// @author raver119@gmail.com
-// @author Yurii Shyrma (iuriish@yahoo.com)
-//
-
-// #ifndef DEV_TESTS_DATABUFFER_H
-// #define DEV_TESTS_DATABUFFER_H
-
-// #include <cstring>
-// #include <op_boilerplate.h>
-// #include <dll.h>
-// #include <pointercast.h>
-// #include <array/DataType.h>
-// #include <memory/Workspace.h>
-// #include <execution/LaunchContext.h>
-
-@Namespace("nd4j") @NoOffset public static class DataBuffer extends Pointer {
-    static { Loader.load(); }
-    /** Pointer cast constructor. Invokes {@link Pointer#Pointer(Pointer)}. */
-    public DataBuffer(Pointer p) { super(p); }
-    /** Native array allocator. Access with {@link Pointer#position(long)}. */
-    public DataBuffer(long size) { super((Pointer)null); allocateArray(size); }
-    private native void allocateArray(long size);
-    @Override public DataBuffer position(long position) {
-        return (DataBuffer)super.position(position);
-    }
-
-
-        public DataBuffer(Pointer primary, Pointer special,
-                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
-                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/, @Cast("const bool") boolean isOwnerSpecial/*=false*/,
-                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(primary, special, lenInBytes, dataType, isOwnerPrimary, isOwnerSpecial, workspace); }
-        private native void allocate(Pointer primary, Pointer special,
-                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
-                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/, @Cast("const bool") boolean isOwnerSpecial/*=false*/,
-                                       Workspace workspace/*=nullptr*/);
-        public DataBuffer(Pointer primary, Pointer special,
-                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(primary, special, lenInBytes, dataType); }
-        private native void allocate(Pointer primary, Pointer special,
-                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
-
-        public DataBuffer(Pointer primary,
-                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
-                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/,
-                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(primary, lenInBytes, dataType, isOwnerPrimary, workspace); }
-        private native void allocate(Pointer primary,
-                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType,
-                                       @Cast("const bool") boolean isOwnerPrimary/*=false*/,
-                                       Workspace workspace/*=nullptr*/);
-        public DataBuffer(Pointer primary,
-                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(primary, lenInBytes, dataType); }
-        private native void allocate(Pointer primary,
-                                       @Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
-
-        public DataBuffer(@Const Pointer hostBuffer,
-                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes,
-                                       Workspace workspace/*=nullptr*/) { super((Pointer)null); allocate(hostBuffer, dataType, lenInBytes, workspace); }
-        private native void allocate(@Const Pointer hostBuffer,
-                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes,
-                                       Workspace workspace/*=nullptr*/);
-        public DataBuffer(@Const Pointer hostBuffer,
-                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes) { super((Pointer)null); allocate(hostBuffer, dataType, lenInBytes); }
-        private native void allocate(@Const Pointer hostBuffer,
-                                       @Cast("const nd4j::DataType") int dataType, @Cast("const size_t") long lenInBytes);
-
-        public DataBuffer(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType, Workspace workspace/*=nullptr*/, @Cast("const bool") boolean allocBoth/*=false*/) { super((Pointer)null); allocate(lenInBytes, dataType, workspace, allocBoth); }
-        private native void allocate(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType, Workspace workspace/*=nullptr*/, @Cast("const bool") boolean allocBoth/*=false*/);
-        public DataBuffer(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType) { super((Pointer)null); allocate(lenInBytes, dataType); }
-        private native void allocate(@Cast("const size_t") long lenInBytes, @Cast("const nd4j::DataType") int dataType);
-
-        public DataBuffer(@Const @ByRef DataBuffer other) { super((Pointer)null); allocate(other); }
-        private native void allocate(@Const @ByRef DataBuffer other);
-        public DataBuffer() { super((Pointer)null); allocate(); }
-        private native void allocate();
-
-        public native @ByRef @Name("operator =") DataBuffer put(@Const @ByRef DataBuffer other);
-
-        public native @Cast("nd4j::DataType") int getDataType();
-        public native void setDataType(@Cast("nd4j::DataType") int dataType);
-        public native @Cast("size_t") long getLenInBytes();
-
-        public native Pointer primary();
-        public native Pointer special();
-
-        public native void allocatePrimary();
-        public native void allocateSpecial();
-
-        public native void writePrimary();
-        public native void writeSpecial();
-        public native void readPrimary();
-        public native void readSpecial();
-        public native @Cast("bool") boolean isPrimaryActual();
-        public native @Cast("bool") boolean isSpecialActual();
-
-        public native void expand(@Cast("const uint64_t") long size);
-
-        public native void migrate();
-
-        public native void syncToPrimary(@Const LaunchContext context, @Cast("const bool") boolean forceSync/*=false*/);
-        public native void syncToPrimary(@Const LaunchContext context);
-        public native void syncToSpecial(@Cast("const bool") boolean forceSync/*=false*/);
-        public native void syncToSpecial();
-
-        public native void setToZeroBuffers(@Cast("const bool") boolean both/*=false*/);
-        public native void setToZeroBuffers();
-
-        public native void copyBufferFrom(@Const @ByRef DataBuffer other, @Cast("size_t") long sizeToCopyinBytes/*=0*/, @Cast("const Nd4jLong") long offsetThis/*=0*/, @Cast("const Nd4jLong") long offsetOther/*=0*/);
-        public native void copyBufferFrom(@Const @ByRef DataBuffer other);
-
-        public native void setPrimaryBuffer(Pointer buffer, @Cast("size_t") long length);
-        public native void setSpecialBuffer(Pointer buffer, @Cast("size_t") long length);
-}
-///// IMLEMENTATION OF INLINE METHODS /////
-
-////////////////////////////////////////////////////////////////////////
-    
-
-////////////////////////////////////////////////////////////////////////
-    
-
-
-
-
-// #endif //DEV_TESTS_DATABUFFER_H
-
 
 // Parsed from array/ConstantDescriptor.h
 
@@ -891,7 +745,6 @@ bool verbose = false;
 // #include <array/ConstantDescriptor.h>
 // #include <helpers/ConstantShapeHelper.h>
 // #include <array/ConstantDataBuffer.h>
-// #include <array/InteropDataBuffer.h>
 // #include <helpers/ConstantHelper.h>
 // #include <array/TadPack.h>
 // #include <graph/VariablesSet.h>
@@ -3196,19 +3049,19 @@ public native void scatterUpdate(@Cast("Nd4jPointer*") PointerPointer extraPoint
                   Pointer dX, @Cast("Nd4jLong*") LongPointer dXShapeInfo, @Cast("Nd4jLong*") LongPointer dXOffsets,
                   Pointer hY, @Cast("Nd4jLong*") LongPointer hYShapeInfo, @Cast("Nd4jLong*") LongPointer hYOffsets,
                   Pointer dY, @Cast("Nd4jLong*") LongPointer dYShapeInfo, @Cast("Nd4jLong*") LongPointer dYOffsets,
-                  IntPointer hIindexes, IntPointer dIindexes);
+                  Pointer hIindexes, @Cast("Nd4jLong*") LongPointer hIndicesShapeInfo, Pointer dIindexes, @Cast("Nd4jLong*") LongPointer dIndicesShapeInfo);
 public native void scatterUpdate(@Cast("Nd4jPointer*") PointerPointer extraPointers, int opCode, int numOfSubArrs,
                   Pointer hX, @Cast("Nd4jLong*") LongBuffer hXShapeInfo, @Cast("Nd4jLong*") LongBuffer hXOffsets,
                   Pointer dX, @Cast("Nd4jLong*") LongBuffer dXShapeInfo, @Cast("Nd4jLong*") LongBuffer dXOffsets,
                   Pointer hY, @Cast("Nd4jLong*") LongBuffer hYShapeInfo, @Cast("Nd4jLong*") LongBuffer hYOffsets,
                   Pointer dY, @Cast("Nd4jLong*") LongBuffer dYShapeInfo, @Cast("Nd4jLong*") LongBuffer dYOffsets,
-                  IntBuffer hIindexes, IntBuffer dIindexes);
+                  Pointer hIindexes, @Cast("Nd4jLong*") LongBuffer hIndicesShapeInfo, Pointer dIindexes, @Cast("Nd4jLong*") LongBuffer dIndicesShapeInfo);
 public native void scatterUpdate(@Cast("Nd4jPointer*") PointerPointer extraPointers, int opCode, int numOfSubArrs,
                   Pointer hX, @Cast("Nd4jLong*") long[] hXShapeInfo, @Cast("Nd4jLong*") long[] hXOffsets,
                   Pointer dX, @Cast("Nd4jLong*") long[] dXShapeInfo, @Cast("Nd4jLong*") long[] dXOffsets,
                   Pointer hY, @Cast("Nd4jLong*") long[] hYShapeInfo, @Cast("Nd4jLong*") long[] hYOffsets,
                   Pointer dY, @Cast("Nd4jLong*") long[] dYShapeInfo, @Cast("Nd4jLong*") long[] dYOffsets,
-                  int[] hIindexes, int[] dIindexes);
+                  Pointer hIindexes, @Cast("Nd4jLong*") long[] hIndicesShapeInfo, Pointer dIindexes, @Cast("Nd4jLong*") long[] dIndicesShapeInfo);
 
 public native void inspectArray(@Cast("Nd4jPointer*") PointerPointer extraPointers, @Cast("Nd4jPointer") Pointer buffer, @Cast("Nd4jLong*") LongPointer shapeInfo, @Cast("Nd4jPointer") Pointer specialBuffer, @Cast("Nd4jLong*") LongPointer specialShapeInfo, @Cast("Nd4jPointer") Pointer debugInfo);
 public native void inspectArray(@Cast("Nd4jPointer*") PointerPointer extraPointers, @Cast("Nd4jPointer") Pointer buffer, @Cast("Nd4jLong*") LongBuffer shapeInfo, @Cast("Nd4jPointer") Pointer specialBuffer, @Cast("Nd4jLong*") LongBuffer specialShapeInfo, @Cast("Nd4jPointer") Pointer debugInfo);
@@ -3239,8 +3092,6 @@ public native void markGraphContextInplace(OpaqueContext ptr, @Cast("bool") bool
 public native void setGraphContextCudaContext(OpaqueContext ptr, Pointer stream, Pointer reductionPointer, Pointer allocationPointer);
 public native void setGraphContextInputArray(OpaqueContext ptr, int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
 public native void setGraphContextOutputArray(OpaqueContext ptr, int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
-public native void setGraphContextInputBuffer(OpaqueContext ptr, int index, OpaqueDataBuffer buffer, Pointer shapeInfo, Pointer specialShapeInfo);
-public native void setGraphContextOutputBuffer(OpaqueContext ptr, int index, OpaqueDataBuffer buffer, Pointer shapeInfo, Pointer specialShapeInfo);
 public native void setGraphContextTArguments(OpaqueContext ptr, DoublePointer arguments, int numberOfArguments);
 public native void setGraphContextTArguments(OpaqueContext ptr, DoubleBuffer arguments, int numberOfArguments);
 public native void setGraphContextTArguments(OpaqueContext ptr, double[] arguments, int numberOfArguments);
@@ -3272,13 +3123,6 @@ public native @Cast("Nd4jPointer") Pointer lcExecutionStream(OpaqueLaunchContext
 public native @Cast("Nd4jPointer") Pointer lcCopyStream(OpaqueLaunchContext lc);
 public native @Cast("Nd4jPointer") Pointer lcBlasHandle(OpaqueLaunchContext lc);
 public native @Cast("Nd4jPointer") Pointer lcSolverHandle(OpaqueLaunchContext lc);
-
-public native OpaqueDataBuffer allocateDataBuffer(@Cast("Nd4jLong") long elements, int dataType, @Cast("bool") boolean allocateBoth);
-public native @Cast("Nd4jPointer") Pointer dbPrimaryBuffer(OpaqueDataBuffer dataBuffer);
-public native @Cast("Nd4jPointer") Pointer dbSpecialBuffer(OpaqueDataBuffer dataBuffer);
-public native void dbSetPrimaryBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer primaryBuffer, @Cast("Nd4jLong") long numBytes);
-public native void dbSetSpecialBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer specialBuffer, @Cast("Nd4jLong") long numBytes);
-public native void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
 
 
 public native int binaryLevel();
@@ -3775,7 +3619,6 @@ public native @Cast("bool") boolean isOptimalRequirementsMet();
 // #include <helpers/ConstantShapeHelper.h>
 // #include <array/DataBuffer.h>
 // #include <execution/AffinityManager.h>
-// #include <memory>
 
 
     @Namespace("nd4j") public static native @ByVal @Name("operator -") NDArray subtract(float arg0, @Const @ByRef NDArray arg1);
@@ -6883,12 +6726,10 @@ NDArray& NDArray::operator()(const Nd4jLong* idx) {
             public native void setInputArray(int index, NDArray array, @Cast("bool") boolean removable/*=false*/);
             public native void setInputArray(int index, NDArray array);
             public native void setInputArray(int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
-            public native void setInputArray(int index, Pointer databuffer, Pointer shapeInfo, Pointer specialShapeInfo);
 
             public native void setOutputArray(int index, NDArray array, @Cast("bool") boolean removable/*=false*/);
             public native void setOutputArray(int index, NDArray array);
             public native void setOutputArray(int index, Pointer buffer, Pointer shapeInfo, Pointer specialBuffer, Pointer specialShapeInfo);
-            public native void setOutputArray(int index, Pointer databuffer, Pointer shapeInfo, Pointer specialShapeInfo);
 
             public native void setTArguments(DoublePointer arguments, int numberOfArguments);
             public native void setTArguments(DoubleBuffer arguments, int numberOfArguments);
@@ -10711,9 +10552,6 @@ public static final int PREALLOC_SIZE = 33554432;
 // #include <ops/declarable/headers/third_party.h>
 // #include <ops/declarable/headers/tests.h>
 // #include <ops/declarable/headers/kernels.h>
-// #include <ops/declarable/headers/strings.h>
-// #include <ops/declarable/headers/compat.h>
-// #include <ops/declarable/headers/util.h>
 // #include <ops/declarable/headers/BarnesHutTsne.h>
 // #include <dll.h>
 // #include <helpers/shape.h>
