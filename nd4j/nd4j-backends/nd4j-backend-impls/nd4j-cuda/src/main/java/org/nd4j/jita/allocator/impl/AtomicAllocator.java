@@ -946,28 +946,22 @@ public class AtomicAllocator implements Allocator {
 
     @Override
     public void tickHostWrite(DataBuffer buffer) {
-        if (1 > 0)
-            throw new UnsupportedOperationException("Pew-pew");
+        getAllocationPoint(buffer).tickHostWrite();
     }
 
     @Override
     public void tickHostWrite(INDArray array) {
-        if (1 > 0)
-            throw new UnsupportedOperationException("Pew-pew");
+        getAllocationPoint(array.data()).tickHostWrite();
     }
 
     @Override
     public void tickDeviceWrite(INDArray array) {
-        if (1 > 0)
-            throw new UnsupportedOperationException("Pew-pew");
+        getAllocationPoint(array.data()).tickDeviceWrite();
     }
 
     @Override
     public AllocationPoint getAllocationPoint(INDArray array) {
-        if (1 > 0)
-            throw new UnsupportedOperationException("Pew-pew");
-
-        return null;
+        return getAllocationPoint(array.data());
     }
 
     @Override

@@ -2213,9 +2213,10 @@ public abstract class BaseNDArray implements INDArray, Iterable {
         if(isEmpty() || isS())
             return false;
 
-        return Shape.offset(jvmShapeInfo.javaShapeInformation) > 0
-                || (length() < data().length() && data.dataType() != DataType.INT)
-                || data().originalDataBuffer() != null;
+        val c2 = (length() < data().length() && data.dataType() != DataType.INT);
+        val c3 = (data().originalDataBuffer() != null && data != data.originalDataBuffer());
+
+        return c2 || c3;
     }
 
     @Override
