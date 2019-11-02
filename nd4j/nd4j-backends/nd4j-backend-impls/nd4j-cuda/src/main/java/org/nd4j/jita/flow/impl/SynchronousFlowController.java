@@ -80,10 +80,10 @@ public class SynchronousFlowController implements FlowController {
             // if this piece of memory is device-dependant, we'll also issue copyback once
             if (point.getAllocationStatus() == AllocationStatus.DEVICE && !point.isActualOnHostSide()) {
                 long perfD = PerformanceTracker.getInstance().helperStartTransaction();
-                val bytes = AllocationUtils.getRequiredMemory(point.getShape());
+                val bytes = point.getNumberOfBytes();
 
                 if (nativeOps.memcpyAsync(point.getHostPointer(), point.getDevicePointer(), bytes, CudaConstants.cudaMemcpyDeviceToHost, context.getSpecialStream()) == 0)
-                    throw new IllegalStateException("synchronizeToHost memcpyAsync failed: " + point.getShape());
+                    throw new IllegalStateException("synchronizeToHost memcpyAsync failed: " + bytes);
 
                 commitTransfer(context.getSpecialStream());
 
@@ -106,10 +106,9 @@ public class SynchronousFlowController implements FlowController {
 
                 long perfD = PerformanceTracker.getInstance().helperStartTransaction();
 
-                if (nativeOps.memcpyAsync(point.getDevicePointer(), point.getHostPointer(),
-                        AllocationUtils.getRequiredMemory(point.getShape()),
+                if (nativeOps.memcpyAsync(point.getDevicePointer(), point.getHostPointer(), point.getNumberOfBytes(),
                         CudaConstants.cudaMemcpyHostToDevice, context.getSpecialStream()) == 0)
-                    throw new IllegalStateException("MemcpyAsync failed: " + point.getShape());
+                    throw new IllegalStateException("MemcpyAsync failed: " + point.getNumberOfBytes());
 
                 commitTransfer(context.getSpecialStream());
                 point.tickDeviceRead();
@@ -147,7 +146,6 @@ public class SynchronousFlowController implements FlowController {
             val pointData = allocator.getAllocationPoint(operand);
             val pointShape = allocator.getAllocationPoint(operand.shapeInfoDataBuffer());
 
-            pointData.acquireLock();
 
             if (pointData.getDeviceId() != cId && pointData.getDeviceId() >= 0) {
                 DataBuffer buffer = operand.data().originalDataBuffer() == null ? operand.data()
@@ -178,9 +176,6 @@ public class SynchronousFlowController implements FlowController {
             val pointData = allocator.getAllocationPoint(result);
             val pointShape = allocator.getAllocationPoint(result.shapeInfoDataBuffer());
 
-            pointData.acquireLock();
-
-
             if (pointData.getDeviceId() != cId && pointData.getDeviceId() >= 0 && (!CudaEnvironment.getInstance().getConfiguration().isCrossDeviceAccessAllowed() || !NativeOpsHolder.getInstance().getDeviceNativeOps().isP2PAvailable())) {
                 DataBuffer buffer = result.data().originalDataBuffer() == null ? result.data()
                                 : result.data().originalDataBuffer();
@@ -206,8 +201,6 @@ public class SynchronousFlowController implements FlowController {
 
             val pointData = allocator.getAllocationPoint(operand);
             val pointShape = allocator.getAllocationPoint(operand.shapeInfoDataBuffer());
-
-            pointData.acquireLock();
 
             if (pointData.getDeviceId() != cId && pointData.getDeviceId() >= 0 && (!CudaEnvironment.getInstance().getConfiguration().isCrossDeviceAccessAllowed() || !NativeOpsHolder.getInstance().getDeviceNativeOps().isP2PAvailable())) {
                 DataBuffer buffer = operand.data().originalDataBuffer() == null ? operand.data()
@@ -240,14 +233,12 @@ public class SynchronousFlowController implements FlowController {
         eventsProvider.storeEvent(result.getLastWriteEvent());
         result.setLastWriteEvent(eventsProvider.getEvent());
         result.getLastWriteEvent().register(context.getOldStream());
-        result.releaseLock();
 
 
         for (AllocationPoint operand : operands) {
             eventsProvider.storeEvent(operand.getLastReadEvent());
             operand.setLastReadEvent(eventsProvider.getEvent());
             operand.getLastReadEvent().register(context.getOldStream());
-            operand.releaseLock();
         }
         //   context.syncOldStream();
     }
@@ -263,7 +254,6 @@ public class SynchronousFlowController implements FlowController {
             eventsProvider.storeEvent(pointOperand.getLastWriteEvent());
             pointOperand.setLastWriteEvent(eventsProvider.getEvent());
             pointOperand.getLastWriteEvent().register(context.getOldStream());
-            pointOperand.releaseLock();
         }
     }
 
@@ -276,14 +266,12 @@ public class SynchronousFlowController implements FlowController {
         eventsProvider.storeEvent(point.getLastWriteEvent());
         point.setLastWriteEvent(eventsProvider.getEvent());
         point.getLastWriteEvent().register(context.getOldStream());
-        point.releaseLock();
 
         for (INDArray operand : operands) {
             if (operand == null || operand.isEmpty())
                 continue;
 
             val pointOperand = allocator.getAllocationPoint(operand);
-            pointOperand.releaseLock();
             eventsProvider.storeEvent(pointOperand.getLastReadEvent());
             pointOperand.setLastReadEvent(eventsProvider.getEvent());
             pointOperand.getLastReadEvent().register(context.getOldStream());
@@ -295,7 +283,6 @@ public class SynchronousFlowController implements FlowController {
         val context = allocator.getDeviceContext();
 
         if (result != null) {
-            result.acquireLock();
             result.setCurrentContext(context);
         }
 
@@ -303,7 +290,6 @@ public class SynchronousFlowController implements FlowController {
             if (operand == null)
                 continue;
 
-            operand.acquireLock();
             operand.setCurrentContext(context);
         }
 

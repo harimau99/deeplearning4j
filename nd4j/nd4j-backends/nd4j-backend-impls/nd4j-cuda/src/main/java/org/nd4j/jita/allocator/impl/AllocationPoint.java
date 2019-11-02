@@ -32,6 +32,7 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.jcublas.context.CudaContext;
 import org.nd4j.nativeblas.NativeOps;
 import org.nd4j.nativeblas.NativeOpsHolder;
+import org.nd4j.nativeblas.OpaqueDataBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +55,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class AllocationPoint {
     private static Logger log = LoggerFactory.getLogger(AllocationPoint.class);
 
-    // thread safety is guaranteed by cudaLock
-    private volatile PointersPair pointerInfo;
+    @Getter
+    private OpaqueDataBuffer ptrDataBuffer;
 
     @Getter
     @Setter
@@ -104,16 +105,16 @@ public class AllocationPoint {
     */
     private volatile int deviceId;
 
-    public AllocationPoint() {
-        //
+    private long bytes;
+
+    public AllocationPoint(@NonNull OpaqueDataBuffer opaqueDataBuffer, long bytes) {
+        ptrDataBuffer = opaqueDataBuffer;
+        this.bytes = bytes;
     }
 
-    public void acquireLock() {
-        //lock.lock();
-    }
-
-    public void releaseLock() {
-        //lock.unlock();
+    public void setPointers(Pointer primary, Pointer special, long numberOfElements) {
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, primary, numberOfElements);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, primary, numberOfElements);
     }
 
     public int getDeviceId() {
@@ -123,13 +124,6 @@ public class AllocationPoint {
     public void setDeviceId(int deviceId) {
         this.deviceId = deviceId;
     }
-
-    /*
-        We assume 1D memory chunk allocations.
-    */
-    @Getter
-    @Setter
-    private AllocationShape shape;
 
     private AtomicBoolean enqueued = new AtomicBoolean(false);
 
@@ -164,7 +158,7 @@ public class AllocationPoint {
     }
 
     public long getNumberOfBytes() {
-        return shape.getNumberOfBytes();
+        return bytes;
     }
 
     /*
@@ -220,44 +214,20 @@ public class AllocationPoint {
      * This method returns CUDA pointer object for this allocation.
      * It can be either device pointer or pinned memory pointer, or null.
      *
-     * PLEASE NOTE: Thread safety is guaranteed by reentrant read/write lock
      * @return
      */
     public Pointer getDevicePointer() {
-        if (pointerInfo == null) {
-            log.info("pointerInfo is null");
-            return null;
-        }
-        return pointerInfo.getDevicePointer();
+        return NativeOpsHolder.getInstance().getDeviceNativeOps().dbSpecialBuffer(ptrDataBuffer);
     }
 
     /**
      * This method returns CUDA pointer object for this allocation.
      * It can be either device pointer or pinned memory pointer, or null.
      *
-     * PLEASE NOTE: Thread safety is guaranteed by reentrant read/write lock
      * @return
      */
     public Pointer getHostPointer() {
-        if (pointerInfo == null)
-            return null;
-
-        return pointerInfo.getHostPointer();
-    }
-
-    /**
-     * This method sets CUDA pointer for this allocation.
-     * It can be either device pointer, or pinned memory pointer, or null.
-     *
-     * PLEASE NOTE: Thread safety is guaranteed by reentrant read/write lock
-     * @param pointerInfo CUDA pointers wrapped into DevicePointerInfo
-     */
-    public void setPointers(@NonNull PointersPair pointerInfo) {
-        this.pointerInfo = pointerInfo;
-    }
-
-    public PointersPair getPointers() {
-        return this.pointerInfo;
+        return NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer);
     }
 
 
@@ -355,6 +325,6 @@ public class AllocationPoint {
 
     @Override
     public String toString() {
-        return "AllocationPoint{" + "deviceId=" + deviceId + ", objectId=" + objectId + ", shape=" + shape + '}';
+        return "AllocationPoint{" + "deviceId=" + deviceId + ", objectId=" + objectId + "}";
     }
 }

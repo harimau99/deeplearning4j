@@ -590,7 +590,7 @@ public class JCublasNDArrayFactory extends BaseNativeNDArrayFactory {
                     throw new ND4JIllegalStateException("All arrays should have equal length for averaging");
 
                 AllocationPoint point = allocator.getAllocationPoint(arrays[i]);
-                xPointers[i] = point.getPointers().getDevicePointer().address();
+                xPointers[i] = point.getDevicePointer().address();
                 point.tickDeviceWrite();
             }
 
@@ -699,7 +699,7 @@ public class JCublasNDArrayFactory extends BaseNativeNDArrayFactory {
                     throw new ND4JIllegalStateException("All arrays should have equal length for averaging");
 
                 AllocationPoint point = allocator.getAllocationPoint(arrays[i]);
-                xPointers[i] = point.getPointers().getDevicePointer().address();
+                xPointers[i] = point.getDevicePointer().address();
                 point.tickDeviceWrite();
             }
 

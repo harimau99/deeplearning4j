@@ -368,7 +368,7 @@ public class AtomicAllocator implements Allocator {
         //Nd4j.getExecutioner().push();
 
         // we don't synchronize constant buffers, since we assume they are always valid on host side
-        if (buffer.isConstant() || buffer.dataType() == DataType.UTF8 || AtomicAllocator.getInstance().getAllocationPoint(buffer).getPointers().getHostPointer() == null) {
+        if (buffer.isConstant() || buffer.dataType() == DataType.UTF8 || AtomicAllocator.getInstance().getAllocationPoint(buffer).getHostPointer() == null) {
             return;
         }
 
@@ -439,6 +439,7 @@ public class AtomicAllocator implements Allocator {
 
 
     public AllocationPoint pickExternalBuffer(DataBuffer buffer) {
+        /**
         AllocationPoint point = new AllocationPoint();
         Long allocId = objectsTracker.getAndIncrement();
         point.setObjectId(allocId);
@@ -451,6 +452,9 @@ public class AtomicAllocator implements Allocator {
         point.tickHostRead();
 
         return point;
+         */
+
+        throw new UnsupportedOperationException("Pew-pew");
     }
 
     /**
@@ -462,69 +466,8 @@ public class AtomicAllocator implements Allocator {
      * @param location
      */
     @Override
-    public AllocationPoint allocateMemory(DataBuffer buffer, AllocationShape requiredMemory, AllocationStatus location,
-                    boolean initialize) {
-        AllocationPoint point = new AllocationPoint();
-
-        useTracker.set(System.currentTimeMillis());
-
-        // we use these longs as tracking codes for memory tracking
-        Long allocId = objectsTracker.getAndIncrement();
-        //point.attachBuffer(buffer);
-        point.setObjectId(allocId);
-        point.setShape(requiredMemory);
-        /*
-        if (buffer instanceof CudaIntDataBuffer) {
-            buffer.setConstant(true);
-            point.setConstant(true);
-        }
-        */
-        /*int numBuckets = configuration.getNumberOfGcThreads();
-        int bucketId = RandomUtils.nextInt(0, numBuckets);
-
-        GarbageBufferReference reference =
-                        new GarbageBufferReference((BaseDataBuffer) buffer, queueMap.get(bucketId), point);*/
-        //point.attachReference(reference);
-        point.setDeviceId(-1);
-
-        if (buffer.isAttached()) {
-            long reqMem = AllocationUtils.getRequiredMemory(requiredMemory);
-
-            // workaround for init order
-            getMemoryHandler().getCudaContext();
-            point.setDeviceId(Nd4j.getAffinityManager().getDeviceForCurrentThread());
-
-            val workspace = (CudaWorkspace) Nd4j.getMemoryManager().getCurrentWorkspace();
-
-            val pair = new PointersPair();
-            val ptrDev = workspace.alloc(reqMem, MemoryKind.DEVICE, requiredMemory.getDataType(), initialize);
-
-            if (ptrDev != null) {
-                pair.setDevicePointer(ptrDev);
-                point.setAllocationStatus(AllocationStatus.DEVICE);
-            } else {
-                // we allocate initial host pointer only
-                val ptrHost = workspace.alloc(reqMem, MemoryKind.HOST, requiredMemory.getDataType(), initialize);
-                pair.setHostPointer(ptrHost);
-
-                pair.setDevicePointer(ptrHost);
-                point.setAllocationStatus(AllocationStatus.HOST);
-            }
-
-            point.setAttached(true);
-
-            point.setPointers(pair);
-        } else {
-            // we stay naive on PointersPair, we just don't know on this level, which pointers are set. MemoryHandler will be used for that
-            PointersPair pair = memoryHandler.alloc(location, point, requiredMemory, initialize);
-            point.setPointers(pair);
-        }
-
-        allocationsMap.put(allocId, point);
-        //point.tickHostRead();
-        point.tickDeviceWrite();
-        //point.setAllocationStatus(location);
-        return point;
+    public AllocationPoint allocateMemory(DataBuffer buffer, AllocationShape requiredMemory, AllocationStatus location, boolean initialize) {
+        throw new UnsupportedOperationException("Pew-pew");
     }
 
 
@@ -612,10 +555,11 @@ public class AtomicAllocator implements Allocator {
                  */
                 if (point.getBuffer() == null) {
                     purgeZeroObject(bucketId, object, point, false);
-                    freeSpace.addAndGet(AllocationUtils.getRequiredMemory(point.getShape()));
+                    //freeSpace.addAndGet(AllocationUtils.getRequiredMemory(point.getShape()));
+                    throw new UnsupportedOperationException("Pew-pew");
 
-                    elementsDropped.incrementAndGet();
-                    continue;
+                    //elementsDropped.incrementAndGet();
+                    //continue;
                 } else {
                     elementsSurvived.incrementAndGet();
                 }
@@ -675,13 +619,14 @@ public class AtomicAllocator implements Allocator {
                 if (point.getAllocationStatus() == AllocationStatus.DEVICE) {
                     // we deallocate device memory
                     purgeDeviceObject(threadId, deviceId, object, point, false);
-                    freeSpace.addAndGet(AllocationUtils.getRequiredMemory(point.getShape()));
+                    //freeSpace.addAndGet(AllocationUtils.getRequiredMemory(point.getShape()));
 
                     // and we deallocate host memory, since object is dereferenced
-                    purgeZeroObject(point.getBucketId(), object, point, false);
+                    //purgeZeroObject(point.getBucketId(), object, point, false);
 
-                    elementsDropped.incrementAndGet();
-                    continue;
+                    //elementsDropped.incrementAndGet();
+                    //continue;
+                    throw new UnsupportedOperationException("Pew-pew");
                 } ;
             } else {
                 elementsSurvived.incrementAndGet();

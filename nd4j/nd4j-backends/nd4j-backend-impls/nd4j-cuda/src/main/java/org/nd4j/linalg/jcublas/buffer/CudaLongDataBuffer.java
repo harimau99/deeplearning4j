@@ -69,9 +69,10 @@ public class CudaLongDataBuffer extends BaseCudaDataBuffer {
 
         this.allocationPoint = AtomicAllocator.getInstance().pickExternalBuffer(this);
 
-        val pp = new PointersPair(devicePointer, this.pointer);
-        allocationPoint.setPointers(pp);
+        //val pp = new PointersPair(devicePointer, this.pointer);
+        //allocationPoint.setPointers(pp);
         trackingPoint = allocationPoint.getObjectId();
+        throw new UnsupportedOperationException("Pew-Pew");
     }
 
     /**
