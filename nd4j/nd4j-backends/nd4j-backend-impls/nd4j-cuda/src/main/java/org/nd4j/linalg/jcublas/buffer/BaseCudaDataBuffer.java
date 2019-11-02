@@ -103,7 +103,6 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.allocationPoint = AtomicAllocator.getInstance().pickExternalBuffer(this);
         this.allocationPoint.setPointers(pointer, specialPointer, length);
 
-        this.trackingPoint = allocationPoint.getObjectId();
         this.allocationMode = AllocationMode.MIXED_DATA_TYPES;
 
         this.indexer = indexer;
@@ -128,7 +127,6 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
         //cuda specific bits
         this.allocationPoint = AtomicAllocator.getInstance().allocateMemory(this, new AllocationShape(length, elementSize, dataType()), false);
-        this.trackingPoint = allocationPoint.getObjectId();
 
         Nd4j.getDeallocatorService().pickObject(this);
 
@@ -316,7 +314,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.length = length;
         //allocationPoint.attachBuffer(this);
         this.elementSize =  (byte) elementSize;
-        this.trackingPoint = allocationPoint.getObjectId();
+
         this.offset = 0;
         this.originalOffset = 0;
 
@@ -342,7 +340,6 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
         this.length = length;
 
-        this.trackingPoint = allocationPoint.getObjectId();
         this.offset = 0;
         this.originalOffset = 0;
 
@@ -396,7 +393,6 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.length = length;
         this.offset = offset;
         this.originalOffset = offset;
-        this.trackingPoint = underlyingBuffer.getTrackingPoint();
         this.elementSize = (byte) underlyingBuffer.getElementSize();
 
         // in case of view creation, we initialize underlying buffer regardless of anything
@@ -1205,7 +1201,9 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
     @Override
     public boolean sameUnderlyingData(DataBuffer buffer) {
-        return buffer.getTrackingPoint() == getTrackingPoint();
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
+        return false;
     }
 
     /**
@@ -1298,7 +1296,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
             this.elementSize = (byte) Nd4j.sizeOfDataType(t);
             this.allocationPoint = AtomicAllocator.getInstance().allocateMemory(this, new AllocationShape(length, elementSize, t), false);
-            this.trackingPoint = allocationPoint.getObjectId();
+
             this.type = t;
 
             Nd4j.getDeallocatorService().pickObject(this);
@@ -1478,7 +1476,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         allocationPoint = AtomicAllocator.getInstance().allocateMemory(this, new AllocationShape(length, elementSize, dataType()), false);
 
         Nd4j.getDeallocatorService().pickObject(this);
-        trackingPoint = allocationPoint.getObjectId();
+
         val oldLength = this.length;
         this.length = length;
 

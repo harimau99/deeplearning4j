@@ -71,7 +71,6 @@ public class CudaLongDataBuffer extends BaseCudaDataBuffer {
 
         //val pp = new PointersPair(devicePointer, this.pointer);
         //allocationPoint.setPointers(pp);
-        trackingPoint = allocationPoint.getObjectId();
         throw new UnsupportedOperationException("Pew-Pew");
     }
 
@@ -229,14 +228,7 @@ public class CudaLongDataBuffer extends BaseCudaDataBuffer {
         this.length = n;
         this.elementSize = 8;
 
-        //wrappedBuffer = ByteBuffer.allocateDirect(length() * getElementSize());
-        //wrappedBuffer.order(ByteOrder.nativeOrder());
-
-        this.allocationPoint = AtomicAllocator.getInstance().allocateMemory(this,
-                        new AllocationShape(length, elementSize, DataType.LONG), false);
-        this.trackingPoint = allocationPoint.getObjectId();
-        //this.wrappedBuffer = allocationPoint.getPointers().getHostPointer().asByteBuffer();
-        //this.wrappedBuffer.order(ByteOrder.nativeOrder());
+        this.allocationPoint = AtomicAllocator.getInstance().allocateMemory(this, new AllocationShape(length, elementSize, DataType.LONG), false);
 
         setData(arr);
     }

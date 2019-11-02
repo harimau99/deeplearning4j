@@ -365,20 +365,9 @@ public class AtomicAllocator implements Allocator {
     @Override
     public void synchronizeHostData(DataBuffer buffer) {
         // we don't want non-committed ops left behind
-        //Nd4j.getExecutioner().push();
 
-        // we don't synchronize constant buffers, since we assume they are always valid on host side
-        if (buffer.isConstant() || buffer.dataType() == DataType.UTF8 || AtomicAllocator.getInstance().getAllocationPoint(buffer).getHostPointer() == null) {
-            return;
-        }
-
-        // we actually need synchronization only in device-dependant environment. no-op otherwise
-        if (memoryHandler.isDeviceDependant()) {
-            val point = getAllocationPoint(buffer.getTrackingPoint());
-            if (point == null)
-                throw new RuntimeException("AllocationPoint is NULL");
-            memoryHandler.synchronizeThreadDevice(Thread.currentThread().getId(), memoryHandler.getDeviceId(), point);
-        }
+        // we actually need synchronization only in device-dependant environment. no-op otherwise. managed by native code
+        throw new UnsupportedOperationException("Pew-pew");
     }
 
 
@@ -389,7 +378,8 @@ public class AtomicAllocator implements Allocator {
      * @return
      */
     public Integer getDeviceId(INDArray array) {
-        return getAllocationPoint(array).getDeviceId();
+        throw new UnsupportedOperationException("Pew-pew");
+        //return getAllocationPoint(array).getDeviceId();
     }
 
 
@@ -952,6 +942,40 @@ public class AtomicAllocator implements Allocator {
         this.memoryHandler.memcpy(dstBuffer, srcBuffer);
     }
 
+    @Override
+    public void tickHostWrite(DataBuffer buffer) {
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
+    }
+
+    @Override
+    public void tickHostWrite(INDArray array) {
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
+    }
+
+    @Override
+    public void tickDeviceWrite(INDArray array) {
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
+    }
+
+    @Override
+    public AllocationPoint getAllocationPoint(INDArray array) {
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
+
+        return null;
+    }
+
+    @Override
+    public AllocationPoint getAllocationPoint(DataBuffer buffer) {
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
+
+        return null;
+    }
+
     /**
      * This method returns deviceId for current thread
      * All values >= 0 are considered valid device IDs, all values < 0 are considered stubs.
@@ -967,48 +991,6 @@ public class AtomicAllocator implements Allocator {
     @Override
     public Pointer getDeviceIdPointer() {
         return new CudaPointer(getDeviceId());
-    }
-
-    @Override
-    public void tickHostWrite(DataBuffer buffer) {
-        AllocationPoint point = getAllocationPoint(buffer.getTrackingPoint());
-        point.tickHostWrite();
-    }
-
-    @Override
-    public void tickHostWrite(INDArray array) {
-        DataBuffer buffer =
-                        array.data().originalDataBuffer() == null ? array.data() : array.data().originalDataBuffer();
-
-        tickHostWrite(buffer);
-    }
-
-    @Override
-    public void tickDeviceWrite(INDArray array) {
-        DataBuffer buffer =
-                        array.data().originalDataBuffer() == null ? array.data() : array.data().originalDataBuffer();
-        AllocationPoint point = getAllocationPoint(buffer.getTrackingPoint());
-
-        point.tickDeviceWrite();
-    }
-
-    @Override
-    public AllocationPoint getAllocationPoint(INDArray array) {
-        if (array.isEmpty())
-            return null;
-
-        DataBuffer buffer = array.data().originalDataBuffer() == null ? array.data() : array.data().originalDataBuffer();
-        return getAllocationPoint(buffer);
-    }
-
-    @Override
-    public AllocationPoint getAllocationPoint(DataBuffer buffer) {
-        if (buffer instanceof CompressedDataBuffer) {
-            log.warn("Trying to get AllocationPoint from CompressedDataBuffer");
-            throw new RuntimeException("AP CDB");
-        }
-
-        return getAllocationPoint(buffer.getTrackingPoint());
     }
 
     @Override

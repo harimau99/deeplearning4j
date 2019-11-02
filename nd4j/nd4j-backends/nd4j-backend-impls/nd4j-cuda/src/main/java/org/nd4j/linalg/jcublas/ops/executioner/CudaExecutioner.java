@@ -678,7 +678,9 @@ public class CudaExecutioner extends DefaultOpExecutioner {
             super.exec(op);
 
             if (op.z() != null)
-                AtomicAllocator.getInstance().tickHostWrite(op.z());
+                throw new UnsupportedOperationException("Pew-pew");
+                //AtomicAllocator.getInstance().tickHostWrite(op.z());
+
             return null;
         }
 
@@ -1510,146 +1512,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
 
     @Override
     public <T extends Aggregate> void exec(Batch<T> batch) {
-        val surfaceBuffer = (BaseCudaDataBuffer) getBuffer(batch);
-        surfaceBuffer.lazyAllocateHostPointer();
-
-        val context = AtomicAllocator.getInstance().getDeviceContext();
-
-        val pointer = (IntPointer) new CudaPointer(AtomicAllocator.getInstance().getHostPointer(surfaceBuffer))
-                .asIntPointer();
-        val surfacePoint = AtomicAllocator.getInstance().getAllocationPoint(surfaceBuffer);
-
-        int maxTypes = 5;
-
-        int maxIntArrays = batch.getSample().maxIntArrays();
-
-        int maxArraySize = batch.getSample().maxIntArraySize();
-
-
-        int indexPos = maxTypes * (Batch.getBatchLimit() * 16);
-        int intArraysPos = indexPos + (batch.getSample().maxIndexArguments() * (Batch.getBatchLimit() * 16));
-        int realPos = (intArraysPos + (maxIntArrays * maxArraySize * (Batch.getBatchLimit() * 16)))
-                / (Nd4j.dataType() == DataType.DOUBLE ? 2 : 1);
-
-        if (Nd4j.dataType() == DataType.HALF)
-            realPos *= 2;
-
-        int argsPos = (realPos + (batch.getSample().maxRealArguments() * (Batch.getBatchLimit() * 16)))
-                / (Nd4j.dataType() == DataType.FLOAT ? 2 : 1);
-
-        if (Nd4j.dataType() == DataType.HALF)
-            argsPos /= 4;
-
-        int shapesPos = argsPos + (batch.getSample().maxArguments() * (Batch.getBatchLimit() * 16));
-        DataType dataType = null;
-        for (int i = 0; i < batch.getNumAggregates(); i++) {
-            T op = batch.getAggregates().get(i);
-
-            if (i == 0)
-                dataType = op.getArguments().get(0).dataType();
-
-            // put num arguments
-            int idx = i * maxTypes;
-            pointer.put(idx, op.getArguments().size());
-            pointer.put(idx + 1, op.getShapes().size());
-            pointer.put(idx + 2, op.getIndexingArguments().size());
-            pointer.put(idx + 3, op.getRealArguments().size());
-            pointer.put(idx + 4, op.getIntArrayArguments().size());
-
-
-            // putting indexing arguments
-            for (int e = 0; e < op.getIndexingArguments().size(); e++) {
-                idx = indexPos + i * batch.getSample().maxIndexArguments();
-                pointer.put(idx + e, op.getIndexingArguments().get(e));
-            }
-
-            // putting intArray values
-            int bsize = maxIntArrays * maxArraySize;
-            for (int e = 0; e < op.getIntArrayArguments().size(); e++) {
-                int step = (i * bsize) + (e * maxArraySize);
-                if (op.getIntArrayArguments().get(e) != null)
-                    for (int x = 0; x < op.getIntArrayArguments().get(e).length; x++) {
-                        idx = intArraysPos + step + x;
-                        pointer.put(idx, op.getIntArrayArguments().get(e)[x]);
-                    }
-            }
-
-            // TODO: variable datatype should be handled here
-            // putting real arguments
-            switch (dataType) {
-                case FLOAT: {
-                    FloatPointer realPtr = new FloatPointer(pointer);
-                    for (int e = 0; e < op.getRealArguments().size(); e++) {
-                        idx = realPos + i * op.maxRealArguments();
-                        realPtr.put(idx + e, op.getRealArguments().get(e).floatValue());
-                    }
-                }
-                break;
-                case DOUBLE: {
-                    DoublePointer dPtr = new DoublePointer(pointer);
-                    for (int e = 0; e < op.getRealArguments().size(); e++) {
-                        idx = realPos + (i * op.maxRealArguments());
-                        dPtr.put(idx + e, op.getRealArguments().get(e).doubleValue());
-                    }
-                }
-                break;
-                case HALF: {
-                    ShortPointer sPtr = new ShortPointer(pointer);
-                    for (int e = 0; e < op.getRealArguments().size(); e++) {
-                        idx = realPos + (i * op.maxRealArguments());
-                        sPtr.put(idx + e, BaseDataBuffer.fromFloat(op.getRealArguments().get(e).floatValue()));
-                    }
-                }
-                break;
-                default:
-                    throw new UnsupportedOperationException("Unknown data type");
-            }
-
-            // putting arguments pointers
-            PointerPointer ptrPtr = new PointerPointer(pointer);
-            for (int e = 0; e < op.getArguments().size(); e++) {
-                idx = argsPos + i * batch.getSample().maxArguments();
-
-                if (op.getArguments().get(e) != null) {
-                    ptrPtr.put(idx + e, AtomicAllocator.getInstance().getPointer(op.getArguments().get(e), context));
-                    AtomicAllocator.getInstance().getAllocationPoint(op.getArguments().get(e)).tickDeviceWrite();
-                }
-            }
-
-
-            // putting shape pointers
-            for (int e = 0; e < op.getShapes().size(); e++) {
-                idx = shapesPos + i * batch.getSample().maxShapes();
-
-                if (op.getShapes().get(e) != null) {
-                    ptrPtr.put(idx + e, AtomicAllocator.getInstance().getPointer(op.getShapes().get(e), context));
-                    AtomicAllocator.getInstance().getAllocationPoint(op.getShapes().get(e)).tickDeviceWrite();
-                }
-            }
-        }
-
-        // trigger write, so getPointer request will force relocation to GPU
-        surfacePoint.tickHostWrite();
-
-        PointerPointer extraArgs = new PointerPointer(32);
-        extraArgs.put(0, null);
-        extraArgs.put(1, context.getOldStream());
-        extraArgs.put(2, new CudaPointer(Math.min(batch.getNumAggregates(),
-                CudaEnvironment.getInstance().getConfiguration().getMaximumGridSize())));
-        extraArgs.put(3, new CudaPointer(batch.getSample().getThreadsPerInstance()));
-        extraArgs.put(4, new CudaPointer(batch.getSample().getSharedMemorySize()));
-
-
-        nativeOps.execAggregateBatch(extraArgs, batch.getNumAggregates(), batch.opNum(),
-                    batch.getSample().maxArguments(), batch.getSample().maxShapes(),
-                    batch.getSample().maxIntArrays(), batch.getSample().maxIntArraySize(),
-                    batch.getSample().maxIndexArguments(), batch.getSample().maxRealArguments(),
-                    AtomicAllocator.getInstance().getPointer(surfaceBuffer, context), FlatBuffersMapper.getDataTypeAsByte(dataType));
-
-        if (nativeOps.lastErrorCode() != 0)
-            throw new RuntimeException(nativeOps.lastErrorMessage());
-
-        surfacePoint.tickHostWrite();
+        throw new UnsupportedOperationException("Pew-pew");
     }
 
     @Override
@@ -1668,84 +1531,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
 
     @Override
     public void exec(Aggregate op) {
-        int numArguments = op.getArguments().size();
-        int numShapeArguments = op.getShapes().size();
-        int numIndexArguments = op.getIndexingArguments().size();
-        int numIntArrays = op.getIntArrayArguments().size();
-        int numRealArguments = op.getRealArguments().size();
-
-        val context = (CudaContext) AtomicAllocator.getInstance().getDeviceContext();
-
-        val extraArgs = new PointerPointer(32);
-        extraArgs.put(0, null);
-        extraArgs.put(1, context.getOldStream());
-        extraArgs.put(2, new CudaPointer(1));
-        extraArgs.put(3, new CudaPointer(op.getThreadsPerInstance()));
-        extraArgs.put(4, new CudaPointer(op.getSharedMemorySize()));
-
-        long arguments[] = new long[numArguments];
-        val dataType = op.getArguments().get(0).dataType();
-
-        for (int x = 0; x < numArguments; x++) {
-            arguments[x] = op.getArguments().get(x) == null ? 0
-                    : AtomicAllocator.getInstance().getPointer(op.getArguments().get(x), context).address();
-
-            if (op.getArguments().get(x) != null)
-                AtomicAllocator.getInstance().getAllocationPoint(op.getArguments().get(x)).tickDeviceWrite();
-        }
-
-        DataBuffer tempX = AllocationUtils.getPointersBuffer(arguments);
-        PointerPointer xPtr = new PointerPointer(AtomicAllocator.getInstance().getPointer(tempX, context));
-
-
-        long shapes[] = new long[numShapeArguments];
-        for (int x = 0; x < numShapeArguments; x++) {
-            shapes[x] = op.getShapes().get(x) == null ? 0
-                    : AtomicAllocator.getInstance().getPointer(op.getShapes().get(x), context).address();
-
-            if (op.getShapes().get(x) != null)
-                AtomicAllocator.getInstance().getAllocationPoint(op.getShapes().get(x)).tickDeviceWrite();
-        }
-
-        DataBuffer tempS = AllocationUtils.getPointersBuffer(shapes);
-        PointerPointer sPtr = new PointerPointer(AtomicAllocator.getInstance().getPointer(tempS, context));
-
-
-        long ints[] = new long[numIntArrays];
-        for (int x = 0; x < numIntArrays; x++) {
-            if (op.getIntArrayArguments().get(x) != null) {
-                DataBuffer intBuf = Nd4j.getDataBufferFactory().createInt(op.getIntArrayArguments().get(x));
-                ints[x] = AtomicAllocator.getInstance().getPointer(intBuf, context).address();
-            }
-
-        }
-
-        DataBuffer tempI = AllocationUtils.getPointersBuffer(ints);
-        PointerPointer iPtr = new PointerPointer(AtomicAllocator.getInstance().getPointer(tempI, context));
-
-        int[] indexes = new int[numIndexArguments];
-        for (int x = 0; x < numIndexArguments; x++) {
-            indexes[x] = op.getIndexingArguments().get(x);
-        }
-
-        DataBuffer intBuffer = Nd4j.getDataBufferFactory().createInt(indexes);
-
-        double[] reals = new double[numRealArguments];
-        INDArray realsBuffer;
-        for (int x = 0; x < numRealArguments; x++) {
-            reals[x] = op.getRealArguments().get(x).doubleValue();
-        }
-
-        realsBuffer = Nd4j.create(reals, new long[]{reals.length}, dataType);
-
-        nativeOps.execAggregate(extraArgs, op.opNum(), xPtr, numArguments, sPtr, numShapeArguments,
-                    (IntPointer) AtomicAllocator.getInstance().getPointer(intBuffer, context),
-                    numIndexArguments, iPtr, numIntArrays,
-                    AtomicAllocator.getInstance().getPointer(realsBuffer.data(), context),
-                    numRealArguments, FlatBuffersMapper.getDataTypeAsByte(dataType));
-
-        if (nativeOps.lastErrorCode() != 0)
-            throw new RuntimeException(nativeOps.lastErrorMessage());
+        throw new UnsupportedOperationException("Pew-pew");
     }
 
     /**
@@ -1920,7 +1706,9 @@ public class CudaExecutioner extends DefaultOpExecutioner {
                 (IntPointer) AtomicAllocator.getInstance().getPointer(blocksBuffer),
                 (float) threshold);
 
-        AtomicAllocator.getInstance().getAllocationPoint(blocksBuffer).tickDeviceWrite();
+        //AtomicAllocator.getInstance().getAllocationPoint(blocksBuffer).tickDeviceWrite();
+        if (1> 0)
+            throw new UnsupportedOperationException("Pew-pew");
 
 
         int numMatches = blocksBuffer.getInt(0);
@@ -1942,11 +1730,14 @@ public class CudaExecutioner extends DefaultOpExecutioner {
         log.info("BlocksCounts: {}", Arrays.toString(blocksBuffer.asInt()));
 */
         DataBuffer encodedBuffer = Nd4j.getMemoryManager().getCurrentWorkspace() == null ? Nd4j.getDataBufferFactory().createInt(4+numMatches, false) : Nd4j.getDataBufferFactory().createInt(4+numMatches, false, Nd4j.getMemoryManager().getCurrentWorkspace());
-        AtomicAllocator.getInstance().getAllocationPoint(encodedBuffer).tickHostWrite();
+        //AtomicAllocator.getInstance().getAllocationPoint(encodedBuffer).tickHostWrite();
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
+
         encodedBuffer.put(0, numMatches);
         encodedBuffer.put(1, (int) buffer.length());
         encodedBuffer.put(2, Float.floatToIntBits((float) threshold));
-        AtomicAllocator.getInstance().getAllocationPoint(encodedBuffer).tickHostWrite();
+        //AtomicAllocator.getInstance().getAllocationPoint(encodedBuffer).tickHostWrite();
 
         encodedBuffer.put(3, ThresholdCompression.FLEXIBLE_ENCODING);
 
@@ -1993,13 +1784,15 @@ public class CudaExecutioner extends DefaultOpExecutioner {
         DataBuffer offsetsBuffer = Nd4j.getMemoryManager().getCurrentWorkspace() == null ? Nd4j.getDataBufferFactory().createInt(numBlocks, true) : Nd4j.getDataBufferFactory().createInt(numBlocks, true, Nd4j.getMemoryManager().getCurrentWorkspace());
 
         NativeOpsHolder.getInstance().getDeviceNativeOps().encodeThresholdP2Int(extras, (IntPointer) AtomicAllocator.getInstance().getPointer(blocksBuffer), numBlocks, (IntPointer) AtomicAllocator.getInstance().getPointer(offsetsBuffer) );
-        AtomicAllocator.getInstance().getAllocationPoint(offsetsBuffer).tickDeviceWrite();
+        //AtomicAllocator.getInstance().getAllocationPoint(offsetsBuffer).tickDeviceWrite();
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
 
 
         NativeOpsHolder.getInstance().getDeviceNativeOps().encodeThresholdP3(extras, AtomicAllocator.getInstance().getPointer(buffer), (LongPointer) AtomicAllocator.getInstance().getHostPointer(input.shapeInfoDataBuffer()), (IntPointer) AtomicAllocator.getInstance().getPointer(offsetsBuffer), buffer.length(), (IntPointer) AtomicAllocator.getInstance().getPointer(encodedBuffer));
 
-        AtomicAllocator.getInstance().getAllocationPoint(encodedBuffer).tickDeviceWrite();
-        AtomicAllocator.getInstance().getAllocationPoint(buffer).tickDeviceWrite();
+        //AtomicAllocator.getInstance().getAllocationPoint(encodedBuffer).tickDeviceWrite();
+        //AtomicAllocator.getInstance().getAllocationPoint(buffer).tickDeviceWrite();
 
         return Nd4j.createArrayFromShapeBuffer(encodedBuffer, input.shapeInfoDataBuffer());
     }
@@ -2037,7 +1830,9 @@ public class CudaExecutioner extends DefaultOpExecutioner {
         if (nativeOps.lastErrorCode() != 0)
             throw new RuntimeException(nativeOps.lastErrorMessage());
 
-        AtomicAllocator.getInstance().getAllocationPoint(result).tickDeviceWrite();
+        //AtomicAllocator.getInstance().getAllocationPoint(result).tickDeviceWrite();
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
 
         return target;
     }
@@ -2086,7 +1881,9 @@ public class CudaExecutioner extends DefaultOpExecutioner {
 
         AtomicAllocator.getInstance().getFlowController().registerAction(context, indArray);
 
-        AtomicAllocator.getInstance().getAllocationPoint(buffer).tickDeviceWrite();
+        //AtomicAllocator.getInstance().getAllocationPoint(buffer).tickDeviceWrite();
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
 
         return val;
     }
@@ -2369,7 +2166,9 @@ public class CudaExecutioner extends DefaultOpExecutioner {
             val array = Nd4j.create(shapeOf, stridesOf, 0, order);
 
             Pointer.memcpy(AtomicAllocator.getInstance().getHostPointer(array), buffer, ArrayUtil.prod(shapeOf) * Nd4j.sizeOfDataType());
-            AtomicAllocator.getInstance().getAllocationPoint(array).tickHostWrite();
+            //AtomicAllocator.getInstance().getAllocationPoint(array).tickHostWrite();
+            if (1 > 0)
+                throw new UnsupportedOperationException("Pew-pew");
 
             String nodeName = nativeOps.getVariableName(var);
             newMap.put(nodeName, array);

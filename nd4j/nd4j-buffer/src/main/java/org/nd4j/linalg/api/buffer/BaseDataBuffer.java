@@ -82,11 +82,9 @@ public abstract class BaseDataBuffer implements DataBuffer {
     protected transient long workspaceGenerationId = 0L;
 
     protected AllocationMode allocationMode;
+
     protected transient Indexer indexer;
-
-
     protected transient Pointer pointer;
-
 
     protected transient boolean attached = false;
     protected transient MemoryWorkspace parentWorkspace;
@@ -94,7 +92,6 @@ public abstract class BaseDataBuffer implements DataBuffer {
     // Allocator-related stuff. Moved down here to avoid opType casting.
     protected transient DataBuffer originalBuffer;
     protected transient long originalOffset = 0;
-    protected transient Long trackingPoint;
 
     protected transient boolean constant = false;
     protected transient boolean released = false;
@@ -1828,31 +1825,6 @@ public abstract class BaseDataBuffer implements DataBuffer {
     @Override
     public long originalOffset() {
         return originalOffset;
-    }
-
-    /**
-     * Returns tracking point for Allocator
-     *
-     * PLEASE NOTE: Suitable & meaningful only for specific backends
-     *
-     * @return
-     */
-    @Override
-    public Long getTrackingPoint() {
-        if (underlyingDataBuffer() != this)
-            return underlyingDataBuffer() == null ? trackingPoint : underlyingDataBuffer().getTrackingPoint();
-        return trackingPoint;
-    }
-
-    /**
-     * Sets tracking point used by Allocator
-     *
-     * PLEASE NOTE: Suitable & meaningful only for specific backends
-     *
-     * @param trackingPoint
-     */
-    public void setTrackingPoint(Long trackingPoint) {
-        this.trackingPoint = trackingPoint;
     }
 
     /**

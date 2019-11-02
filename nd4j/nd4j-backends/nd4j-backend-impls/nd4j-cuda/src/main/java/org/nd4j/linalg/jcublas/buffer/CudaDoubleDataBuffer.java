@@ -198,14 +198,7 @@ public class CudaDoubleDataBuffer extends BaseCudaDataBuffer {
         this.length = n;
         this.elementSize = 8;
 
-        //wrappedBuffer = ByteBuffer.allocateDirect(length() * getElementSize());
-        //wrappedBuffer.order(ByteOrder.nativeOrder());
-
-        this.allocationPoint = AtomicAllocator.getInstance().allocateMemory(this,
-                        new AllocationShape(length, elementSize, DataType.DOUBLE), false);
-        this.trackingPoint = allocationPoint.getObjectId();
-        //this.wrappedBuffer = allocationPoint.getPointers().getHostPointer().asByteBuffer();
-        //this.wrappedBuffer.order(ByteOrder.nativeOrder());
+        this.allocationPoint = AtomicAllocator.getInstance().allocateMemory(this, new AllocationShape(length, elementSize, DataType.DOUBLE), false);
 
         setData(arr);
     }

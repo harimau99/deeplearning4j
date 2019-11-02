@@ -566,8 +566,10 @@ public class JCublasNDArray extends BaseNDArray {
         AtomicAllocator allocator = AtomicAllocator.getInstance();
         val context = (CudaContext) allocator.getDeviceContext();
 
-        AllocationPoint srcPoint = allocator.getAllocationPoint(this);
-        AllocationPoint dstPoint = allocator.getAllocationPoint(ret);
+        AllocationPoint srcPoint = null; //allocator.getAllocationPoint(this);
+        AllocationPoint dstPoint = null; //allocator.getAllocationPoint(ret);
+        if (1 > 0)
+            throw new UnsupportedOperationException("Pew-pew");
 
         int route = 0;
 //        long time1 = System.currentTimeMillis();
@@ -659,8 +661,10 @@ public class JCublasNDArray extends BaseNDArray {
 
             DataBuffer buffer = Nd4j.createBuffer(this.length(), false);
 
-            AllocationPoint pointDst = AtomicAllocator.getInstance().getAllocationPoint(buffer);
-            AllocationPoint pointSrc = AtomicAllocator.getInstance().getAllocationPoint(this.data);
+            AllocationPoint pointDst = null; //AtomicAllocator.getInstance().getAllocationPoint(buffer);
+            AllocationPoint pointSrc = null; //AtomicAllocator.getInstance().getAllocationPoint(this.data);
+            if (1 > 0)
+                throw new UnsupportedOperationException("Pew-pew");
 
             CudaContext context = AtomicAllocator.getInstance().getFlowController().prepareAction(pointDst, pointSrc);
 /*
@@ -725,8 +729,10 @@ public class JCublasNDArray extends BaseNDArray {
 
             val buffer = Nd4j.createBuffer(this.dataType(), this.length(), false);
 
-            val pointDst = AtomicAllocator.getInstance().getAllocationPoint(buffer);
-            val pointSrc = AtomicAllocator.getInstance().getAllocationPoint(this.data);
+            AllocationPoint pointDst = null; //AtomicAllocator.getInstance().getAllocationPoint(buffer);
+            AllocationPoint pointSrc = null; //AtomicAllocator.getInstance().getAllocationPoint(this.data);
+            if (1 > 0)
+                throw new UnsupportedOperationException("Pew-pew");
 
             val context = AtomicAllocator.getInstance().getFlowController().prepareAction(pointDst, pointSrc);
 
