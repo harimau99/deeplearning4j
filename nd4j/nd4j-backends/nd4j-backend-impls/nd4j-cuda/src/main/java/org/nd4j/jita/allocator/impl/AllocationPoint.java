@@ -232,25 +232,7 @@ public class AllocationPoint {
 
 
     public synchronized void tickDeviceRead() {
-        //        this.deviceTicks.incrementAndGet();
-        //        this.timerShort.triggerEvent();
-        //        this.timerLong.triggerEvent();
-        //this.deviceAccessTime.set(realTimeProvider.getCurrentTime());
-        this.accessDeviceRead  = (timeProvider.getCurrentTime());
-    }
-
-
-    /**
-     * Returns time, in milliseconds, when this point was accessed on host side
-     *
-     * @return
-     */
-    public synchronized long getHostReadTime() {
-        return accessHostRead;
-    };
-
-    public synchronized long getHostWriteTime() {
-        return accessHostWrite;
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbTickDeviceRead(ptrDataBuffer);
     }
 
     /**
@@ -272,7 +254,7 @@ public class AllocationPoint {
     }
 
     public synchronized void tickHostRead() {
-        accessHostRead = (timeProvider.getCurrentTime());
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbTickHostRead(ptrDataBuffer);
     }
 
     /**
@@ -280,17 +262,14 @@ public class AllocationPoint {
      *
      */
     public synchronized void tickDeviceWrite() {
-        //        deviceAccessTime.set(realTimeProvider.getCurrentTime());
-        tickDeviceRead();
-        accessDeviceWrite = (timeProvider.getCurrentTime());
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbTickDeviceWrite(ptrDataBuffer);
     }
 
     /**
      * This method sets time when this point was changed on host
      */
     public synchronized void tickHostWrite() {
-        tickHostRead();
-        accessHostWrite = (timeProvider.getCurrentTime());
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbTickHostWrite(ptrDataBuffer);
     }
 
     /**

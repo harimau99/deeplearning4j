@@ -16,6 +16,7 @@
 
 package org.nd4j.jita.handler.impl;
 
+import lombok.var;
 import org.nd4j.nativeblas.OpaqueLaunchContext;
 import org.nd4j.shade.guava.collect.HashBasedTable;
 import org.nd4j.shade.guava.collect.Table;
@@ -338,6 +339,24 @@ public class CudaZeroHandler implements MemoryHandler {
 
             point.tickHostRead();
         } else {
+            // if we're copying something into host memory, but we're on device - we need to provide exact copy to device as well
+            Pointer rDP = new CudaPointer(point.getDevicePointer().address() + dstOffset);
+
+            if (tContext == null)
+                tContext = flowController.prepareAction(point);
+
+            var prof = PerformanceTracker.getInstance().helperStartTransaction();
+
+            if (nativeOps.memcpyAsync(rDP, srcPointer, length, CudaConstants.cudaMemcpyHostToDevice, tContext.getSpecialStream()) == 0)
+                throw new IllegalStateException("MemcpyAsync H2D failed: [" + srcPointer.address() + "] -> [" + rDP.address() + "]");
+
+            flowController.commitTransfer(tContext.getSpecialStream());
+
+            PerformanceTracker.getInstance().helperRegisterTransaction(point.getDeviceId(), prof, point.getNumberOfBytes(), MemcpyDirection.HOST_TO_DEVICE);
+
+            flowController.registerAction(tContext, point);
+            point.tickDeviceWrite();
+
             // we optionally copy to host memory
             if (point.getHostPointer() != null) {
                 Pointer dP = new CudaPointer((point.getHostPointer().address()) + dstOffset);
@@ -345,7 +364,7 @@ public class CudaZeroHandler implements MemoryHandler {
                 CudaContext context = flowController.prepareAction(point);
                 tContext = context;
 
-                val prof = PerformanceTracker.getInstance().helperStartTransaction();
+                prof = PerformanceTracker.getInstance().helperStartTransaction();
 
                 if (nativeOps.memcpyAsync(dP, srcPointer, length, CudaConstants.cudaMemcpyHostToHost, context.getSpecialStream()) == 0)
                     throw new IllegalStateException("MemcpyAsync H2H failed: [" + srcPointer.address() + "] -> [" + dP.address() + "]");
@@ -356,27 +375,9 @@ public class CudaZeroHandler implements MemoryHandler {
 
                 if (point.getAllocationStatus() == AllocationStatus.HOST)
                     flowController.registerAction(context, point);
+
+                point.tickHostRead();
             }
-        }
-
-        // if we're copying something into host memory, but we're on device - we need to provide exact copy to device as well
-        if (point.getAllocationStatus() == AllocationStatus.DEVICE) {
-            Pointer rDP = new CudaPointer(point.getDevicePointer().address() + dstOffset);
-
-            if (tContext == null)
-                tContext = flowController.prepareAction(point);
-
-            val prof = PerformanceTracker.getInstance().helperStartTransaction();
-
-            if (nativeOps.memcpyAsync(rDP, srcPointer, length, CudaConstants.cudaMemcpyHostToDevice, tContext.getSpecialStream()) == 0)
-                throw new IllegalStateException("MemcpyAsync H2D failed: [" + srcPointer.address() + "] -> [" + rDP.address() + "]");
-
-            flowController.commitTransfer(tContext.getSpecialStream());
-
-            PerformanceTracker.getInstance().helperRegisterTransaction(point.getDeviceId(), prof, point.getNumberOfBytes(),MemcpyDirection.HOST_TO_DEVICE);
-
-            flowController.registerAction(tContext, point);
-            point.tickDeviceWrite();
         }
     }
 

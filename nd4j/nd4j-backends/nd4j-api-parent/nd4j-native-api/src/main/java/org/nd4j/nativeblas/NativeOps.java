@@ -1169,5 +1169,11 @@ public interface NativeOps {
     void dbAllocateSpecialBuffer(OpaqueDataBuffer dataBuffer);
     void dbSetPrimaryBuffer(OpaqueDataBuffer dataBuffer, Pointer primaryBuffer, long numBytes);
     void dbSetSpecialBuffer(OpaqueDataBuffer dataBuffer, Pointer specialBuffer, long numBytes);
+    void dbSyncToSpecial(OpaqueDataBuffer dataBuffer);
+    void dbSyncToPrimary(OpaqueDataBuffer dataBuffer);
+    void dbTickHostRead(OpaqueDataBuffer dataBuffer);
+    void dbTickHostWrite(OpaqueDataBuffer dataBuffer);
+    void dbTickDeviceRead(OpaqueDataBuffer dataBuffer);
+    void dbTickDeviceWrite(OpaqueDataBuffer dataBuffer);
     void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
 }

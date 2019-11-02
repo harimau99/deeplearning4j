@@ -76,7 +76,7 @@ import java.util.Collection;
  * @author raver119@gmail.com
  */
 public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCudaBuffer, Deallocatable {
-    private OpaqueDataBuffer ptrDataBuffer;
+    protected OpaqueDataBuffer ptrDataBuffer;
 
     @Getter
     protected transient volatile AllocationPoint allocationPoint;

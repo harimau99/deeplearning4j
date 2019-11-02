@@ -3303,6 +3303,30 @@ OpaqueDataBuffer* dbCreateView(OpaqueDataBuffer *dataBuffer, Nd4jLong offset) {
     return new InteropDataBuffer(*dataBuffer, offset);
 }
 
+void dbSyncToSpecial(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->syncToSpecial();
+}
+
+void dbSyncToPrimary(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->syncToPrimary(nullptr);
+}
+
+void dbTickHostRead(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->readPrimary();
+}
+
+void dbTickHostWrite(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->writePrimary();
+}
+
+void dbTickDeviceRead(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->readSpecial();
+}
+
+void dbTickDeviceWrite(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->writeSpecial();
+}
+
 BUILD_SINGLE_TEMPLATE(template void pullRowsGeneric, (void *, Nd4jLong*, void*, Nd4jLong*, const int, Nd4jLong*, Nd4jLong*, Nd4jLong*, Nd4jLong*, Nd4jLong*), LIBND4J_TYPES);
 BUILD_SINGLE_TEMPLATE(template void tearGeneric, (void *, Nd4jLong*, Nd4jPointer*, Nd4jLong*, Nd4jLong*, Nd4jLong*), LIBND4J_TYPES);
 BUILD_SINGLE_TEMPLATE(template void shuffleGeneric, (void**, Nd4jLong**, void**, Nd4jLong**, int, int*, Nd4jLong**, Nd4jLong**), LIBND4J_TYPES);

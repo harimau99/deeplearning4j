@@ -42,6 +42,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.cache.ConstantHandler;
 import org.nd4j.linalg.compression.CompressedDataBuffer;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.jcublas.buffer.BaseCudaDataBuffer;
 import org.nd4j.linalg.jcublas.buffer.CudaUtf8Buffer;
 import org.nd4j.linalg.jcublas.context.CudaContext;
 import org.nd4j.nativeblas.NativeOpsHolder;
@@ -365,9 +366,10 @@ public class AtomicAllocator implements Allocator {
     @Override
     public void synchronizeHostData(DataBuffer buffer) {
         // we don't want non-committed ops left behind
+        Nd4j.getExecutioner().commit();
 
         // we actually need synchronization only in device-dependant environment. no-op otherwise. managed by native code
-        throw new UnsupportedOperationException("Pew-pew");
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSyncToPrimary(((BaseCudaDataBuffer) buffer).getOpaqueDataBuffer());
     }
 
 
@@ -970,10 +972,7 @@ public class AtomicAllocator implements Allocator {
 
     @Override
     public AllocationPoint getAllocationPoint(DataBuffer buffer) {
-        if (1 > 0)
-            throw new UnsupportedOperationException("Pew-pew");
-
-        return null;
+        return ((BaseCudaDataBuffer) buffer).getAllocationPoint();
     }
 
     /**

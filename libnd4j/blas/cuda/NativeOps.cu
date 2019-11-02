@@ -3653,3 +3653,27 @@ void dbExpandBuffer(OpaqueDataBuffer *dataBuffer, Nd4jLong elements) {
 OpaqueDataBuffer* dbCreateView(OpaqueDataBuffer *dataBuffer, Nd4jLong offset) {
     return new InteropDataBuffer(*dataBuffer, offset);
 }
+
+void dbSyncToSpecial(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->syncToSpecial();
+}
+
+void dbSyncToPrimary(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->syncToPrimary(nullptr);
+}
+
+void dbTickHostRead(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->readPrimary();
+}
+
+void dbTickHostWrite(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->writePrimary();
+}
+
+void dbTickDeviceRead(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->readSpecial();
+}
+
+void dbTickDeviceWrite(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->dataBuffer()->writeSpecial();
+}

@@ -1773,6 +1773,12 @@ ND4J_EXPORT void dbAllocatePrimaryBuffer(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void dbAllocateSpecialBuffer(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void dbSetPrimaryBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer primaryBuffer, Nd4jLong numBytes);
 ND4J_EXPORT void dbSetSpecialBuffer(OpaqueDataBuffer *dataBuffer, Nd4jPointer specialBuffer, Nd4jLong numBytes);
+ND4J_EXPORT void dbSyncToSpecial(OpaqueDataBuffer *dataBuffer);
+ND4J_EXPORT void dbSyncToPrimary(OpaqueDataBuffer *dataBuffer);
+ND4J_EXPORT void dbTickHostRead(OpaqueDataBuffer *dataBuffer);
+ND4J_EXPORT void dbTickHostWrite(OpaqueDataBuffer *dataBuffer);
+ND4J_EXPORT void dbTickDeviceRead(OpaqueDataBuffer *dataBuffer);
+ND4J_EXPORT void dbTickDeviceWrite(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void deleteDataBuffer(OpaqueDataBuffer *dataBuffer);
 
 
