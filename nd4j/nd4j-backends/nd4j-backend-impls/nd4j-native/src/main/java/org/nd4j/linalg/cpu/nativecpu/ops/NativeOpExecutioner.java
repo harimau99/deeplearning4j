@@ -1702,7 +1702,12 @@ public class NativeOpExecutioner extends DefaultOpExecutioner {
             val result = exec(op, context);
             val states = context.getRngStates();
 
-            // check if output needs update
+            // check if input & output needs update
+            for (val in:op.inputArguments()) {
+                if (!in.isEmpty())
+                    ((BaseCpuDataBuffer) in.data()).actualizePointerAndIndexer();
+            }
+
             for (val out:op.outputArguments()) {
                 if (!out.isEmpty())
                     ((BaseCpuDataBuffer) out.data()).actualizePointerAndIndexer();

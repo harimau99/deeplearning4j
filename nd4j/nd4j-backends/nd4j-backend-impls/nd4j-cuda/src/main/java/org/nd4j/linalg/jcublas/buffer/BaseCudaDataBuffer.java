@@ -309,7 +309,6 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
     protected void initPointers(long length, int elementSize, boolean initialize) {
         this.allocationMode = AllocationMode.MIXED_DATA_TYPES;
         this.length = length;
-        //allocationPoint.attachBuffer(this);
         this.elementSize =  (byte) elementSize;
 
         this.offset = 0;
@@ -1460,6 +1459,60 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         lazyAllocateHostPointer();
         allocator.synchronizeHostData(this);
         return super.getInt(ix);
+    }
+
+    public void actualizePointerAndIndexer() {
+        val cptr = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer);
+
+        // skip update if pointers are equal
+        if (cptr != null && pointer != null && cptr.address() == pointer.address())
+            return;
+
+        val t = dataType();
+        if (t == DataType.BOOL) {
+            pointer = new PagedPointer(cptr, length).asBoolPointer();
+            setIndexer(BooleanIndexer.create((BooleanPointer) pointer));
+        } else if (t == DataType.UBYTE) {
+            pointer = new PagedPointer(cptr, length).asBytePointer();
+            setIndexer(UByteIndexer.create((BytePointer) pointer));
+        } else if (t == DataType.BYTE) {
+            pointer = new PagedPointer(cptr, length).asBytePointer();
+            setIndexer(ByteIndexer.create((BytePointer) pointer));
+        } else if (t == DataType.UINT16) {
+            pointer = new PagedPointer(cptr, length).asShortPointer();
+            setIndexer(UShortIndexer.create((ShortPointer) pointer));
+        } else if (t == DataType.SHORT) {
+            pointer = new PagedPointer(cptr, length).asShortPointer();
+            setIndexer(ShortIndexer.create((ShortPointer) pointer));
+        } else if (t == DataType.UINT32) {
+            pointer = new PagedPointer(cptr, length).asIntPointer();
+            setIndexer(IntIndexer.create((IntPointer) pointer));
+        } else if (t == DataType.INT) {
+            pointer = new PagedPointer(cptr, length).asIntPointer();
+            setIndexer(IntIndexer.create((IntPointer) pointer));
+        } else if (t == DataType.UINT64) {
+            pointer = new PagedPointer(cptr, length).asLongPointer();
+            setIndexer(LongIndexer.create((LongPointer) pointer));
+        } else if (t == DataType.LONG) {
+            pointer = new PagedPointer(cptr, length).asLongPointer();
+            setIndexer(LongIndexer.create((LongPointer) pointer));
+        } else if (t == DataType.BFLOAT16) {
+            pointer = new PagedPointer(cptr, length).asShortPointer();
+            setIndexer(Bfloat16Indexer.create((ShortPointer) pointer));
+        } else if (t == DataType.HALF) {
+            pointer = new PagedPointer(cptr, length).asShortPointer();
+            setIndexer(HalfIndexer.create((ShortPointer) pointer));
+        } else if (t == DataType.FLOAT) {
+            pointer = new PagedPointer(cptr, length).asFloatPointer();
+            setIndexer(FloatIndexer.create((FloatPointer) pointer));
+        } else if (t == DataType.DOUBLE) {
+            pointer = new PagedPointer(cptr, length).asDoublePointer();
+            setIndexer(DoubleIndexer.create((DoublePointer) pointer));
+        } else if (t == DataType.UTF8) {
+            pointer = new PagedPointer(cptr, length()).asBytePointer();
+            setIndexer(ByteIndexer.create((BytePointer) pointer));
+        } else
+            throw new IllegalArgumentException("Unknown datatype: " + dataType());
     }
 
     @Override

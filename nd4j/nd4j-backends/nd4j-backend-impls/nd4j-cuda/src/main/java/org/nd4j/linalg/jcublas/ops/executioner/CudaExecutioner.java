@@ -47,6 +47,7 @@ import org.nd4j.linalg.api.ops.impl.scatter.ScatterUpdate;
 import org.nd4j.linalg.api.ops.impl.summarystats.Variance;
 import org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic.CopyOp;
 import org.nd4j.linalg.api.ops.performance.PerformanceTracker;
+import org.nd4j.linalg.api.ops.util.PrintVariable;
 import org.nd4j.linalg.api.rng.Random;
 import org.nd4j.linalg.api.shape.LongShapeDescriptor;
 import org.nd4j.linalg.api.shape.Shape;
@@ -239,6 +240,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
         }
 
         INDArray ret = op.z();
+        //Nd4j.exec(new PrintVariable(ret, false));
 
         checkForCompression(op);
         op.validateDataTypes();
@@ -2082,6 +2084,17 @@ public class CudaExecutioner extends DefaultOpExecutioner {
 
             val result = exec(op, context);
             val states = context.getRngStates();
+
+            // check if input && output needs update
+            for (val in:op.inputArguments()) {
+                if (!in.isEmpty())
+                    ((BaseCudaDataBuffer) in.data()).actualizePointerAndIndexer();
+            }
+
+            for (val out:op.outputArguments()) {
+                if (!out.isEmpty())
+                    ((BaseCudaDataBuffer) out.data()).actualizePointerAndIndexer();
+            }
 
             // pulling states back
             Nd4j.getRandom().setStates(states.getFirst(), states.getSecond());

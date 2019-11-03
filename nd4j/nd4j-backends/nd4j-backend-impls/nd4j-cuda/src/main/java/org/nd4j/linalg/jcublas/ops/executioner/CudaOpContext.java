@@ -112,8 +112,8 @@ public class CudaOpContext extends BaseOpContext implements OpContext {
             if (v.isEmpty() || v.isS())
                 continue;
 
-            AtomicAllocator.getInstance().getAllocationPoint(v).tickHostRead();
-            AtomicAllocator.getInstance().getAllocationPoint(v).tickDeviceRead();
+            //AtomicAllocator.getInstance().getAllocationPoint(v).tickHostRead();
+            //AtomicAllocator.getInstance().getAllocationPoint(v).tickDeviceRead();
 
             //if (context.isInplace())
                 //AtomicAllocator.getInstance().getAllocationPoint(v).tickDeviceWrite();
@@ -123,8 +123,8 @@ public class CudaOpContext extends BaseOpContext implements OpContext {
             if (v.isEmpty() || v.isS())
                 continue;
 
-            AtomicAllocator.getInstance().getAllocationPoint(v).tickHostRead();
-            AtomicAllocator.getInstance().getAllocationPoint(v).tickDeviceRead();
+            //AtomicAllocator.getInstance().getAllocationPoint(v).tickHostRead();
+            //AtomicAllocator.getInstance().getAllocationPoint(v).tickDeviceRead();
         }
 
         return context;

@@ -9,6 +9,7 @@ import org.nd4j.jita.workspace.CudaWorkspace;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.conf.WorkspaceConfiguration;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.util.PrintVariable;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.ByteArrayInputStream;
@@ -73,6 +74,30 @@ public class BaseCudaDataBufferTest {
     }
 
     @Test
+    public void testScalar_1() {
+        val scalar = Nd4j.scalar(119.f);
+
+        // basic validation
+        assertNotNull(scalar);
+        assertNotNull(scalar.data());
+        assertNotNull(((BaseCudaDataBuffer) scalar.data()).getOpaqueDataBuffer());
+
+        // shape part
+        assertArrayEquals(new long[]{0, 8192, 1, 99}, scalar.shapeInfoJava());
+        assertArrayEquals(new long[]{0, 8192, 1, 99}, scalar.shapeInfoDataBuffer().asLong());
+
+        // pointers part
+        val devPtr = AtomicAllocator.getInstance().getPointer(scalar.data());
+        val hostPtr = AtomicAllocator.getInstance().getHostPointer(scalar.data());
+
+        // dev pointer supposed to exist, and host pointer is not
+        assertNotNull(devPtr);
+        assertNull(hostPtr);
+
+        assertEquals(119.f, scalar.getFloat(0), 1e-5f);
+    }
+
+    @Test
     public void testSerDe_1() throws Exception {
         val array = Nd4j.createFromArray(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
         val baos = new ByteArrayOutputStream();
@@ -97,6 +122,17 @@ public class BaseCudaDataBufferTest {
     public void testBasicOpInvocation_1() {
         val array1 = Nd4j.createFromArray(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
         val array2 = Nd4j.createFromArray(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
+
+        // shape pointers must be equal here
+        val devPtr1 = AtomicAllocator.getInstance().getPointer(array1.shapeInfoDataBuffer());
+        val devPtr2 = AtomicAllocator.getInstance().getPointer(array2.shapeInfoDataBuffer());
+
+        val hostPtr1 = AtomicAllocator.getInstance().getHostPointer(array1.shapeInfoDataBuffer());
+        val hostPtr2 = AtomicAllocator.getInstance().getHostPointer(array2.shapeInfoDataBuffer());
+
+        // pointers must be equal on host and device, since we have shape cache
+        assertEquals(devPtr1.address(), devPtr2.address());
+        assertEquals(hostPtr1.address(), hostPtr2.address());
 
         assertEquals(array1, array2);
     }
