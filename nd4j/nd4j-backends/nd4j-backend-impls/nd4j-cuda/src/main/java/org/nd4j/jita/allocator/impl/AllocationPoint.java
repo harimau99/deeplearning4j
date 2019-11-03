@@ -114,7 +114,7 @@ public class AllocationPoint {
 
     public void setPointers(Pointer primary, Pointer special, long numberOfElements) {
         NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, primary, numberOfElements);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, primary, numberOfElements);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, special, numberOfElements);
     }
 
     public int getDeviceId() {
