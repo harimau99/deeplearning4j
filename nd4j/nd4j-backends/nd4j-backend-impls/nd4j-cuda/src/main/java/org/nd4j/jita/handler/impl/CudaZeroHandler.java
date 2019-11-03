@@ -522,7 +522,6 @@ public class CudaZeroHandler implements MemoryHandler {
     @Override
     public org.bytedeco.javacpp.Pointer getDevicePointer(DataBuffer buffer, CudaContext context) {
         // TODO: It would be awesome to get rid of typecasting here
-        //getCudaContext().syncOldStream();
         AllocationPoint dstPoint = ((BaseCudaDataBuffer) buffer).getAllocationPoint();
 
         // if that's device state, we probably might want to update device memory state
@@ -533,8 +532,9 @@ public class CudaZeroHandler implements MemoryHandler {
             }
         }
 
-        //  we update memory use counter, to announce that it's somehow used on device
-        dstPoint.tickDeviceRead();
+        if (dstPoint.getDevicePointer() == null)
+            throw new RuntimeException("NullPointer");
+
 
         // return pointer with offset if needed. length is specified for constructor compatibility purposes
         val p = new CudaPointer(dstPoint.getDevicePointer(), buffer.length(), (buffer.offset() * buffer.getElementSize()));
@@ -553,10 +553,17 @@ public class CudaZeroHandler implements MemoryHandler {
             case SHORT:
             case UINT16:
             case HALF:
+            case BFLOAT16:
                 return p.asShortPointer();
             case UINT64:
             case LONG:
                 return p.asLongPointer();
+            case UTF8:
+            case UBYTE:
+            case BYTE:
+                return p.asBytePointer();
+            case BOOL:
+                return p.asBooleanPointer();
             default:
                 return p;
         }

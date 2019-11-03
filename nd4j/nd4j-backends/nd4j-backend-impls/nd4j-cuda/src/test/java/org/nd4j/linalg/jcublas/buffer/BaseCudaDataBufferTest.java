@@ -92,4 +92,20 @@ public class BaseCudaDataBufferTest {
         // data equality
         assertArrayEquals(array.data().asFloat(), restored.data().asFloat(), 1e-5f);
     }
+
+    @Test
+    public void testBasicOpInvocation_1() {
+        val array1 = Nd4j.createFromArray(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
+        val array2 = Nd4j.createFromArray(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
+
+        assertEquals(array1, array2);
+    }
+
+    @Test
+    public void testBasicOpInvocation_2() {
+        val array1 = Nd4j.createFromArray(1.f, 200.f, 3.f, 4.f, 5.f, 6.f);
+        val array2 = Nd4j.createFromArray(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
+
+        assertNotEquals(array1, array2);
+    }
 }

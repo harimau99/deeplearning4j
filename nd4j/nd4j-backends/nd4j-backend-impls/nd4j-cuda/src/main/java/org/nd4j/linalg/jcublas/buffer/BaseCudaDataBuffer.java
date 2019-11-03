@@ -97,12 +97,6 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
 
     public BaseCudaDataBuffer(@NonNull Pointer pointer, @NonNull Pointer specialPointer, @NonNull Indexer indexer, long length) {
-        if (1 > 0)
-            throw new RuntimeException("Pew-pew");
-
-        this.allocationPoint = AtomicAllocator.getInstance().pickExternalBuffer(this);
-        this.allocationPoint.setPointers(pointer, specialPointer, length);
-
         this.allocationMode = AllocationMode.MIXED_DATA_TYPES;
 
         this.indexer = indexer;
@@ -113,6 +107,10 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.length = length;
 
         initTypeAndSize();
+
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, this.type.toInt(), false);
+        this.allocationPoint = new AllocationPoint(ptrDataBuffer, this.type.width() * length);
+        this.allocationPoint.setPointers(pointer, specialPointer, length);
     }
 
     /**
@@ -249,7 +247,6 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
             this.allocationPoint.setAllocationStatus(location);
             this.allocationPoint.tickDeviceWrite();
         }
-
 
         val hostPointer = allocationPoint.getHostPointer();
 
