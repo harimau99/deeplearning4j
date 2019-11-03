@@ -159,14 +159,10 @@ ND4J_EXPORT void   execIndexReduce(Nd4jPointer *extraPointers,
 ND4J_EXPORT void   execBroadcast(
         Nd4jPointer *extraPointers,
         int opNum,
-        void *hX, Nd4jLong *hXShapeInfo,
-        void *dX, Nd4jLong *dXShapeInfo,
-        void *hY, Nd4jLong *hYShapeInfo,
-        void *dY, Nd4jLong *dYShapeInfo,
-        void *hZ, Nd4jLong *hZShapeInfo,
-        void *dZ, Nd4jLong *dZShapeInfo,
-        void *hDimension, Nd4jLong *hDimensionShape,
-        void *dDimension, Nd4jLong *dDimensionShape);
+        OpaqueDataBuffer *dbX, Nd4jLong *hXShapeInfo, Nd4jLong *dXShapeInfo,
+        OpaqueDataBuffer *dbY, Nd4jLong *hYShapeInfo, Nd4jLong *dYShapeInfo,
+        OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
+        OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape);
 
 
 ND4J_EXPORT void   execBroadcastBool(
