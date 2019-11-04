@@ -796,12 +796,17 @@ TEST_F(JavaInteropTests, Test_Reduce3_EdgeCase) {
     auto packY = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(y.getShapeInfo(), {0,1});
 
     NDArray::prepareSpecialUse({&z}, {&x, &y, &dims});
+    OpaqueDataBuffer xBuf(x.dataBuffer());
+    OpaqueDataBuffer yBuf(y.dataBuffer());
+    OpaqueDataBuffer zBuf(z.dataBuffer());
+    OpaqueDataBuffer dimBuf(dims.dataBuffer());
 
-    execReduce3Tad(extraPointers, 2, x.buffer(), x.shapeInfo(), x.specialBuffer(), x.specialShapeInfo(),
+    execReduce3Tad(extraPointers, 2, &xBuf, x.shapeInfo(), x.specialShapeInfo(),
                           nullptr,
-                        y.buffer(), y.shapeInfo(), y.specialBuffer(), y.specialShapeInfo(),
-                        z.buffer(), z.shapeInfo(), z.specialBuffer(), z.specialShapeInfo(),
-                        dims.buffer(), dims.shapeInfo(), dims.specialBuffer(), dims.specialShapeInfo(), packX.platformShapeInfo(), packX.platformOffsets(), packY.platformShapeInfo(), packY.platformOffsets());
+                        &yBuf, y.shapeInfo(), y.specialShapeInfo(),
+                        &zBuf, z.shapeInfo(), z.specialShapeInfo(),
+                        &dimBuf, dims.shapeInfo(), dims.specialShapeInfo(), packX.platformShapeInfo(),
+                        packX.platformOffsets(), packY.platformShapeInfo(), packY.platformOffsets());
 
     NDArray::registerSpecialUse({&z}, {&x, &y, &dims});
 
@@ -943,10 +948,14 @@ TEST_F(JavaInteropTests, Test_Mixed_Add_1) {
 
     NDArray::prepareSpecialUse({&arrayZ}, {&arrayX, &arrayY});
 
+    OpaqueDataBuffer xBuf(arrayX.dataBuffer());
+    OpaqueDataBuffer yBuf(arrayY.dataBuffer());
+    OpaqueDataBuffer zBuf(arrayZ.dataBuffer());
+
     execPairwiseTransform(nullptr, pairwise::Add,
-                              arrayX.buffer(), arrayX.shapeInfo(), arrayX.getSpecialBuffer(), arrayX.getSpecialShapeInfo(),
-                              arrayY.buffer(), arrayY.shapeInfo(), arrayY.getSpecialBuffer(), arrayY.getSpecialShapeInfo(),
-                              arrayZ.buffer(), arrayZ.shapeInfo(), arrayZ.getSpecialBuffer(), arrayZ.getSpecialShapeInfo(),
+                              &xBuf, arrayX.shapeInfo(), arrayX.getSpecialShapeInfo(),
+                              &yBuf, arrayY.shapeInfo(), arrayY.getSpecialShapeInfo(),
+                              &zBuf, arrayZ.shapeInfo(), arrayZ.getSpecialShapeInfo(),
                               nullptr);
 
     NDArray::registerSpecialUse({&arrayZ}, {&arrayX, &arrayY});
@@ -1182,7 +1191,8 @@ TEST_F(JavaInteropTests, test_bfloat16_rng) {
     auto z = NDArrayFactory::create<bfloat16>('c', {10});
     RandomGenerator rng(119, 323841120L);
     bfloat16 args[2] = {(bfloat16) 0.0f, (bfloat16) 1.0f};
-    execRandom(nullptr, nd4j::random::Ops::UniformDistribution, &rng, z.buffer(), z.shapeInfo(), z.specialBuffer(), z.specialShapeInfo(), args);
+    OpaqueDataBuffer zBuf(z.dataBuffer());
+    execRandom(nullptr, nd4j::random::Ops::UniformDistribution, &rng, &zBuf, z.shapeInfo(), z.specialShapeInfo(), args);
     z.printIndexedBuffer("z");
     ASSERT_TRUE(z.sumNumber().e<float>(0) > 0);
 }
