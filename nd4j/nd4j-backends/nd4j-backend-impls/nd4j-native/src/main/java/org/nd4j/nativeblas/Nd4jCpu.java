@@ -3529,6 +3529,7 @@ public native @Cast("bool") boolean isOptimalRequirementsMet();
 // #include <array/DataBuffer.h>
 // #include <execution/AffinityManager.h>
 // #include <memory>
+// #include <array/InteropDataBuffer.h>
 
 
     @Namespace("nd4j") public static native @ByVal @Name("operator -") NDArray subtract(float arg0, @Const @ByRef NDArray arg1);
@@ -3758,16 +3759,13 @@ public native @Cast("bool") boolean isOptimalRequirementsMet();
          * @param writeList
          * @param readList
          */
-         // TODO: it would be nice to have NDArray::registerSpecialUse signature that accepts something else beyond initializer_list
         public static native void registerSpecialUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList);
         public static native void prepareSpecialUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList, @Cast("bool") boolean synchronizeWritables/*=false*/);
         public static native void prepareSpecialUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList);
 
-        // TODO: it would be nice to have NDArray::registerSpecialUse signature that accepts something else beyond initializer_list
         public static native void registerPrimaryUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList);
         public static native void preparePrimaryUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList, @Cast("bool") boolean synchronizeWritables/*=false*/);
         public static native void preparePrimaryUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList);
-
 
         /**
          * This method returns buffer pointer offset by given number of elements, wrt own data type
