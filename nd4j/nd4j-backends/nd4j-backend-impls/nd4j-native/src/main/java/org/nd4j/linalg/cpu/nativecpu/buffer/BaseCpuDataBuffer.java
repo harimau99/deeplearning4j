@@ -29,6 +29,7 @@ import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.pointers.PagedPointer;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.memory.deallocation.DeallocatorService;
+import org.nd4j.nativeblas.NativeOps;
 import org.nd4j.nativeblas.NativeOpsHolder;
 import org.nd4j.nativeblas.OpaqueDataBuffer;
 
@@ -468,6 +469,10 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
     public BaseCpuDataBuffer(Pointer pointer, Indexer indexer, long length) {
         super(pointer, indexer, length);
+
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, type.toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, this.pointer, length * elementSize);
+        Nd4j.getDeallocatorService().pickObject(this);;
     }
 
     /**
