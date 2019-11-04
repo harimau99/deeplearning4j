@@ -506,9 +506,9 @@ public class JCublasNDArrayFactory extends BaseNativeNDArrayFactory {
         AtomicAllocator allocator = AtomicAllocator.getInstance();
         CudaContext context = allocator.getFlowController().prepareAction(ret, source);
 
-        Pointer x = AtomicAllocator.getInstance().getPointer(source, context);
+        val x = ((BaseCudaDataBuffer) source.data()).getOpaqueDataBuffer();
+        val z = ((BaseCudaDataBuffer) ret.data()).getOpaqueDataBuffer();
         Pointer xShape = AtomicAllocator.getInstance().getPointer(source.shapeInfoDataBuffer(), context);
-        Pointer z = AtomicAllocator.getInstance().getPointer(ret, context);
         Pointer zShape = AtomicAllocator.getInstance().getPointer(ret.shapeInfoDataBuffer(), context);
 
         PointerPointer extras = new PointerPointer(AddressRetriever.retrieveHostPointer(ret.shapeInfoDataBuffer()),
@@ -534,14 +534,8 @@ public class JCublasNDArrayFactory extends BaseNativeNDArrayFactory {
 
 
         nativeOps.pullRows(extras,
-                null,
-                (LongPointer) source.shapeInfoDataBuffer().addressPointer(),
-                x,
-                (LongPointer) xShape,
-                null,
-                (LongPointer) ret.shapeInfoDataBuffer().addressPointer(),
-                z,
-                (LongPointer) zShape,
+                x, (LongPointer) source.shapeInfoDataBuffer().addressPointer(), (LongPointer) xShape,
+                z, (LongPointer) ret.shapeInfoDataBuffer().addressPointer(), (LongPointer) zShape,
                 indexes.length,
                 (LongPointer) pIndex,
                 (LongPointer) tadShapeInfo,
@@ -1313,11 +1307,11 @@ public class JCublasNDArrayFactory extends BaseNativeNDArrayFactory {
         PointerPointer extraz = new PointerPointer(null, // not used
                 context.getOldStream(), AtomicAllocator.getInstance().getDeviceIdPointer());
 
+        val x = ((BaseCudaDataBuffer) tensor.data()).getOpaqueDataBuffer();
+
+
         nativeOps.tear(extraz,
-                    null,
-                    (LongPointer) tensor.shapeInfoDataBuffer().addressPointer(),
-                    AtomicAllocator.getInstance().getPointer(tensor, context),
-                    (LongPointer) AtomicAllocator.getInstance().getPointer(tensor.shapeInfoDataBuffer(), context),
+                    x, (LongPointer) tensor.shapeInfoDataBuffer().addressPointer(), (LongPointer) AtomicAllocator.getInstance().getPointer(tensor.shapeInfoDataBuffer(), context),
                     new PointerPointer(AtomicAllocator.getInstance().getPointer(tempX, context)),
                     (LongPointer) AtomicAllocator.getInstance().getPointer(result[0].shapeInfoDataBuffer(), context),
                     (LongPointer) AtomicAllocator.getInstance().getPointer(tadBuffers.getFirst(), context),

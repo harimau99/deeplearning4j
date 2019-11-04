@@ -2049,25 +2049,22 @@ void decodeThreshold(Nd4jPointer *extraPointers, void *dx, Nd4jLong N, void *dz,
 ////////////////////////////////////////////////////////////////////////
 void execReduce3All(Nd4jPointer *extraPointers,
 									int opNum,
-									void *hX, Nd4jLong *hXShapeInfo,
-                            		void *dX, Nd4jLong *dXShapeInfo,
+                                    OpaqueDataBuffer *dbX, Nd4jLong *hXShapeInfo, Nd4jLong *dXShapeInfo,
                             		void *extraParamsVals,
-									void *hY, Nd4jLong *hYShapeInfo,
-                            		void *dY, Nd4jLong *dYShapeInfo,
-                            		void *hZ, Nd4jLong *hZShapeInfo,
-                            		void *dZ, Nd4jLong *dZShapeInfo,
-							   		void *hDimension, Nd4jLong *hDimensionShape,
-							   		void *dDimension, Nd4jLong *dDimensionShape,
+                                    OpaqueDataBuffer *dbY, Nd4jLong *hYShapeInfo, Nd4jLong *dYShapeInfo,
+                                    OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
+                                    OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape,
 									Nd4jLong *xTadShapeInfo, Nd4jLong *xOffsets,
 									Nd4jLong *yTadShapeInfo, Nd4jLong *yOffsets) {
     try {
-        auto dimension = reinterpret_cast<int *>(dDimension);
+        auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
-        NativeOpExecutioner::execReduce3All(&lc, opNum, hX, hXShapeInfo, dX, dXShapeInfo, extraParamsVals, hY,
-                                            hYShapeInfo, dY, dYShapeInfo, hZ, hZShapeInfo, dZ, dZShapeInfo, dimension,
-                                            dimensionLength, xTadShapeInfo, xOffsets, yTadShapeInfo, yOffsets);
+        NativeOpExecutioner::execReduce3All(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParamsVals,
+                                            dbY->primary(), hYShapeInfo, dbY->special(), dYShapeInfo,
+                                            dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo,
+                                            dimension, dimensionLength, xTadShapeInfo, xOffsets, yTadShapeInfo, yOffsets);
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
