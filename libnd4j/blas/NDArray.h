@@ -42,6 +42,7 @@
 #include <array/DataBuffer.h>
 #include <execution/AffinityManager.h>
 #include <memory>
+#include <array/InteropDataBuffer.h>
 
 
 namespace nd4j {
@@ -274,14 +275,11 @@ namespace nd4j {
          * @param writeList
          * @param readList
          */
-         // TODO: it would be nice to have NDArray::registerSpecialUse signature that accepts something else beyond initializer_list
         static void registerSpecialUse(const std::vector<const NDArray*>& writeList, const std::vector<const NDArray*>& readList);
         static void prepareSpecialUse(const std::vector<const NDArray*>& writeList, const std::vector<const NDArray*>& readList, bool synchronizeWritables = false);
 
-        // TODO: it would be nice to have NDArray::registerSpecialUse signature that accepts something else beyond initializer_list
         static void registerPrimaryUse(const std::vector<const NDArray*>& writeList, const std::vector<const NDArray*>& readList);
         static void preparePrimaryUse(const std::vector<const NDArray*>& writeList, const std::vector<const NDArray*>& readList, bool synchronizeWritables = false);
-
 
         /**
          * This method returns buffer pointer offset by given number of elements, wrt own data type

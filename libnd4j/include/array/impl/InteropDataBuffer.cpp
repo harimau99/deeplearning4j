@@ -47,11 +47,11 @@ namespace nd4j {
         return _dataBuffer;
     }
 
-    void* InteropDataBuffer::primary() {
+    void* InteropDataBuffer::primary() const {
         return _dataBuffer->primary();
     }
 
-    void* InteropDataBuffer::special() {
+    void* InteropDataBuffer::special() const {
         return _dataBuffer->special();
     }
 
@@ -63,11 +63,38 @@ namespace nd4j {
         _dataBuffer->setSpecialBuffer(ptr, length);
     }
 
-    uint64_t InteropDataBuffer::offset() {
+    uint64_t InteropDataBuffer::offset() const {
         return _offset;
     }
 
     void InteropDataBuffer::setOffset(uint64_t offset) {
         _offset = offset;
+    }
+
+
+    void InteropDataBuffer::registerSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList) {
+        for (const auto &v:writeList) {
+            v->getDataBuffer()->writeSpecial();
+        }
+    }
+
+    void InteropDataBuffer::prepareSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables) {
+        for (const auto &v:readList) {
+            v->getDataBuffer()->syncToSpecial();
+            v->getDataBuffer()->readSpecial();
+        }
+    }
+
+    void InteropDataBuffer::registerPrimaryUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList) {
+        for (const auto &v:writeList) {
+            v->getDataBuffer()->writePrimary();
+        }
+    }
+
+    void InteropDataBuffer::preparePrimaryUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables) {
+        for (const auto &v:readList) {
+            v->getDataBuffer()->syncToPrimary(LaunchContext::defaultContext());
+            v->getDataBuffer()->readPrimary();
+        }
     }
 }
