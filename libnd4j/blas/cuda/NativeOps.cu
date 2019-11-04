@@ -233,18 +233,13 @@ void execPairwiseTransform( Nd4jPointer *extraPointers,
                                         OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
         								void *extraParams) {
     try {
-        auto sdbX = dbX->dataBuffer();
-        auto sdbY = dbY->dataBuffer();
-        auto sdbZ = dbZ->dataBuffer();
-
-        sdbX->syncToSpecial();
-        sdbY->syncToSpecial();
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execPairwiseTransform(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbY->primary(), hYShapeInfo, dbY->special(),
                                                    dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo, extraParams);
 
-        sdbZ->writeSpecial();
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -259,9 +254,13 @@ void execPairwiseTransformBool(Nd4jPointer *extraPointers,
         								OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
         								void *extraParams) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execPairwiseBoolTransform(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbY->primary(), hYShapeInfo,
                                                        dbY->special(), dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo, extraParams);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -276,9 +275,13 @@ void execSummaryStatsScalar(Nd4jPointer *extraPointers,
                                        OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                                        bool biasCorrected) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execSummaryStatsScalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(),
                                                     hZShapeInfo, dbZ->special(), dZShapeInfo, biasCorrected);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -293,10 +296,8 @@ void execBroadcastBool(Nd4jPointer *extraPointers,
                                 OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                                 OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape) {
     try {
-        //Nd4jLong *tadOnlyShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers[0]);
-        //Nd4jLong *tadOffsets = reinterpret_cast<Nd4jLong *>(extraPointers[1]);
-        //Nd4jLong *tadOnlyShapeInfoZ = reinterpret_cast<Nd4jLong *>(extraPointers[2]);
-        //Nd4jLong *tadOffsetsZ = reinterpret_cast<Nd4jLong *>(extraPointers[3]);
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
 
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
@@ -312,6 +313,8 @@ void execBroadcastBool(Nd4jPointer *extraPointers,
                                                dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo, dimension,
                                                dimensionLength, tadOnlyShapeInfo, tadOffsets, tadOnlyShapeInfoZ,
                                                tadOffsetsZ);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -338,6 +341,9 @@ void   execBroadcast(
         OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
         OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -357,6 +363,8 @@ void   execBroadcast(
         NativeOpExecutioner::execBroadcast(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbY->primary(), hYShapeInfo, dbY->special(),
                                            dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo, dimension, dimensionLength,
                                            tadOnlyShapeInfo, tadOffsets, tadOnlyShapeInfoZ, tadOffsetsZ);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -380,9 +388,13 @@ void execReduceFloat(Nd4jPointer *extraPointers,
 							void *extraParams,
                             OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execReduceFloatScalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(),
                                                    hZShapeInfo, dbZ->special(), dZShapeInfo);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -396,9 +408,13 @@ void execReduceSame(Nd4jPointer *extraPointers,
                                 void *extraParams,
                                 OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execReduceSameScalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(),
                                                   hZShapeInfo, dbZ->special(), dZShapeInfo);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -413,6 +429,9 @@ void execReduceSame2(Nd4jPointer *extraPointers,
                             OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                             OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -424,6 +443,8 @@ void execReduceSame2(Nd4jPointer *extraPointers,
         NativeOpExecutioner::execReduceSame(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(), hZShapeInfo,
                                             dbZ->special(), dZShapeInfo, dimension, dimensionLength, tadPack.specialShapeInfo(),
                                             tadPack.specialOffsets());
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -438,6 +459,9 @@ void execReduceLong2(Nd4jPointer *extraPointers,
                             OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                             OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -449,6 +473,8 @@ void execReduceLong2(Nd4jPointer *extraPointers,
         NativeOpExecutioner::execReduceLong(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(), hZShapeInfo,
                                             dbZ->special(), dZShapeInfo, dimension, dimensionLength, tadPack.specialShapeInfo(),
                                             tadPack.specialOffsets());
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -462,6 +488,8 @@ void   execReduceLong(Nd4jPointer *extraPointers,
                                 void *extraParams,
                                 OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         auto stream = reinterpret_cast<cudaStream_t *>(extraPointers[1]);
         auto hTADShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers[9]);
         auto dTADShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers[10]);
@@ -485,6 +513,8 @@ void   execReduceLong(Nd4jPointer *extraPointers,
                                                  dTADShapeInfo), LIBND4J_TYPES, LONG_TYPES);
 
         nd4j::DebugHelper::checkErrorCode(stream, "execReduceLong(...) failed");
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -499,6 +529,9 @@ void execReduceBool2(Nd4jPointer *extraPointers,
                             OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                             OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -510,6 +543,8 @@ void execReduceBool2(Nd4jPointer *extraPointers,
         NativeOpExecutioner::execReduceBool(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(), hZShapeInfo,
                                             dbZ->special(), dZShapeInfo, dimension, dimensionLength, tadPack.specialShapeInfo(),
                                             tadPack.specialOffsets());
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -523,6 +558,8 @@ void   execReduceBool(Nd4jPointer *extraPointers,
                                 void *extraParams,
                                 OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         auto stream = reinterpret_cast<cudaStream_t *>(extraPointers[1]);
         auto hTADShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers[9]);
         auto dTADShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers[10]);
@@ -546,6 +583,8 @@ void   execReduceBool(Nd4jPointer *extraPointers,
                                                  dTADShapeInfo), LIBND4J_TYPES, BOOL_TYPES);
 
         nd4j::DebugHelper::checkErrorCode(stream, "execReduceBool(...) failed");
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -571,6 +610,9 @@ void execIndexReduce(Nd4jPointer *extraPointers,
         						 OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
         						 OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -582,6 +624,8 @@ void execIndexReduce(Nd4jPointer *extraPointers,
         NativeOpExecutioner::execIndexReduce(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(), hZShapeInfo,
                                              dbZ->special(), dZShapeInfo, dimension, dimensionLength, tadPack.specialShapeInfo(),
                                              tadPack.specialOffsets());
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -605,6 +649,9 @@ void execReduceFloat2(Nd4jPointer *extraPointers,
                                 OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                                 OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -616,6 +663,8 @@ void execReduceFloat2(Nd4jPointer *extraPointers,
         NativeOpExecutioner::execReduceFloat(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(), hZShapeInfo,
                                              dbZ->special(), dZShapeInfo, dimension, dimensionLength, tadPack.specialShapeInfo(),
                                              tadPack.specialOffsets());
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -637,9 +686,13 @@ void execIndexReduceScalar(
         void *extraParams,
         OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo){
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execIndexReduceScalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(),
                                                    hZShapeInfo, dbZ->special(), dZShapeInfo);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -652,12 +705,16 @@ void execTransformSame(Nd4jPointer *extraPointers,int opNum,
                                    OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                                    void *extraParams) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         auto tadShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers != nullptr ? extraPointers[0] : nullptr);
         auto tadOffsets = reinterpret_cast<Nd4jLong *>(extraPointers != nullptr ? extraPointers[1] : nullptr);
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execTransformSame(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(),
                                                dZShapeInfo, extraParams, tadShapeInfo, tadOffsets);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -670,12 +727,16 @@ void execTransformBool(Nd4jPointer *extraPointers,int opNum,
                                   OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
 								  void *extraParams) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         auto tadShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers != nullptr ? extraPointers[0] : nullptr);
         auto tadOffsets = reinterpret_cast<Nd4jLong *>(extraPointers != nullptr ? extraPointers[1] : nullptr);
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execTransformBool(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(),
                                                dZShapeInfo, extraParams, tadShapeInfo, tadOffsets);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -688,6 +749,8 @@ void execTransformAny(Nd4jPointer *extraPointers,int opNum,
                                     OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
 								    void *extraParams) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         auto stream = reinterpret_cast<cudaStream_t *>(extraPointers[1]);
         auto streamSpecial = reinterpret_cast<cudaStream_t &>(extraPointers[4]);
         LaunchContext lc(stream, streamSpecial, extraPointers[5], extraPointers[3],
@@ -695,6 +758,8 @@ void execTransformAny(Nd4jPointer *extraPointers,int opNum,
 
         NativeOpExecutioner::execTransformAny(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(),
                                               dZShapeInfo, extraParams, nullptr, nullptr);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -707,12 +772,16 @@ void execTransformStrict(Nd4jPointer *extraPointers,int opNum,
                                     OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                                     void *extraParams) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         auto tadShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers != nullptr ? extraPointers[10] : nullptr);
         auto tadOffsets = reinterpret_cast<Nd4jLong *>(extraPointers != nullptr ? extraPointers[11] : nullptr);
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execTransformStrict(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(),
                                                  dZShapeInfo, extraParams, tadShapeInfo, tadOffsets);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -725,12 +794,16 @@ void execTransformFloat(Nd4jPointer *extraPointers,int opNum,
                                     OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                                     void *extraParams) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         auto tadShapeInfo = reinterpret_cast<Nd4jLong *>(extraPointers != nullptr ? extraPointers[10] : nullptr);
         auto tadOffsets = reinterpret_cast<Nd4jLong *>(extraPointers != nullptr ? extraPointers[11] : nullptr);
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execTransformFloat(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(),
                                                 dZShapeInfo, extraParams, tadShapeInfo, tadOffsets);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1304,6 +1377,8 @@ void pullRows(Nd4jPointer *extraPointers,
 						 Nd4jLong *zTadShapeInfo,
 						 Nd4jLong *zTadOffsets) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         cudaStream_t *stream = reinterpret_cast<cudaStream_t *>(extraPointers[1]);
         dim3 launchDims(64, 256, 1024);
         auto xType = nd4j::ArrayOptions::dataType(xShapeInfo);
@@ -1312,6 +1387,8 @@ void pullRows(Nd4jPointer *extraPointers,
                               LIBND4J_TYPES);
 
         DEBUG_KERNEL(stream, -1);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1450,9 +1527,13 @@ void execSummaryStats(Nd4jPointer *extraPointers,
                                  OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                                  bool biasCorrected) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execSummaryStats(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(),
                                               hZShapeInfo, dbZ->special(), dZShapeInfo, biasCorrected);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1469,6 +1550,9 @@ void execSummaryStatsTad(Nd4jPointer *extraPointers,
                                  bool biasCorrected,
 								 Nd4jLong *tadShapeInfo, Nd4jLong *tadOffsets) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -1476,6 +1560,8 @@ void execSummaryStatsTad(Nd4jPointer *extraPointers,
         NativeOpExecutioner::execSummaryStats(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(),
                                               hZShapeInfo, dbZ->special(), dZShapeInfo, dimension, dimensionLength, tadShapeInfo,
                                               tadOffsets, biasCorrected);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1490,9 +1576,13 @@ void execReduce3(Nd4jPointer *extraPointers,
                             OpaqueDataBuffer *dbY, Nd4jLong *hYShapeInfo, Nd4jLong *dYShapeInfo,
                             OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execReduce3(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbY->primary(), hYShapeInfo, dbY->special(),
                                          dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1510,6 +1600,9 @@ void execReduce3Tad(Nd4jPointer *extraPointers,
                             Nd4jLong *tadOnlyShapeInfo, Nd4jLong *tadOffsets,
                             Nd4jLong *yTadOnlyShapeInfo, Nd4jLong *yTadOffsets) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -1534,6 +1627,7 @@ void execReduce3Tad(Nd4jPointer *extraPointers,
                                                 dimension, dimensionLength, tadOnlyShapeInfo, yTadOffsets,
                                                 yTadOnlyShapeInfo, yTadOffsets);
 
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1547,9 +1641,13 @@ void execReduce3Scalar(Nd4jPointer *extraPointers,int opNum,
                                     OpaqueDataBuffer *dbY, Nd4jLong *hYShapeInfo, Nd4jLong *dYShapeInfo,
                                     OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execReduce3Scalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbY->primary(),
                                                hYShapeInfo, dbY->special(), dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1564,9 +1662,13 @@ void execScalarBool(Nd4jPointer *extraPointers,
                             OpaqueDataBuffer *dbScalar, Nd4jLong *hScalarShapeInfo, Nd4jLong *dScalarShapeInfo,
 							void *extraParams) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbScalar});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execScalarBool(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(),
                                             dZShapeInfo, dbScalar->primary(), hScalarShapeInfo, dbScalar->special(), dScalarShapeInfo, extraParams);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbScalar});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1584,6 +1686,9 @@ void execScalarBoolTad(Nd4jPointer *extraPointers,
                            Nd4jLong *tadShapeInfo, Nd4jLong *tadOffsets,
                            Nd4jLong *tadShapeInfoZ, Nd4jLong *tadOffsetsZ) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbScalars});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -1592,6 +1697,8 @@ void execScalarBoolTad(Nd4jPointer *extraPointers,
                                             dbZ->special(), dZShapeInfo, dbScalars->primary(), hScalarShapeInfo, dbScalars->special(), dScalarShapeInfo,
                                             dimension, dimensionLength, tadShapeInfo, tadOffsets, tadShapeInfoZ,
                                             tadOffsetsZ);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbScalars});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1606,9 +1713,13 @@ void execScalar(Nd4jPointer *extraPointers,
                         OpaqueDataBuffer *dbScalar, Nd4jLong *hScalarShapeInfo, Nd4jLong *dScalarShapeInfo,
 						void *extraParams) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbScalar});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execScalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo,
                                         dbScalar->primary(), hScalarShapeInfo, dbScalar->special(), dScalarShapeInfo, extraParams);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbScalar});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1626,6 +1737,9 @@ void execScalarTad(Nd4jPointer *extraPointers,
                      Nd4jLong *tadShapeInfo, Nd4jLong *tadOffsets,
                      Nd4jLong *tadShapeInfoZ, Nd4jLong *tadOffsetsZ) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbScalars});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -1651,6 +1765,8 @@ void execScalarTad(Nd4jPointer *extraPointers,
 #endif
 
         DEBUG_KERNEL(stream, opNum);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbScalars});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1736,8 +1852,12 @@ void execRandom(Nd4jPointer *extraPointers,
                           OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
                           void *extraArguments) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execRandom(&lc, opNum, stateHost, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo, extraArguments);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1750,9 +1870,13 @@ void execRandom2(Nd4jPointer *extraPointers, int opNum, Nd4jPointer stateHost,
                            OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
 						   void *extraArguments) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execRandom(&lc, opNum, stateHost, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(),
                                         dZShapeInfo, extraArguments);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1766,9 +1890,13 @@ void execRandom3(Nd4jPointer *extraPointers, int opNum, Nd4jPointer stateHost,
                             OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
 							void *extraArguments) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execRandom(&lc, opNum, stateHost, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbY->primary(), hYShapeInfo, dbY->special(),
                                         dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo, extraArguments);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -1880,6 +2008,8 @@ void tear(Nd4jPointer *extras,
 					 Nd4jLong *tadShapeInfo,
 					 Nd4jLong *tadOffsets) {
     try {
+        InteropDataBuffer::prepareSpecialUse({}, {dbX});
+
         cudaStream_t *stream = reinterpret_cast<cudaStream_t *>(extras[1]);
         dim3 launchDims(512, 512, 512);
         auto xType = nd4j::ArrayOptions::dataType(xShapeInfo);
@@ -1888,6 +2018,8 @@ void tear(Nd4jPointer *extras,
                               LIBND4J_TYPES);
 
         nd4j::DebugHelper::checkErrorCode(stream, "tearFloat(...) failed");
+
+        InteropDataBuffer::registerSpecialUse({}, {dbX});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
@@ -2057,6 +2189,9 @@ void execReduce3All(Nd4jPointer *extraPointers,
 									Nd4jLong *xTadShapeInfo, Nd4jLong *xOffsets,
 									Nd4jLong *yTadShapeInfo, Nd4jLong *yOffsets) {
     try {
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+        InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
+
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
         int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
@@ -2065,6 +2200,8 @@ void execReduce3All(Nd4jPointer *extraPointers,
                                             dbY->primary(), hYShapeInfo, dbY->special(), dYShapeInfo,
                                             dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo,
                                             dimension, dimensionLength, xTadShapeInfo, xOffsets, yTadShapeInfo, yOffsets);
+
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());

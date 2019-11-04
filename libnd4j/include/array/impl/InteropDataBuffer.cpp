@@ -74,12 +74,18 @@ namespace nd4j {
 
     void InteropDataBuffer::registerSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList) {
         for (const auto &v:writeList) {
+            if (v == nullptr)
+                continue;
+
             v->getDataBuffer()->writeSpecial();
         }
     }
 
     void InteropDataBuffer::prepareSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables) {
         for (const auto &v:readList) {
+            if (v == nullptr)
+                continue;
+
             v->getDataBuffer()->syncToSpecial();
             v->getDataBuffer()->readSpecial();
         }
@@ -87,12 +93,18 @@ namespace nd4j {
 
     void InteropDataBuffer::registerPrimaryUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList) {
         for (const auto &v:writeList) {
+            if (v == nullptr)
+                continue;
+
             v->getDataBuffer()->writePrimary();
         }
     }
 
     void InteropDataBuffer::preparePrimaryUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables) {
         for (const auto &v:readList) {
+            if (v == nullptr)
+                continue;
+
             v->getDataBuffer()->syncToPrimary(LaunchContext::defaultContext());
             v->getDataBuffer()->readPrimary();
         }
