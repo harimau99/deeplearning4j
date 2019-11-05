@@ -144,4 +144,12 @@ public class BaseCudaDataBufferTest {
 
         assertNotEquals(array1, array2);
     }
+
+    @Test
+    public void testCustomOpInvocation_1() {
+        val array = Nd4j.createFromArray(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
+
+        Nd4j.exec(new PrintVariable(array, true));
+        Nd4j.exec(new PrintVariable(array));
+    }
 }
