@@ -29,8 +29,6 @@ import org.deeplearning4j.rl4j.space.Encodable;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.util.Random;
-
 /**
  * @author rubenfiszel (ruben.fiszel@epfl.ch) on 7/27/16.
  *
@@ -43,18 +41,13 @@ import java.util.Random;
 @Slf4j
 public abstract class Learning<O extends Encodable, A, AS extends ActionSpace<A>, NN extends NeuralNet>
                 implements ILearning<O, A, AS>, NeuralNetFetchable<NN> {
-    @Getter
-    final private Random random;
+
     @Getter @Setter
     private int stepCounter = 0;
     @Getter @Setter
     private int epochCounter = 0;
     @Getter @Setter
     private IHistoryProcessor historyProcessor = null;
-
-    public Learning(LConfiguration conf) {
-        random = new Random(conf.getSeed());
-    }
 
     public static Integer getMaxAction(INDArray vector) {
         return Nd4j.argMax(vector, Integer.MAX_VALUE).getInt(0);
@@ -74,8 +67,6 @@ public abstract class Learning<O extends Encodable, A, AS extends ActionSpace<A>
 
         O obs = mdp.reset();
 
-        O nextO = obs;
-
         int step = 0;
         double reward = 0;
 
@@ -84,11 +75,12 @@ public abstract class Learning<O extends Encodable, A, AS extends ActionSpace<A>
         int skipFrame = isHistoryProcessor ? hp.getConf().getSkipFrame() : 1;
         int requiredFrame = isHistoryProcessor ? skipFrame * (hp.getConf().getHistoryLength() - 1) : 0;
 
-        while (step < requiredFrame) {
-            INDArray input = Learning.getInput(mdp, obs);
+        INDArray input = Learning.getInput(mdp, obs);
+        if (isHistoryProcessor)
+            hp.record(input);
 
-            if (isHistoryProcessor)
-                hp.record(input);
+
+        while (step < requiredFrame && !mdp.isDone()) {
 
             A action = mdp.getActionSpace().noOp(); //by convention should be the NO_OP
             if (step % skipFrame == 0 && isHistoryProcessor)
@@ -96,13 +88,17 @@ public abstract class Learning<O extends Encodable, A, AS extends ActionSpace<A>
 
             StepReply<O> stepReply = mdp.step(action);
             reward += stepReply.getReward();
-            nextO = stepReply.getObservation();
+            obs = stepReply.getObservation();
+
+            input = Learning.getInput(mdp, obs);
+            if (isHistoryProcessor)
+                hp.record(input);
 
             step++;
 
         }
 
-        return new InitMdp(step, nextO, reward);
+        return new InitMdp(step, obs, reward);
 
     }
 

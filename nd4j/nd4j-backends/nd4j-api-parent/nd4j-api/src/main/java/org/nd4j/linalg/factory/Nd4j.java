@@ -5721,12 +5721,6 @@ public class Nd4j {
                 }
             }
             case UBYTE:
-                val b = Nd4j.createBuffer(DataType.UBYTE, ArrayUtil.prod(shapeOf), false);
-                val sb = bb.order(_order).asReadOnlyBuffer();
-                for (int e = 0; e < prod; e++)
-                    b.put(e, sb.get(e));
-
-                return Nd4j.create(b, shapeOf);
             case BFLOAT16:
             case UINT16:
                 INDArray arr = Nd4j.createUninitialized(_dtype, shapeOf);
