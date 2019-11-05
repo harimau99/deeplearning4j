@@ -236,8 +236,9 @@ void execPairwiseTransform( Nd4jPointer *extraPointers,
         InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
-        NativeOpExecutioner::execPairwiseTransform(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbY->primary(), hYShapeInfo, dbY->special(),
-                                                   dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo, extraParams);
+        NativeOpExecutioner::execPairwiseTransform(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hXShapeInfo).specialAsT<Nd4jLong>(),
+                                                        dbY->primary(), hYShapeInfo, dbY->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hYShapeInfo).specialAsT<Nd4jLong>(),
+                                                        dbZ->primary(), hZShapeInfo, dbZ->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hZShapeInfo).specialAsT<Nd4jLong>(), extraParams);
 
         InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
@@ -257,8 +258,11 @@ void execPairwiseTransformBool(Nd4jPointer *extraPointers,
         InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
-        NativeOpExecutioner::execPairwiseBoolTransform(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbY->primary(), hYShapeInfo,
-                                                       dbY->special(), dYShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo, extraParams);
+        NativeOpExecutioner::execPairwiseBoolTransform(&lc, opNum,
+                                                       dbX->primary(), hXShapeInfo, dbX->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hXShapeInfo).specialAsT<Nd4jLong>(),
+                                                       dbY->primary(), hYShapeInfo, dbY->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hYShapeInfo).specialAsT<Nd4jLong>(),
+                                                       dbZ->primary(), hZShapeInfo, dbZ->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hZShapeInfo).specialAsT<Nd4jLong>(),
+                                                       extraParams);
 
         InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
     } catch (std::exception &e) {
@@ -278,8 +282,11 @@ void execSummaryStatsScalar(Nd4jPointer *extraPointers,
         InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
-        NativeOpExecutioner::execSummaryStatsScalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, extraParams, dbZ->primary(),
-                                                    hZShapeInfo, dbZ->special(), dZShapeInfo, biasCorrected);
+        NativeOpExecutioner::execSummaryStatsScalar(&lc, opNum,
+                                                         dbX->primary(), hXShapeInfo, dbX->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hXShapeInfo).specialAsT<Nd4jLong>(),
+                                                         extraParams,
+                                                         dbZ->primary(), hZShapeInfo, dbZ->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hZShapeInfo).specialAsT<Nd4jLong>(),
+                                                         biasCorrected);
 
         InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
     } catch (std::exception &e) {
@@ -1716,8 +1723,8 @@ void execScalar(Nd4jPointer *extraPointers,
         InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbScalar});
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
-        NativeOpExecutioner::execScalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), dXShapeInfo, dbZ->primary(), hZShapeInfo, dbZ->special(), dZShapeInfo,
-                                        dbScalar->primary(), hScalarShapeInfo, dbScalar->special(), dScalarShapeInfo, extraParams);
+        NativeOpExecutioner::execScalar(&lc, opNum, dbX->primary(), hXShapeInfo, dbX->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hXShapeInfo).specialAsT<Nd4jLong>(), dbZ->primary(), hZShapeInfo, dbZ->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hZShapeInfo).specialAsT<Nd4jLong>(),
+                                        dbScalar->primary(), hScalarShapeInfo, dbScalar->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hScalarShapeInfo).specialAsT<Nd4jLong>(), extraParams);
 
         InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbScalar});
     } catch (std::exception &e) {

@@ -19,6 +19,7 @@
 //
 
 #include <array/InteropDataBuffer.h>
+#include <execution/AffinityManager.h>
 
 namespace nd4j {
     InteropDataBuffer::InteropDataBuffer(InteropDataBuffer &dataBuffer, Nd4jLong offset) {
@@ -82,12 +83,25 @@ namespace nd4j {
     }
 
     void InteropDataBuffer::prepareSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables) {
+        auto currentDeviceId = nd4j::AffinityManager::currentDeviceId();
         for (const auto &v:readList) {
             if (v == nullptr)
                 continue;
 
+            if (v->getDataBuffer()->deviceId() != currentDeviceId)
+                v->getDataBuffer()->migrate();
+
             v->getDataBuffer()->syncToSpecial();
             v->getDataBuffer()->readSpecial();
+        }
+
+        // we don't tick write list, only ensure the same device affinity
+        for (const auto &v:writeList) {
+            if (v == nullptr)
+                continue;
+
+            if (v->getDataBuffer()->deviceId() != currentDeviceId)
+                v->getDataBuffer()->migrate();
         }
     }
 
