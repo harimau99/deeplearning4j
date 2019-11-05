@@ -14,6 +14,8 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -146,10 +148,55 @@ public class BaseCudaDataBufferTest {
     }
 
     @Test
+    public void testBasicOpInvocation_3() {
+        val array = Nd4j.create(DataType.FLOAT, 6);
+        val exp = Nd4j.createFromArray(1.f, 1.f, 1.f, 1.f, 1.f, 1.f);
+
+        array.addi(1.0f);
+
+        assertEquals(exp, array);
+    }
+
+    @Test
     public void testCustomOpInvocation_1() {
         val array = Nd4j.createFromArray(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
 
         Nd4j.exec(new PrintVariable(array, true));
         Nd4j.exec(new PrintVariable(array));
+    }
+
+    @Test
+    public void testMultiDeviceMigration_1() throws Exception {
+        if (Nd4j.getAffinityManager().getNumberOfDevices() < 2)
+            return;
+
+        // creating all arrays within main thread context
+        val list = new ArrayList<INDArray>();
+        for (int e = 0; e < Nd4j.getAffinityManager().getNumberOfDevices(); e++)
+            list.add(Nd4j.create(DataType.FLOAT, 3, 5));
+
+        val cnt = new AtomicInteger(0);
+
+        // now we're creating threads
+        for (int e = 0; e < Nd4j.getAffinityManager().getNumberOfDevices(); e++) {
+            val f = e;
+            val t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    // issuing one operation, just to see how migration works
+                    list.get(f).addi(1.0f);
+
+                    // synchronizing immediately
+                    Nd4j.getExecutioner().commit();
+                    cnt.incrementAndGet();
+                }
+            });
+
+            t.start();
+            t.join();
+        }
+
+        // there shoul dbe no exceptions during execution
+        assertEquals(Nd4j.getAffinityManager().getNumberOfDevices(), cnt.get());
     }
 }
