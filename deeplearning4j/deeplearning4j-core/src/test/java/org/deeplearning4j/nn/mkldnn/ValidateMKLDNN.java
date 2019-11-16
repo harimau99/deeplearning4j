@@ -23,10 +23,13 @@ import org.deeplearning4j.datasets.iterator.impl.SingletonDataSetIterator;
 import org.deeplearning4j.nn.conf.ConvolutionMode;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
+import org.deeplearning4j.nn.gradient.Gradient;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.nd4j.linalg.activations.Activation;
@@ -36,13 +39,17 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.primitives.Pair;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static junit.framework.TestCase.*;
 import static org.junit.Assume.assumeTrue;
 
 public class ValidateMKLDNN extends BaseDL4JTest {
+
 
     @Test
     public void validateConvSubsampling() throws Exception {
@@ -132,52 +139,55 @@ public class ValidateMKLDNN extends BaseDL4JTest {
         ConvolutionMode cm = ConvolutionMode.Truncate;
 
         for (int minibatch : new int[]{1, 3}) {
+            for (boolean b : new boolean[]{true, false}) {
 
-            inputSize[0] = minibatch;
-            INDArray f = Nd4j.rand(Nd4j.defaultFloatingPointType(), inputSize);
-            INDArray l = TestUtils.randomOneHot(minibatch, 10);
+                inputSize[0] = minibatch;
+                INDArray f = Nd4j.rand(Nd4j.defaultFloatingPointType(), inputSize);
+                INDArray l = TestUtils.randomOneHot(minibatch, 10);
 
-            MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                    .updater(new Adam(0.01))
-                    .convolutionMode(cm)
-                    .seed(12345)
-                    .list()
-                    .layer(new ConvolutionLayer.Builder().activation(Activation.TANH)
-                            .kernelSize(kernel)
-                            .stride(stride)
-                            .padding(0, 0)
-                            .nOut(3)
-                            .build())
-                    .layer(new BatchNormalization.Builder().cudnnAllowFallback(false).build())
-                    .layer(new ConvolutionLayer.Builder().activation(Activation.TANH)
-                            .kernelSize(kernel)
-                            .stride(stride)
-                            .padding(0, 0)
-                            .nOut(3)
-                            .build())
-                    .layer(new OutputLayer.Builder().nOut(10).activation(Activation.SOFTMAX).lossFunction(LossFunctions.LossFunction.MCXENT).build())
-                    .setInputType(InputType.convolutional(inputSize[2], inputSize[3], inputSize[1]))
-                    .build();
+                MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                        .dataType(DataType.FLOAT)
+                        .updater(new Adam(0.01))
+                        .convolutionMode(cm)
+                        .seed(12345)
+                        .list()
+                        .layer(new ConvolutionLayer.Builder().activation(Activation.TANH)
+                                .kernelSize(kernel)
+                                .stride(stride)
+                                .padding(0, 0)
+                                .nOut(3)
+                                .build())
+                        .layer(new BatchNormalization.Builder().useLogStd(b).helperAllowFallback(false)/*.eps(0)*/.build())
+                        .layer(new ConvolutionLayer.Builder().activation(Activation.TANH)
+                                .kernelSize(kernel)
+                                .stride(stride)
+                                .padding(0, 0)
+                                .nOut(3)
+                                .build())
+                        .layer(new OutputLayer.Builder().nOut(10).activation(Activation.SOFTMAX).lossFunction(LossFunctions.LossFunction.MCXENT).build())
+                        .setInputType(InputType.convolutional(inputSize[2], inputSize[3], inputSize[1]))
+                        .build();
 
-            MultiLayerNetwork netWith = new MultiLayerNetwork(conf.clone());
-            netWith.init();
+                MultiLayerNetwork netWith = new MultiLayerNetwork(conf.clone());
+                netWith.init();
 
-            MultiLayerNetwork netWithout = new MultiLayerNetwork(conf.clone());
-            netWithout.init();
+                MultiLayerNetwork netWithout = new MultiLayerNetwork(conf.clone());
+                netWithout.init();
 
-            LayerHelperValidationUtil.TestCase tc = LayerHelperValidationUtil.TestCase.builder()
-                    .allowHelpersForClasses(Collections.<Class<?>>singletonList(org.deeplearning4j.nn.layers.normalization.BatchNormalization.class))
-                    .testForward(true)
-                    .testScore(true)
-                    .testBackward(true)
-                    .testTraining(true)
-                    .features(f)
-                    .labels(l)
-                    .data(new SingletonDataSetIterator(new DataSet(f, l)))
-                    .maxRelError(1e-4)
-                    .build();
+                LayerHelperValidationUtil.TestCase tc = LayerHelperValidationUtil.TestCase.builder()
+                        .allowHelpersForClasses(Collections.<Class<?>>singletonList(org.deeplearning4j.nn.layers.normalization.BatchNormalization.class))
+                        .testForward(true)
+                        .testScore(true)
+                        .testBackward(true)
+                        .testTraining(true)
+                        .features(f)
+                        .labels(l)
+                        .data(new SingletonDataSetIterator(new DataSet(f, l)))
+                        .maxRelError(1e-4)
+                        .build();
 
-            LayerHelperValidationUtil.validateMLN(netWith, tc);
+                LayerHelperValidationUtil.validateMLN(netWith, tc);
+            }
         }
     }
 
@@ -255,5 +265,56 @@ public class ValidateMKLDNN extends BaseDL4JTest {
                 System.out.println("/////////////////////////////////////////////////////////////////////////////");
             }
         }
+    }
+
+    @Test
+    public void compareBatchNormBackward() throws Exception {
+        assumeTrue(Nd4j.getBackend().getClass().getName().toLowerCase().contains("native"));
+
+        Nd4j.getRandom().setSeed(12345);
+        INDArray in = Nd4j.rand(DataType.FLOAT, 1, 3, 15, 15);
+        INDArray mean = in.mean(0, 2, 3).reshape(1,3);
+        INDArray var = in.var(0, 2, 3).reshape(1,3);
+        INDArray eps = Nd4j.rand(DataType.FLOAT, in.shape());
+        INDArray gamma = Nd4j.rand(DataType.FLOAT, 1,3);
+        INDArray beta = Nd4j.rand(DataType.FLOAT, 1,3);
+        double e = 1e-3;
+
+        INDArray dLdIn = in.ulike();
+        INDArray dLdm = mean.ulike();
+        INDArray dLdv = var.ulike();
+        INDArray dLdg = gamma.ulike();
+        INDArray dLdb = beta.ulike();
+
+
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .inferenceWorkspaceMode(WorkspaceMode.NONE)
+                .trainingWorkspaceMode(WorkspaceMode.NONE)
+                .list()
+                .layer(new BatchNormalization.Builder().nIn(3).nOut(3).build())
+                .build();
+        MultiLayerNetwork net = new MultiLayerNetwork(conf);
+        net.init();
+        org.deeplearning4j.nn.layers.normalization.BatchNormalization bn = (org.deeplearning4j.nn.layers.normalization.BatchNormalization) net.getLayer(0);
+        assertNotNull(bn.getHelper());
+        System.out.println(bn.getHelper());
+
+        net.output(in, true);
+        bn.setInput(in, LayerWorkspaceMgr.noWorkspaces());
+        Pair<Gradient,INDArray> pcudnn = net.backpropGradient(eps, LayerWorkspaceMgr.noWorkspaces());
+
+        Field f = bn.getClass().getDeclaredField("helper");
+        f.setAccessible(true);
+        f.set(bn, null);
+        assertNull(bn.getHelper());
+
+        net.output(in, true);
+        bn.setInput(in, LayerWorkspaceMgr.noWorkspaces());
+        Pair<Gradient,INDArray> p = net.backpropGradient(eps, LayerWorkspaceMgr.noWorkspaces());
+
+        INDArray dldin_dl4j = p.getSecond();
+        INDArray dldin_helper = pcudnn.getSecond();
+
+        assertTrue(dldin_dl4j.equalsWithEps(dldin_helper, 1e-5));
     }
 }

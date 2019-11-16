@@ -39,6 +39,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.nd4j.OpValidationSuite;
+import org.nd4j.autodiff.samediff.api.OutAndGrad;
 import org.nd4j.autodiff.samediff.impl.DefaultSameDiffConditional;
 import org.nd4j.autodiff.validation.OpValidation;
 import org.nd4j.autodiff.validation.TestCase;
@@ -2310,7 +2311,6 @@ public class SameDiffTests extends BaseNd4jTest {
         SDVariable loss = out.std("out", true);
 
         INDArray outArr = loss.eval();
-//        sd.execBackwards(Collections.emptyMap());
         Map<String,INDArray> grads = sd.calculateGradients(null, in.name(), w.name(), out.name());
 
         Map<String, INDArray> origGrad = new HashMap<>();
@@ -2320,7 +2320,6 @@ public class SameDiffTests extends BaseNd4jTest {
 
         in.getArr().assign(Nd4j.rand(in.getArr().shape()));
         INDArray outArr2 = loss.eval();
-//        sd.execBackwards(Collections.emptyMap());
         grads = sd.calculateGradients(null, in.name(), w.name(), out.name());
 
         assertNotEquals(outArr, outArr2);
@@ -2640,8 +2639,7 @@ public class SameDiffTests extends BaseNd4jTest {
                 .expectedOutput("out", out)
                 .gradientCheck(true));
 
-        assertNull(err, err);
-
+        assertNull(err);
     }
 
     @Test
@@ -3426,4 +3424,68 @@ public class SameDiffTests extends BaseNd4jTest {
         INDArray a1 = rand1.eval();
         assertEquals(a0, a1);
     }
+
+
+    @Test
+    public void testCalculateGradientsAndOutputs(){
+        SameDiff sd = SameDiff.create();
+        SDVariable in = sd.placeHolder("in", DataType.FLOAT, -1, 4);
+        SDVariable w = sd.var("w", Nd4j.rand(DataType.FLOAT, 4, 3));
+        SDVariable b = sd.var("b", Nd4j.rand(DataType.FLOAT, 3));
+        SDVariable z = in.mmul(w).add("z", b);
+        SDVariable softmax = sd.nn.softmax("softmax", z);
+
+        Map<String,INDArray> ph = Collections.singletonMap("in", Nd4j.rand(DataType.FLOAT, 2, 4));
+        List<String> outputs = Arrays.asList("in", "z", "softmax");
+        List<String> grads = Arrays.asList("in", "w", "z");
+
+        OutAndGrad oag = sd.calculateGradientsAndOutputs(ph, outputs, grads);
+        Map<String,INDArray> outs = oag.getOutputs();
+        Map<String,INDArray> g = oag.getGradients();
+
+
+        Map<String,INDArray> outExp = sd.output(ph, outputs);
+        Map<String,INDArray> gExp = sd.calculateGradients(ph, grads);
+
+        assertEquals(outExp, outs);
+        assertEquals(gExp, g);
+    }
+    
+    @Test
+	public void testConcatVariableGrad() {
+		SameDiff sd = SameDiff.create();
+		SDVariable label = sd.var("label", DataType.FLOAT, 3, 4);
+		SDVariable a = sd.var("a", DataType.FLOAT, 3, 2);
+		SDVariable b = sd.var("b", DataType.FLOAT, 3, 2);
+		INDArray inputArr = Nd4j.rand(3,4);
+		INDArray labelArr =  Nd4j.rand(3,4);
+		SDVariable c = sd.concat("concat", 1, a, b);
+		SDVariable loss = sd.math().pow(c.sub(label), 2);
+		sd.setLossVariables(loss);
+		sd.associateArrayWithVariable(labelArr, label);
+		sd.associateArrayWithVariable(inputArr.get(NDArrayIndex.all(), NDArrayIndex.interval(0, 2)), a);
+		sd.associateArrayWithVariable(inputArr.get(NDArrayIndex.all(), NDArrayIndex.interval(2, 4)), b);
+		Map<String, INDArray> map = sd.calculateGradients(null, "a", "b", "concat");
+		INDArray concatArray = Nd4j.hstack(map.get("a"), map.get("b"));
+		assertEquals(concatArray, map.get("concat"));
+
+	}
+
+	@Test
+	public void testSliceVariableGrad() {
+		SameDiff sd = SameDiff.create();
+		SDVariable label = sd.var("label", DataType.FLOAT, 3, 4);
+		SDVariable input = sd.var("input", DataType.FLOAT, 3, 4);
+		INDArray inputArr =  Nd4j.rand(3,4);
+		INDArray labelArr =  Nd4j.rand(3,4);
+		SDVariable a = input.get(SDIndex.all(), SDIndex.interval(0, 2));
+		SDVariable b = input.get(SDIndex.all(), SDIndex.interval(2, 4));
+		SDVariable c = sd.concat("concat", 1, a, b);
+		SDVariable loss = sd.math().pow(c.sub(label), 2);
+		sd.setLossVariables(loss);
+		sd.associateArrayWithVariable(labelArr, label);
+		sd.associateArrayWithVariable(inputArr, input);
+		Map<String, INDArray> map = sd.calculateGradients(null,"input", "concat");
+		assertEquals(map.get("input"), map.get("concat"));
+	}
 }

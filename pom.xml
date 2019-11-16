@@ -288,21 +288,21 @@
         <javacpp.platform.extension/> <!-- -Djavacpp.platform.extension=-avx512 -->
         <javacpp.platform.properties>${javacpp.platform}</javacpp.platform.properties>
 
-        <javacpp.version>1.5.1-1</javacpp.version>
-        <javacpp-presets.version>1.5.1</javacpp-presets.version>
-        <javacv.version>1.5.1</javacv.version>
+        <javacpp.version>1.5.2</javacpp.version>
+        <javacpp-presets.version>1.5.2</javacpp-presets.version>
+        <javacv.version>1.5.2</javacv.version>
 
-        <python.version>3.7.3</python.version>
+        <python.version>3.7.5</python.version>
         <cpython-platform.version>${python.version}-${javacpp-presets.version}</cpython-platform.version>
 
-        <openblas.version>0.3.6</openblas.version>
-        <mkl.version>2019.4</mkl.version>
-        <opencv.version>4.1.0</opencv.version>
-        <ffmpeg.version>4.1.3</ffmpeg.version>
+        <openblas.version>0.3.7</openblas.version>
+        <mkl.version>2019.5</mkl.version>
+        <opencv.version>4.1.2</opencv.version>
+        <ffmpeg.version>4.2.1</ffmpeg.version>
         <leptonica.version>1.78.0</leptonica.version>
         <hdf5.version>1.10.5</hdf5.version>
         <ale.version>0.6.0</ale.version>
-        <tensorflow.version>1.14.0</tensorflow.version>
+        <tensorflow.version>1.15.0</tensorflow.version>
         <tensorflow.javacpp.version>${tensorflow.version}-${javacpp-presets.version}</tensorflow.javacpp.version>
 
         <commons-compress.version>1.18</commons-compress.version>
@@ -452,133 +452,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>s3-repo</id>
-            <activation>
-                <property>
-                    <name>local.software.repository</name>
-                    <value>s3-repo</value>
-                </property>
-            </activation>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>s3-repo</id>
-                    <name>s3-repo</name>
-                    <url>s3://${s3.repo.url}</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>skymindnexus-skil</id>
-            <activation>
-                <property>
-                    <name>local.software.repository</name>
-                    <value>skymindnexus-skil</value>
-                </property>
-            </activation>
-            <distributionManagement>
-                <repository>
-                    <id>skymindnexus</id>
-                    <name>skymindnexus</name>
-                    <url>https://nexus.skymind.io/repository/skil/</url>
-                </repository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>local-nexus</id>
-            <activation>
-                <property>
-                    <name>local.software.repository</name>
-                    <value>nexus</value>
-                </property>
-            </activation>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>local-nexus</id>
-                    <name>local-nexus</name>
-                    <url>
-                        http://master-jenkins.skymind.io:8088/repository/snapshots
-                    </url>
-                </snapshotRepository>
-            </distributionManagement>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>${maven-deploy-plugin.version}</version>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.6</version>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>local-nexus</serverId>
-                            <nexusUrl>http://master-jenkins.skymind.io:8088/</nexusUrl>
-                            <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>local-jfrog</id>
-            <activation>
-                <property>
-                    <name>local.software.repository</name>
-                    <value>jfrog</value>
-                </property>
-            </activation>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>local-jfrog</id>
-                    <name>local-jfrog</name>
-                    <url>http://master-jenkins.skymind.io:8081/artifactory/libs-snapshot-local
-                    </url>
-                </snapshotRepository>
-                <repository>
-                    <id>local-jfrog</id>
-                    <name>local-jfrog</name>
-                    <url>http://master-jenkins.skymind.io:8081/artifactory/libs-release-local
-                    </url>
-                </repository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>Bintray-artifactory</id>
-            <activation>
-                <property>
-                    <name>local.software.repository</name>
-                    <value>bintray</value>
-                </property>
-            </activation>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>bintray-deeplearning4j-maven</id>
-                    <name>deeplearning4j-maven-snapshots</name>
-                    <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-                </snapshotRepository>
-                <repository>
-                    <id>bintray-deeplearning4j-maven</id>
-                    <name>deeplearning4j-maven-releases</name>
-                    <url>
-                        https://api.bintray.com/maven/deeplearning4j/maven/${project.artifactId}/;publish=1
-                    </url>
-                </repository>
-            </distributionManagement>
         </profile>
         <profile>
             <id>sonatype-nexus</id>

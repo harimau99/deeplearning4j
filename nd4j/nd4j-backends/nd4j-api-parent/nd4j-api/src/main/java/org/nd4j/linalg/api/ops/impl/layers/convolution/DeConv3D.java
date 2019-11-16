@@ -147,66 +147,6 @@ public class DeConv3D extends DynamicCustomOp {
         return config.getValue(property);
     }
 
-    @Override
-    public void initFromTensorFlow(NodeDef nodeDef, SameDiff initWith, Map<String, AttrValue> attributesForNode, GraphDef graph) {
-        val aStrides = nodeDef.getAttrOrThrow("strides");
-        val tfStrides = aStrides.getList().getIList();
-        int sD, sH, sW, kD, kH, kW;
-
-        val aPadding = nodeDef.getAttrOrDefault("padding", null);
-
-        val paddingMode = aPadding.getS().toStringUtf8();
-
-        val args = args();
-        INDArray arr = sameDiff.getVariable(args[1].name()).getArr();
-        if (arr == null) {
-            arr = TFGraphMapper.getNDArrayFromTensor(nodeDef);
-            val varForOp = initWith.getVariable(args[1].name());
-            if (arr != null)
-                initWith.associateArrayWithVariable(arr, varForOp);
-        }
-
-        String dataFormat = "nhwc";
-        if (nodeDef.containsAttr("data_format")) {
-            val attr = nodeDef.getAttrOrThrow("data_format");
-            dataFormat = attr.getS().toStringUtf8().toLowerCase();
-        }
-
-        if (dataFormat.equalsIgnoreCase(DeConv3DConfig.NCDHW)) {
-            sD = tfStrides.get(2).intValue();
-            sH = tfStrides.get(3).intValue();
-            sW = tfStrides.get(4).intValue();
-
-            kD = (int) arr.size(2);
-            kH = (int) arr.size(3);
-            kW = (int) arr.size(4);
-        } else {
-            sD = tfStrides.get(1).intValue();
-            sH = tfStrides.get(2).intValue();
-            sW = tfStrides.get(3).intValue();
-
-            kD = (int) arr.size(0);
-            kH = (int) arr.size(1);
-            kW = (int) arr.size(2);
-        }
-
-
-        boolean isSameMode = paddingMode.equalsIgnoreCase("SAME");
-        DeConv3DConfig conv2DConfig = DeConv3DConfig.builder()
-                .kD(kD)
-                .kH(kH)
-                .kW(kW)
-                .sD(sD)
-                .sH(sW)
-                .sW(sH)
-                .isSameMode(isSameMode)
-                .dataFormat(dataFormat.equalsIgnoreCase(DeConv3DConfig.NCDHW) ? DeConv3DConfig.NCDHW : DeConv3DConfig.NDHWC)
-                .build();
-        this.config = conv2DConfig;
-
-        addArgs();
-    }
-
 
     @Override
     public String opName() {

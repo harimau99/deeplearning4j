@@ -31,7 +31,9 @@ import org.deeplearning4j.rl4j.policy.EpsGreedy;
 import org.deeplearning4j.rl4j.space.DiscreteSpace;
 import org.deeplearning4j.rl4j.space.Encodable;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.rng.Random;
 import org.nd4j.linalg.dataset.api.DataSet;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.util.ArrayUtil;
 
 import java.util.ArrayList;
@@ -42,7 +44,7 @@ import java.util.ArrayList;
  *
  * DQN or Deep Q-Learning in the Discrete domain
  *
- * http://arxiv.org/abs/1312.5602
+ * https://arxiv.org/abs/1312.5602
  *
  */
 public abstract class QLearningDiscrete<O extends Encodable> extends QLearning<O, Integer, DiscreteSpace> {
@@ -70,15 +72,19 @@ public abstract class QLearningDiscrete<O extends Encodable> extends QLearning<O
 
     public QLearningDiscrete(MDP<O, Integer, DiscreteSpace> mdp, IDQN dqn, QLConfiguration conf,
                              int epsilonNbStep) {
+        this(mdp, dqn, conf, epsilonNbStep, Nd4j.getRandomFactory().getNewRandomInstance(conf.getSeed()));
+    }
+
+    public QLearningDiscrete(MDP<O, Integer, DiscreteSpace> mdp, IDQN dqn, QLConfiguration conf,
+                             int epsilonNbStep, Random random) {
         super(conf);
         this.configuration = conf;
         this.mdp = mdp;
         qNetwork = dqn;
         targetQNetwork = dqn.clone();
         policy = new DQNPolicy(getQNetwork());
-        egPolicy = new EpsGreedy(policy, mdp, conf.getUpdateStart(), epsilonNbStep, getRandom(), conf.getMinEpsilon(),
+        egPolicy = new EpsGreedy(policy, mdp, conf.getUpdateStart(), epsilonNbStep, random, conf.getMinEpsilon(),
                 this);
-        mdp.getActionSpace().setSeed(conf.getSeed());
 
         tdTargetAlgorithm = conf.isDoubleDQN()
                 ? new DoubleDQN(this, conf.getGamma(), conf.getErrorClamp())
@@ -110,9 +116,6 @@ public abstract class QLearningDiscrete<O extends Encodable> extends QLearning<O
         INDArray input = getInput(obs);
         boolean isHistoryProcessor = getHistoryProcessor() != null;
 
-
-        if (isHistoryProcessor)
-            getHistoryProcessor().record(input);
 
         int skipFrame = isHistoryProcessor ? getHistoryProcessor().getConf().getSkipFrame() : 1;
         int historyLength = isHistoryProcessor ? getHistoryProcessor().getConf().getHistoryLength() : 1;
@@ -153,12 +156,16 @@ public abstract class QLearningDiscrete<O extends Encodable> extends QLearning<O
 
         StepReply<O> stepReply = getMdp().step(action);
 
+        INDArray ninput = getInput(stepReply.getObservation());
+
+        if (isHistoryProcessor)
+            getHistoryProcessor().record(ninput);
+
         accuReward += stepReply.getReward() * configuration.getRewardFactor();
 
         //if it's not a skipped frame, you can do a step of training
         if (getStepCounter() % skipFrame == 0 || stepReply.isDone()) {
 
-            INDArray ninput = getInput(stepReply.getObservation());
             if (isHistoryProcessor)
                 getHistoryProcessor().add(ninput);
 

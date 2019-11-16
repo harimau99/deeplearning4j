@@ -37,21 +37,6 @@ public:
     }
 };
 
-TEST_F(DeclarableOpsTests11, test_mixed_biasadd_1) {
-    if (!Environment::getInstance()->isExperimentalBuild())
-        return;
-
-    auto x = NDArrayFactory::create<double>('c', {2, 3});
-    auto y = NDArrayFactory::create<float>('c', {3}, {1.f, 2.f, 3.f});
-    auto z = NDArrayFactory::create<float>('c', {2, 3});
-    auto exp = NDArrayFactory::create<float>('c', {2, 3}, {1.f, 2.f, 3.f, 1.f, 2.f, 3.f});
-
-    nd4j::ops::biasadd op;
-    auto status = op.execute({&x, &y}, {&z}, {}, {}, {true});
-    ASSERT_EQ(Status::OK(), status);
-
-    ASSERT_EQ(exp, z);
-}
 
 TEST_F(DeclarableOpsTests11, test_listdiff_1) {
     auto x = NDArrayFactory::create<int>('c', {4}, {0, 1, 2, 3});
@@ -931,7 +916,6 @@ TEST_F(DeclarableOpsTests11, SquaredSubtractTest_Test1) {
     auto result = op.execute({&x, &y}, {}, {});
     ASSERT_EQ(Status::OK(), result->status());
     ASSERT_TRUE(exp.equalsTo(result->at(0)));
-    result->at(0)->printBuffer("Output");
 
     delete result;
 }
@@ -943,7 +927,6 @@ TEST_F(DeclarableOpsTests11, SquaredSubtractTest_Test2) {
     nd4j::ops::squaredsubtract op;
     auto result = op.execute({&x, &y}, {}, {});
     ASSERT_EQ(Status::OK(), result->status());
-    result->at(0)->printBuffer("Output");
     ASSERT_TRUE(exp.equalsTo(result->at(0)));
     delete result;
 }
@@ -956,7 +939,6 @@ TEST_F(DeclarableOpsTests11, SquaredSubtractTest_Test3) {
     nd4j::ops::squaredsubtract_bp op;
     auto result = op.execute({&x, &y, &eps}, {}, {});
     ASSERT_EQ(Status::OK(), result->status());
-    result->at(0)->printBuffer("Output");
     ASSERT_TRUE(exp.equalsTo(result->at(0)));
     delete result;
 }
@@ -1387,7 +1369,6 @@ TEST_F(DeclarableOpsTests11, BFloat16_Test_1) {
     ASSERT_EQ(ND4J_STATUS_OK, results->status());
 
     auto res = results->at(0);
-    res->printIndexedBuffer("BFloat16 sum:");
     ASSERT_TRUE(res->equalsTo(exp));
 
     delete results;
@@ -1409,7 +1390,6 @@ TEST_F(DeclarableOpsTests11, BFloat16_Test_2) {
     ASSERT_EQ(ND4J_STATUS_OK, results->status());
 
     auto res = results->at(0);
-    res->printIndexedBuffer("BFloat16 sum:");
     ASSERT_TRUE(res->equalsTo(exp));
 
     delete results;
@@ -1431,7 +1411,6 @@ TEST_F(DeclarableOpsTests11, BFloat16_Test_3) {
     ASSERT_EQ(ND4J_STATUS_OK, results->status());
 
     auto res = results->at(0);
-    res->printIndexedBuffer("BFloat16 sum:");
     ASSERT_TRUE(res->equalsTo(exp));
 
     delete results;
@@ -1884,7 +1863,6 @@ TEST_F(DeclarableOpsTests11, BFloat16_Test_4) {
     ASSERT_EQ(ND4J_STATUS_OK, results->status());
 
     auto res = results->at(0);
-    res->printIndexedBuffer("BFloat16 sum:");
     ASSERT_TRUE(res->equalsTo(exp));
 
     delete results;
@@ -1906,7 +1884,6 @@ TEST_F(DeclarableOpsTests11, BFloat16_Test_5) {
     ASSERT_EQ(ND4J_STATUS_OK, results->status());
 
     auto res = results->at(0);
-    res->printIndexedBuffer("BFloat16 subtract:");
     ASSERT_TRUE(res->equalsTo(exp));
 
     delete results;
@@ -1928,7 +1905,6 @@ TEST_F(DeclarableOpsTests11, BFloat16_Test_6) {
     ASSERT_EQ(ND4J_STATUS_OK, results->status());
 
     auto res = results->at(0);
-    res->printIndexedBuffer("BFloat16 subtract2:");
     ASSERT_TRUE(res->equalsTo(exp));
 
     delete results;
@@ -2204,7 +2180,6 @@ TEST_F(DeclarableOpsTests11, SafeDivideMixed_Test1) {
     NDArray numOfNonZero(sumDiff.getShapeInfo(), nd4j::DataType::INT64, false);
     numOfNonZero.assign(1);
     sumDiff.applyPairwiseTransform(pairwise::SafeDivide, &numOfNonZero, &sumDiff, nullptr);
-    sumDiff.printIndexedBuffer("Output as Is");
 }
 
 /////////////////////////////////////////////////////////////////
@@ -2408,7 +2383,6 @@ TEST_F(DeclarableOpsTests11, Multiply_BP_Test1) {
     ASSERT_EQ(ND4J_STATUS_OK, results->status());
 
     auto *dLdo = results->at(0);
-    dLdo->printBuffer("Output for multiply_bp op");
     ASSERT_TRUE(dLdpExp.isSameShape(dLdo));
     ASSERT_TRUE(dLdpExp.equalsTo(dLdo));
 

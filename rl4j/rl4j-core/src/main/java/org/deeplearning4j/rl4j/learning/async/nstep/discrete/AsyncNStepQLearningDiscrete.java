@@ -27,6 +27,7 @@ import org.deeplearning4j.rl4j.policy.DQNPolicy;
 import org.deeplearning4j.rl4j.policy.IPolicy;
 import org.deeplearning4j.rl4j.space.DiscreteSpace;
 import org.deeplearning4j.rl4j.space.Encodable;
+import org.nd4j.linalg.factory.Nd4j;
 
 /**
  * @author rubenfiszel (ruben.fiszel@epfl.ch) on 8/5/16.
@@ -43,11 +44,9 @@ public abstract class AsyncNStepQLearningDiscrete<O extends Encodable>
 
 
     public AsyncNStepQLearningDiscrete(MDP<O, Integer, DiscreteSpace> mdp, IDQN dqn, AsyncNStepQLConfiguration conf) {
-        super(conf);
         this.mdp = mdp;
         this.configuration = conf;
         this.asyncGlobal = new AsyncGlobal<>(dqn, conf);
-        mdp.getActionSpace().setSeed(conf.getSeed());
     }
 
     @Override
@@ -70,7 +69,7 @@ public abstract class AsyncNStepQLearningDiscrete<O extends Encodable>
     @EqualsAndHashCode(callSuper = false)
     public static class AsyncNStepQLConfiguration implements AsyncConfiguration {
 
-        int seed;
+        Integer seed;
         int maxEpochStep;
         int maxStep;
         int numThread;
