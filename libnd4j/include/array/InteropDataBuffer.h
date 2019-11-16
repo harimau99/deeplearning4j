@@ -45,14 +45,20 @@ namespace nd4j {
         std::shared_ptr<DataBuffer> dataBuffer();
 #endif
 
-        void* primary();
-        void* special();
+        void* primary() const;
+        void* special() const;
 
-        uint64_t offset();
+        uint64_t offset() const ;
         void setOffset(uint64_t offset);
 
         void setPrimary(void* ptr, size_t length);
         void setSpecial(void* ptr, size_t length);
+
+        static void registerSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList);
+        static void prepareSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables = false);
+
+        static void registerPrimaryUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList);
+        static void preparePrimaryUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables = false);
     };
 }
 

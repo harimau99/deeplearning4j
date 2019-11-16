@@ -175,6 +175,74 @@ public class Nd4jCuda extends org.nd4j.nativeblas.Nd4jCudaHelper {
     }
 }
 
+@Name("std::vector<const nd4j::NDArray*>") public static class ConstNDArrayVector extends Pointer {
+    static { Loader.load(); }
+    /** Pointer cast constructor. Invokes {@link Pointer#Pointer(Pointer)}. */
+    public ConstNDArrayVector(Pointer p) { super(p); }
+    public ConstNDArrayVector(NDArray value) { this(1); put(0, value); }
+    public ConstNDArrayVector(NDArray ... array) { this(array.length); put(array); }
+    public ConstNDArrayVector()       { allocate();  }
+    public ConstNDArrayVector(long n) { allocate(n); }
+    private native void allocate();
+    private native void allocate(@Cast("size_t") long n);
+    public native @Name("operator=") @ByRef ConstNDArrayVector put(@ByRef ConstNDArrayVector x);
+
+    public boolean empty() { return size() == 0; }
+    public native long size();
+    public void clear() { resize(0); }
+    public native void resize(@Cast("size_t") long n);
+
+    @Index(function = "at") public native @Const NDArray get(@Cast("size_t") long i);
+    public native ConstNDArrayVector put(@Cast("size_t") long i, NDArray value);
+
+    public native @ByVal Iterator insert(@ByVal Iterator pos, @Const NDArray value);
+    public native @ByVal Iterator erase(@ByVal Iterator pos);
+    public native @ByVal Iterator begin();
+    public native @ByVal Iterator end();
+    @NoOffset @Name("iterator") public static class Iterator extends Pointer {
+        public Iterator(Pointer p) { super(p); }
+        public Iterator() { }
+
+        public native @Name("operator++") @ByRef Iterator increment();
+        public native @Name("operator==") boolean equals(@ByRef Iterator it);
+        public native @Name("operator*") @Const NDArray get();
+    }
+
+    public NDArray[] get() {
+        NDArray[] array = new NDArray[size() < Integer.MAX_VALUE ? (int)size() : Integer.MAX_VALUE];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = get(i);
+        }
+        return array;
+    }
+    @Override public String toString() {
+        return java.util.Arrays.toString(get());
+    }
+
+    public NDArray pop_back() {
+        long size = size();
+        NDArray value = get(size - 1);
+        resize(size - 1);
+        return value;
+    }
+    public ConstNDArrayVector push_back(NDArray value) {
+        long size = size();
+        resize(size + 1);
+        return put(size, value);
+    }
+    public ConstNDArrayVector put(NDArray value) {
+        if (size() != 1) { resize(1); }
+        return put(0, value);
+    }
+    public ConstNDArrayVector put(NDArray ... array) {
+        if (size() != array.length) { resize(array.length); }
+        for (int i = 0; i < array.length; i++) {
+            put(i, array[i]);
+        }
+        return this;
+    }
+}
+
 @NoOffset @Name("std::pair<int,int>") public static class IntIntPair extends Pointer {
     static { Loader.load(); }
     /** Pointer cast constructor. Invokes {@link Pointer#Pointer(Pointer)}. */
@@ -3471,6 +3539,7 @@ public native @Cast("bool") boolean isOptimalRequirementsMet();
 // #include <array/DataBuffer.h>
 // #include <execution/AffinityManager.h>
 // #include <memory>
+// #include <array/InteropDataBuffer.h>
 
 
     @Namespace("nd4j") public static native @ByVal @Name("operator -") NDArray subtract(float arg0, @Const @ByRef NDArray arg1);
@@ -3700,10 +3769,13 @@ public native @Cast("bool") boolean isOptimalRequirementsMet();
          * @param writeList
          * @param readList
          */
-         // TODO: it would be nice to have NDArray::registerSpecialUse signature that accepts something else beyond initializer_list
+        public static native void registerSpecialUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList);
+        public static native void prepareSpecialUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList, @Cast("bool") boolean synchronizeWritables/*=false*/);
+        public static native void prepareSpecialUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList);
 
-        // TODO: it would be nice to have NDArray::registerSpecialUse signature that accepts something else beyond initializer_list
-
+        public static native void registerPrimaryUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList);
+        public static native void preparePrimaryUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList, @Cast("bool") boolean synchronizeWritables/*=false*/);
+        public static native void preparePrimaryUse(@Const @ByRef ConstNDArrayVector writeList, @Const @ByRef ConstNDArrayVector readList);
 
         /**
          * This method returns buffer pointer offset by given number of elements, wrt own data type

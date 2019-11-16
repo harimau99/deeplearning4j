@@ -19,6 +19,7 @@
 //
 
 #include <array/InteropDataBuffer.h>
+#include <execution/AffinityManager.h>
 
 namespace nd4j {
     InteropDataBuffer::InteropDataBuffer(InteropDataBuffer &dataBuffer, Nd4jLong offset) {
@@ -47,11 +48,11 @@ namespace nd4j {
         return _dataBuffer;
     }
 
-    void* InteropDataBuffer::primary() {
+    void* InteropDataBuffer::primary() const {
         return _dataBuffer->primary();
     }
 
-    void* InteropDataBuffer::special() {
+    void* InteropDataBuffer::special() const {
         return _dataBuffer->special();
     }
 
@@ -63,11 +64,63 @@ namespace nd4j {
         _dataBuffer->setSpecialBuffer(ptr, length);
     }
 
-    uint64_t InteropDataBuffer::offset() {
+    uint64_t InteropDataBuffer::offset() const {
         return _offset;
     }
 
     void InteropDataBuffer::setOffset(uint64_t offset) {
         _offset = offset;
+    }
+
+
+    void InteropDataBuffer::registerSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList) {
+        for (const auto &v:writeList) {
+            if (v == nullptr)
+                continue;
+
+            v->getDataBuffer()->writeSpecial();
+        }
+    }
+
+    void InteropDataBuffer::prepareSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables) {
+        auto currentDeviceId = nd4j::AffinityManager::currentDeviceId();
+        for (const auto &v:readList) {
+            if (v == nullptr)
+                continue;
+
+            if (v->getDataBuffer()->deviceId() != currentDeviceId)
+                v->getDataBuffer()->migrate();
+
+            v->getDataBuffer()->syncToSpecial();
+            v->getDataBuffer()->readSpecial();
+        }
+
+        // we don't tick write list, only ensure the same device affinity
+        for (const auto &v:writeList) {
+            if (v == nullptr)
+                continue;
+
+            if (v->getDataBuffer()->deviceId() != currentDeviceId)
+                v->getDataBuffer()->migrate();
+        }
+    }
+
+    void InteropDataBuffer::registerPrimaryUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList) {
+        for (const auto &v:writeList) {
+            if (v == nullptr)
+                continue;
+
+            v->getDataBuffer()->writePrimary();
+        }
+    }
+
+    void InteropDataBuffer::preparePrimaryUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables) {
+        for (const auto &v:readList) {
+            if (v == nullptr)
+                continue;
+
+            v->getDataBuffer()->syncToPrimary(LaunchContext::defaultContext());
+            v->getDataBuffer()->readPrimary();
+        }
     }
 }

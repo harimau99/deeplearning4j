@@ -23,7 +23,7 @@
 
 namespace nd4j {
     namespace ops {
-        CONFIGURABLE_OP_IMPL(print_variable, 1, 1, true, 0, 0) {
+        CUSTOM_OP_IMPL(print_variable, 1, 1, true, 0, 0) {
             // TODO: make this op compatible with ArrayList etc
             auto input = INPUT_VARIABLE(0);
             auto output = OUTPUT_VARIABLE(0);
@@ -55,9 +55,6 @@ namespace nd4j {
                 }
             }
 
-            if (!block.isInplace())
-                output->assign(input);
-
             return Status::OK();
         }
 
@@ -66,6 +63,10 @@ namespace nd4j {
                     ->setAllowedInputTypes(0, nd4j::DataType::ANY)
                     ->setAllowedInputTypes(1, {ALL_STRINGS})
                     ->setAllowedOutputTypes(0, nd4j::DataType::ANY);
+        }
+
+        DECLARE_SHAPE_FN(print_variable) {
+            return SHAPELIST(ConstantShapeHelper::getInstance()->scalarShapeInfo(DataType::INT32));
         }
     }
 }

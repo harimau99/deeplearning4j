@@ -43,6 +43,7 @@ class ND4J_EXPORT DataBuffer {
         memory::Workspace* _workspace = nullptr;
         bool _isOwnerPrimary;
         bool _isOwnerSpecial;
+        std::atomic<int> _deviceId;
 
     #ifdef __CUDABLAS__
         mutable std::atomic<Nd4jLong> _counter;
@@ -108,6 +109,7 @@ class ND4J_EXPORT DataBuffer {
 
         void expand(const uint64_t size);
 
+        int deviceId() const;
         void migrate();
 
         template <typename T> FORCEINLINE T* primaryAsT();

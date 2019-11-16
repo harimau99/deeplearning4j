@@ -89,8 +89,6 @@ public class CudaOpContext extends BaseOpContext implements OpContext {
     @Override
     public void setInputArray(int index, @NonNull INDArray array) {
         val ctx = AtomicAllocator.getInstance().getFlowController().prepareAction(null, array);
-
-        //nativeOps.setGraphContextInputArray(context, index, array.isEmpty() ? null : array.data().addressPointer(), array.shapeInfoDataBuffer().addressPointer(), array.isEmpty() ? null : AtomicAllocator.getInstance().getPointer(array, ctx), AtomicAllocator.getInstance().getPointer(array.shapeInfoDataBuffer()));
         nativeOps.setGraphContextInputBuffer(context, index, array.isEmpty() ? null : ((BaseCudaDataBuffer) array.data()).getOpaqueDataBuffer(), array.shapeInfoDataBuffer().addressPointer(), AtomicAllocator.getInstance().getPointer(array.shapeInfoDataBuffer()));
 
         super.setInputArray(index, array);
@@ -99,8 +97,6 @@ public class CudaOpContext extends BaseOpContext implements OpContext {
     @Override
     public void setOutputArray(int index, @NonNull INDArray array) {
         val ctx = AtomicAllocator.getInstance().getFlowController().prepareAction(array, null);
-
-        //nativeOps.setGraphContextOutputArray(context, index, array.isEmpty() ? null : array.data().addressPointer(), array.shapeInfoDataBuffer().addressPointer(), array.isEmpty() ? null : AtomicAllocator.getInstance().getPointer(array, ctx), AtomicAllocator.getInstance().getPointer(array.shapeInfoDataBuffer()));
         nativeOps.setGraphContextOutputBuffer(context, index, array.isEmpty() ? null : ((BaseCudaDataBuffer) array.data()).getOpaqueDataBuffer(), array.shapeInfoDataBuffer().addressPointer(), AtomicAllocator.getInstance().getPointer(array.shapeInfoDataBuffer()));
 
         super.setOutputArray(index, array);
@@ -108,25 +104,6 @@ public class CudaOpContext extends BaseOpContext implements OpContext {
 
     @Override
     public Pointer contextPointer() {
-        for (val v:fastpath_in.values()) {
-            if (v.isEmpty() || v.isS())
-                continue;
-
-            //AtomicAllocator.getInstance().getAllocationPoint(v).tickHostRead();
-            //AtomicAllocator.getInstance().getAllocationPoint(v).tickDeviceRead();
-
-            //if (context.isInplace())
-                //AtomicAllocator.getInstance().getAllocationPoint(v).tickDeviceWrite();
-        }
-
-        for (val v:fastpath_out.values()) {
-            if (v.isEmpty() || v.isS())
-                continue;
-
-            //AtomicAllocator.getInstance().getAllocationPoint(v).tickHostRead();
-            //AtomicAllocator.getInstance().getAllocationPoint(v).tickDeviceRead();
-        }
-
         return context;
     }
 

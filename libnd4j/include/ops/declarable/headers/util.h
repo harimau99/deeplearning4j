@@ -26,7 +26,7 @@
 namespace nd4j {
     namespace ops {
     #if NOT_EXCLUDED(OP_print_variable)
-        DECLARE_CONFIGURABLE_OP(print_variable, 1, 1, true, 0, 0);
+        DECLARE_CUSTOM_OP(print_variable, 1, 1, true, 0, 0);
     #endif
     }
 }

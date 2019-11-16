@@ -189,6 +189,7 @@ public class Nd4jCpuPresets implements InfoMapper, BuildEnabled {
                .put(new Info("std::pair<int,int>").pointerTypes("IntIntPair").define())
                .put(new Info("std::vector<std::vector<int> >").pointerTypes("IntVectorVector").define())
                .put(new Info("std::vector<std::vector<Nd4jLong> >").pointerTypes("LongVectorVector").define())
+               .put(new Info("std::vector<const nd4j::NDArray*>").pointerTypes("ConstNDArrayVector").define())
                .put(new Info("std::vector<nd4j::NDArray*>").pointerTypes("NDArrayVector").define())
                .put(new Info("nd4j::graph::ResultWrapper").base("org.nd4j.nativeblas.ResultWrapperAbstraction").define())
                .put(new Info("bool").cast().valueTypes("boolean").pointerTypes("BooleanPointer", "boolean[]"))

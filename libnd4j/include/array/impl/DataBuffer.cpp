@@ -22,6 +22,7 @@
 #include <array/DataBuffer.h>
 #include <helpers/logger.h>
 #include <array/DataTypeUtils.h>
+#include <execution/AffinityManager.h>
 
 namespace nd4j {
     ///// IMLEMENTATION OF COMMON METHODS /////
@@ -38,6 +39,7 @@ namespace nd4j {
         _workspace = nullptr;
         _isOwnerPrimary = false;
         _isOwnerSpecial = false;
+        _deviceId = nd4j::AffinityManager::currentDeviceId();
 
         setCountersToZero();
     }
@@ -54,6 +56,8 @@ namespace nd4j {
 
         _primaryBuffer = nullptr;
         _specialBuffer = nullptr;
+
+        _deviceId.store(other._deviceId.load());
 
         setCountersToZero();
 
@@ -77,6 +81,7 @@ namespace nd4j {
         _workspace      = workspace;
         _isOwnerPrimary = isOwnerPrimary;
         _isOwnerSpecial = isOwnerSpecial;
+        _deviceId = nd4j::AffinityManager::currentDeviceId();
 
         setCountersToZero();
 
@@ -108,6 +113,8 @@ namespace nd4j {
         _dataType       = dataType;
         _workspace      = workspace;
 
+        _deviceId = nd4j::AffinityManager::currentDeviceId();
+
         setCountersToZero();
 
         allocateBuffers();
@@ -124,6 +131,8 @@ namespace nd4j {
 
         _primaryBuffer = nullptr;
         _specialBuffer = nullptr;
+
+        _deviceId = nd4j::AffinityManager::currentDeviceId();
 
         setCountersToZero();
 
@@ -144,6 +153,7 @@ namespace nd4j {
         _workspace      = other._workspace;
         _isOwnerPrimary = other._isOwnerPrimary;
         _isOwnerSpecial = other._isOwnerSpecial;
+        _deviceId.store(other._deviceId);
 
         copyCounters(other);
 
@@ -276,5 +286,9 @@ namespace nd4j {
 
     void DataBuffer::setDataType(DataType dataType) {
         _dataType = dataType;
+    }
+
+    int DataBuffer::deviceId() const {
+        return _deviceId.load();
     }
 }
