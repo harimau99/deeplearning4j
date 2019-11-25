@@ -36,7 +36,7 @@ namespace nd4j {
             if (_primaryBuffer != nullptr) {
                 // there's non-zero chance that primary buffer doesn't exist yet
                 ALLOCATE(newBuffer, _workspace, size, int8_t);
-                memcpy(newBuffer, _primaryBuffer, _lenInBytes);
+                std::memcpy(newBuffer, _primaryBuffer, _lenInBytes);
 
                 auto ipb = reinterpret_cast<int8_t *>(_primaryBuffer);
                 RELEASE(ipb, _workspace);
@@ -199,6 +199,20 @@ void DataBuffer::setToZeroBuffers(const bool both) {
     if(both) {
         memset(primary(), 0, getLenInBytes());
         readPrimary();
+    }
+}
+
+/////////////////////////
+void DataBuffer::memcpy(const DataBuffer &dst, const DataBuffer &src) {
+    if (src._lenInBytes < dst._lenInBytes)
+        throw std::runtime_error("DataBuffer::memcpy: Source data buffer is smaller than destination");
+
+    if (src.isSpecialActual()) {
+        cudaMemcpy(dst._specialBuffer, src._specialBuffer, dst.getLenInBytes(), cudaMemcpyDeviceToDevice);
+        dst.readSpecial();
+    } else if (src.isPrimaryActual()) {
+        std::memcpy(dst._primaryBuffer, src._primaryBuffer, dst._lenInBytes);
+        dst.readPrimary();
     }
 }
 
