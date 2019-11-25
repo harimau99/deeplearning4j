@@ -55,7 +55,6 @@
 #define ND4J_EXPORT
 #endif
 #include <dll.h>
-#include <helpers/BlasHelper.h>
 
 /*
 int tad_threshold = 1;
@@ -171,6 +170,7 @@ ND4J_EXPORT void   execBroadcastBool(
         OpaqueDataBuffer *dbX, Nd4jLong *hXShapeInfo, Nd4jLong *dXShapeInfo,
         OpaqueDataBuffer *dbY, Nd4jLong *hYShapeInfo, Nd4jLong *dYShapeInfo,
         OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
+        void *extraParams,
         OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape);
 
 /**
@@ -1295,7 +1295,11 @@ static const char* getNpyArrayNameFromMap(void *map, int index){
     for(; it != end; ++it, ++cnt){
         if (cnt == index){
             // FIXME: @fariz, this is a leak!
+#ifdef _MSC_VER
+            return const_cast<const char *>(_strdup(it->first.c_str()));
+#else
             return const_cast<const char *>(strdup(it->first.c_str()));
+#endif
         }
     }
     throw std::runtime_error("No array at index.");
@@ -1593,6 +1597,7 @@ typedef nd4j::graph::RandomGenerator OpaqueRandomGenerator;
 
 ND4J_EXPORT OpaqueContext* createGraphContext(int nodeId);
 ND4J_EXPORT OpaqueRandomGenerator* getGraphContextRandomGenerator(OpaqueContext* ptr);
+ND4J_EXPORT void ctxAllowHelpers(OpaqueContext* ptr, bool reallyAllow);
 ND4J_EXPORT void markGraphContextInplace(OpaqueContext* ptr, bool reallyInplace);
 ND4J_EXPORT void setGraphContextCudaContext(OpaqueContext* ptr, void *stream, void *reductionPointer, void *allocationPointer);
 ND4J_EXPORT void setGraphContextInputArray(OpaqueContext* ptr, int index, void *buffer, void *shapeInfo, void *specialBuffer, void *specialShapeInfo);

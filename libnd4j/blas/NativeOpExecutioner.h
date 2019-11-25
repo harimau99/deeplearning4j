@@ -24,10 +24,10 @@
 
 #include <types/types.h>
 #include <dll.h>
-#include <loops/aggregates.h>
 #include <ops/specials.h>
 #include <ops/specials_sparse.h>
 #include <execution/LaunchContext.h>
+#include <array/ArrayOptions.h>
 
 /**
  * Native op executioner:
@@ -284,6 +284,7 @@ static void execScalarInt(nd4j::LaunchContext  *lc,
                             void *dY, Nd4jLong *dYShapeInfo,
                             void *hZ, Nd4jLong *hZShapeInfo,
                             void *dZ, Nd4jLong *dZShapeInfo,
+                            void *extraParams,
                             int *dimension, int dimensionLength,
                             Nd4jLong *tadOnlyShapeInfo, Nd4jLong *tadOffsets,
                             Nd4jLong *tadOnlyShapeInfoZ,Nd4jLong *tadOffsetsZ);
@@ -296,6 +297,7 @@ static void execScalarInt(nd4j::LaunchContext  *lc,
                                      void *dY, Nd4jLong *dYShapeInfo,
                                      void *result, Nd4jLong *resultShapeInfo,
                                      void *dZ, Nd4jLong *dZShapeInfo,
+                                     void *extraParams,
                                      int *dimension, int dimensionLength,
                                      Nd4jLong *tadOnlyShapeInfo, Nd4jLong *tadOffsets,
                                      Nd4jLong *tadOnlyShapeInfoZ, Nd4jLong *tadOffsetsZ);
@@ -624,10 +626,6 @@ static void execTransformBool(nd4j::LaunchContext  *lc,
                               void *vrealArguments,
                               int numRealArguments) {
 
-        auto arguments = reinterpret_cast<X **>(varguments);
-        auto realArguments = reinterpret_cast<X *>(vrealArguments);
-
-        functions::aggregate::AggregatedFunction<X>::exec(opNum, arguments, numArguments, shapeArguments, numShapeArguments, indexArguments, numIndexArguments, intArrays, numIntArrays, realArguments, numRealArguments);
     }
     
 

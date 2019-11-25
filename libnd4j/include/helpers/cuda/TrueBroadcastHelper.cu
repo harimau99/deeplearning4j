@@ -24,6 +24,7 @@
 #include <execution/LaunchContext.h>
 #include <specials.h>
 #include <logger.h>
+#include <ops/ops.h>
 // #include <cuda_runtime.h>
 // #include <cuda.h>
 
@@ -85,7 +86,7 @@ __global__ static void trueBroadcastCuda(const void* vx, const Nd4jLong* xShapeI
         const auto zOffset = shape::getOffset(zShapeInfo, zCoords);
         const auto yOffset = shape::getOffset(yShapeInfo, yCoords);
 
-        z[zOffset] = OpType::op(x[xOffset], y[yOffset]);
+        z[zOffset] = OpType::op(x[xOffset], y[yOffset], nullptr);
     }
 }
 
@@ -171,7 +172,7 @@ __global__ static void trueBroadcastBoolCuda(const void* vx, const Nd4jLong* xSh
         const auto zOffset = shape::getOffset(zShapeInfo, zCoords);
         const auto yOffset = shape::getOffset(yShapeInfo, yCoords);
 
-        z[zOffset] = OpType::op(x[xOffset], y[yOffset]);
+        z[zOffset] = OpType::op(x[xOffset], y[yOffset], nullptr);
     }
 }
 

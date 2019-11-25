@@ -42,7 +42,7 @@ if ("${BUILD_MKLDNN}")
     set(HAVE_MKLDNN 1)
     add_definitions("-DHAVE_MKLDNN")
     include_directories(${mkldnn_SOURCE_DIR}/include ${mkldnn_SOURCE_DIR}/external/mklml_lnx_2019.0.3.20190220/include ${mkldnn_SOURCE_DIR})
-    set(MKLDNN mkldnn)
+    set(MKLDNN dnnl)
 endif()
 
 # Download and unpack flatbuffers at configure time
@@ -109,15 +109,17 @@ endif()
 # -fsanitize=address
 # -fsanitize=leak
 if (APPLE)
-    set(CMAKE_CXX_FLAGS  " -O0 -g -fPIC -std=c++11 -D__APPLE_OS__=true")
+    set(CMAKE_CXX_FLAGS  " -O0 -g -fPIC -std=c++11 -D__APPLE_OS__=true -DAPPLE_BUILD=true")
 elseif(WIN32)
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 		set(CMAKE_CXX_FLAGS  " -g -fPIC -std=c++11 -Wa,-mbig-obj")
 	endif()
 else()
+    set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DLINUX_BUILD=true")
+
     if ("${_RELEASE}" OR CMAKE_BUILD_TYPE STREQUAL "Release")
         message("Release build for tests")
-        set(CMAKE_CXX_FLAGS  "-O3 -fPIC -std=c++11")
+        set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O3 -fPIC -std=c++11 -D_RELEASE=true")
         if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc64*")
             set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -mcpu=native")
         else()

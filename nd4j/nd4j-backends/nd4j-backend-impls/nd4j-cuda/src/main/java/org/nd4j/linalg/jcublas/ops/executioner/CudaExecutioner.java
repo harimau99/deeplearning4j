@@ -192,6 +192,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
                         x, (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.x().shapeInfoDataBuffer()), (LongPointer) xShapeInfo,
                         y, (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.y().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.y().shapeInfoDataBuffer(),context),
                         z, (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.z().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.z().shapeInfoDataBuffer(), context),
+                        null,
                         ((BaseCudaDataBuffer) op.dimensions()).getOpaqueDataBuffer(), (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.dimensions().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.dimensions(), context));
                 break;
             default:
@@ -754,6 +755,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
                         x, (LongPointer) hostXShapeInfo, (LongPointer) xShapeInfo,
                         y, (LongPointer) hostYShapeInfo, (LongPointer) yShapeInfo,
                         z, (LongPointer) hostZShapeInfo, (LongPointer) zShapeInfo,
+                        null,
                         ((BaseCudaDataBuffer) op.dimensions().data()).getOpaqueDataBuffer(), (LongPointer) op.dimensions().shapeInfoDataBuffer().addressPointer(), null);
                 break;
             default:
@@ -1924,7 +1926,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
 
         cnt = 0;
         for (val t: op.tArgs())
-            tArgs.put(cnt++, (float) t);
+            tArgs.put(cnt++, t);
 
         OpaqueShapeList ptrptr = nativeOps.calculateOutputShapes2(null, hash, inputBuffers, inputShapes, op.inputArguments().size(), tArgs, op.tArgs().length, iArgs, op.iArgs().length, bArgs, op.numBArguments());
 

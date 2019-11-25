@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015-2018 Skymind, Inc.
+ * Copyright (c) 2019 Konduit K.K.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -20,6 +21,7 @@
 #include <hhSequence.h>
 #include <svd.h>
 #include <hhColPivQR.h>
+#include <array>
 #include <jacobiSVD.h>
 #include <ops/declarable/helpers/reverse.h>
 #include <ops/declarable/helpers/activations.h>
@@ -46,14 +48,14 @@ public:
 #ifndef __CUDABLAS__
 
 TEST_F(HelpersTests1, test_binary_search_1) {
-    std::array<int, 10> array({0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    std::array<int, 10> array = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     auto idx = nd4j::ops::helpers::binarySearch(array.data(), 2, 10);
     ASSERT_EQ(2, idx);
 }
 
 TEST_F(HelpersTests1, test_binary_search_2) {
-    std::array<int, 10> array({0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    std::array<int, 10> array = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     auto idx = nd4j::ops::helpers::binarySearch(array.data(), 18, 10);
     ASSERT_EQ(-1, idx);
@@ -1797,6 +1799,7 @@ TEST_F(HelpersTests1, tensordot_test_6) {
 
     // [iC, bS*oH*oW, kW*kH] x [iC, kH*kW, mC] = [iC, bS*oH*oW, mC]
     MmulHelper::tensorDot(&a, &b, &cR, {{1,0,4,5,2,3}, {iC,bS*oH*oW,kW*kH}},  {{2,0,1,3},{iC,kH*kW,mC}},  {{3,0,1,2,4},{iC, bS*oH*oW, mC}});
+    // c.printBuffer();
 
     ASSERT_TRUE(c.isSameShape(expected));
     ASSERT_TRUE(c.equalsTo(expected));

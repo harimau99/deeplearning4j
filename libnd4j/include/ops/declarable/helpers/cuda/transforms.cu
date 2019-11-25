@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015-2018 Skymind, Inc.
+ * Copyright (c) 2019 Konduit K.K.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -644,7 +645,6 @@ void clipByNormBP(nd4j::LaunchContext* context, const NDArray& input, const NDAr
 
             // apply Fisher-Yates shuffle
             if(isInplace) {
-                PRAGMA_OMP_PARALLEL_FOR_IF((firstDim-1) > Environment::getInstance()->elementwiseThreshold())
                 for(int i = firstDim - 1; i > 0; --i) {
                     int r = rng.relativeInt(i) % i;
 
@@ -658,7 +658,7 @@ void clipByNormBP(nd4j::LaunchContext* context, const NDArray& input, const NDAr
                 std::vector<int> indices(firstDim);
                 std::iota(indices.begin(), indices.end(), 0);
                 bool isZeroShuffled = false;
-                PRAGMA_OMP_PARALLEL_FOR_IF((firstDim-1) > Environment::getInstance()->tadThreshold())
+
                 for(int i = firstDim - 1; i > 0; --i) {
                     int r = rng.relativeInt(i) % i;
                     subArrsListOut->at(i)->assign(subArrsListIn->at(indices[r]));

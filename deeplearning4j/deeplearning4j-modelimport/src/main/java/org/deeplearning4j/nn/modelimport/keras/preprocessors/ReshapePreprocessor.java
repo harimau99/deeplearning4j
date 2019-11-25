@@ -1,5 +1,6 @@
-/*******************************************************************************
+/* ******************************************************************************
  * Copyright (c) 2015-2018 Skymind, Inc.
+ * Copyright (c) 2019 Konduit K.K.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -19,17 +20,14 @@ package org.deeplearning4j.nn.modelimport.keras.preprocessors;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
-
 import lombok.val;
-import org.apache.commons.lang3.ArrayUtils;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.inputs.InvalidInputTypeException;
 import org.deeplearning4j.nn.conf.preprocessor.BaseInputPreProcessor;
 import org.deeplearning4j.nn.workspace.ArrayType;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.shape.Shape;
-import org.nd4j.linalg.util.ArrayUtil;
 import org.nd4j.shade.jackson.annotation.JsonIgnoreProperties;
 import org.nd4j.shade.jackson.annotation.JsonProperty;
 
@@ -38,66 +36,75 @@ import java.util.Arrays;
 import static org.nd4j.linalg.util.ArrayUtil.prodLong;
 
 /**
- * Generic reshape preprocessor
+ * Generic reshape preprocessor.
+ * Note that shapes may be specified with or without the leading minibatch dimension, as long as hasMiniBatchDimension
+ * is set appropriately in {@link #ReshapePreprocessor(long[], long[], boolean)}<br>
+ * For example, to reshape from [minibatch, 32] to [minibatch, 2, 4, 4] you could use:<br>
+ * hasMiniBatchDimension = true with inputShape = [-1, 32] and targetShape = [-1, 2, 4, 4] OR<br>
+ * hasMiniBatchDimension = false with inputShape = [32] and targetShape = [2, 4, 4]
  *
  * @author Max Pumperla
  */
 @Data
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
-@JsonIgnoreProperties({"hasMiniBatchDimension", "miniBatchSize"})
+@JsonIgnoreProperties({"miniBatchSize", "staticTargetShape"})
 public class ReshapePreprocessor extends BaseInputPreProcessor {
 
-    private long[] inputShape;
-    private long[] targetShape;
-    private boolean hasMiniBatchDimension = false;
-    private int miniBatchSize;
+    private final long[] inputShape;
+    private final long[] targetShape;
+    private boolean hasMiniBatchDimension;
 
-    public ReshapePreprocessor(@JsonProperty("inputShape") long[] inputShape, @JsonProperty("targetShape") long[] targetShape) {
-        this.inputShape = inputShape;
-        this.targetShape = targetShape;
+    /**
+     * @deprecated Use constructor {@link #ReshapePreprocessor(long[], long[], boolean)}
+     */
+    @Deprecated
+    public ReshapePreprocessor(long[] inputShape, long[] targetShape) {
+        this(inputShape, targetShape, false);
     }
 
-    private static int prod(int[] array) {
-        int prod = 1;
-        for (int i : array) {
-            prod *= i;
+    /**
+     * @param inputShape            Input shape, with or without leading minibatch dimension, depending on value of hasMiniBatchDimension
+     * @param targetShape           Target shape, with or without leading minibatch dimension, depending on value of hasMiniBatchDimension
+     * @param hasMiniBatchDimension If true: shapes should be of the form [minibatch, x, y, ...]; if false: shapes should be of form [x, y, ...]
+     */
+    public ReshapePreprocessor(@JsonProperty("inputShape") long[] inputShape, @JsonProperty("targetShape") long[] targetShape,
+                               @JsonProperty("hasMiniBatchDimension") boolean hasMiniBatchDimension) {
+        this.inputShape = inputShape;
+        this.targetShape = targetShape;
+        this.hasMiniBatchDimension = hasMiniBatchDimension;
+    }
+
+    private long[] getShape(long[] originalShape, long minibatch) {
+        long[] newShape = (hasMiniBatchDimension ? originalShape : prependMiniBatchSize(originalShape, minibatch));
+        if (newShape[0] != minibatch) {
+            newShape = newShape.clone();
+            newShape[0] = minibatch;
         }
-        return prod;
+        return newShape;
     }
 
     private static long[] prependMiniBatchSize(long[] shape, long miniBatchSize) {
         int shapeLength = shape.length;
         val miniBatchShape = new long[shapeLength + 1];
-        for (int i = 0; i < miniBatchShape.length; i++) {
-            if (i == 0)
-                miniBatchShape[i] = miniBatchSize;
-            else
-                miniBatchShape[i] = shape[i - 1];
+        miniBatchShape[0] = miniBatchSize;
+        for (int i = 1; i < miniBatchShape.length; i++) {
+            miniBatchShape[i] = shape[i - 1];
         }
         return miniBatchShape;
     }
 
     @Override
     public INDArray preProcess(INDArray input, int miniBatchSize, LayerWorkspaceMgr workspaceMgr) {
-        // the target shape read from a keras config does not have mini-batch size
-        // included. We prepend it here dynamically.
-        if (!this.hasMiniBatchDimension) {
-            targetShape = prependMiniBatchSize(targetShape, miniBatchSize);
-            inputShape = prependMiniBatchSize(inputShape, miniBatchSize);
-            this.hasMiniBatchDimension = true;
-            this.miniBatchSize = miniBatchSize;
-        }
-        if (this.miniBatchSize != miniBatchSize) {
-            targetShape = prependMiniBatchSize(ArrayUtils.subarray(targetShape, 1, targetShape.length), miniBatchSize);
-            inputShape = prependMiniBatchSize(ArrayUtils.subarray(inputShape, 1, targetShape.length), miniBatchSize);
-            this.miniBatchSize = miniBatchSize;
-        }
+        // the target shape read from a keras config does not have mini-batch size included. We prepend it here dynamically.
+        long[] targetShape = getShape(this.targetShape, miniBatchSize);
+        long[] inputShape = getShape(this.inputShape, miniBatchSize);
+
         if (prodLong(input.shape()) == prodLong((targetShape))) {
-            if(input.ordering() != 'c' || !Shape.hasDefaultStridesForShape(input)){
+            if (input.ordering() != 'c' || !Shape.hasDefaultStridesForShape(input)) {
                 input = workspaceMgr.dup(ArrayType.ACTIVATIONS, input, 'c');
             }
-            return workspaceMgr.leverageTo(ArrayType.ACTIVATIONS, input.reshape(this.targetShape));
+            return workspaceMgr.leverageTo(ArrayType.ACTIVATIONS, input.reshape(targetShape));
         } else {
             throw new IllegalStateException("Input shape " + Arrays.toString(input.shape())
                     + " and output shape" + Arrays.toString(inputShape) + " do not match");
@@ -106,15 +113,18 @@ public class ReshapePreprocessor extends BaseInputPreProcessor {
 
     @Override
     public INDArray backprop(INDArray output, int miniBatchSize, LayerWorkspaceMgr workspaceMgr) {
+        long[] targetShape = getShape(this.targetShape, miniBatchSize);
+        long[] inputShape = getShape(this.inputShape, miniBatchSize);
+
         if (!Arrays.equals(targetShape, output.shape())) {
             throw new IllegalStateException("Unexpected output shape" + Arrays.toString(output.shape())
                     + " (expected to be " + Arrays.toString(targetShape) + ")");
         }
         if (prodLong(output.shape()) == prodLong((targetShape))) {
-            if(output.ordering() != 'c' || !Shape.hasDefaultStridesForShape(output)){
+            if (output.ordering() != 'c' || !Shape.hasDefaultStridesForShape(output)) {
                 output = workspaceMgr.dup(ArrayType.ACTIVATIONS, output, 'c');
             }
-            return workspaceMgr.leverageTo(ArrayType.ACTIVATION_GRAD, output.reshape(this.inputShape));
+            return workspaceMgr.leverageTo(ArrayType.ACTIVATION_GRAD, output.reshape(inputShape));
         } else {
             throw new IllegalStateException("Output shape" + Arrays.toString(output.shape())
                     + " and input shape" + Arrays.toString(targetShape) + " do not match");
@@ -123,21 +133,26 @@ public class ReshapePreprocessor extends BaseInputPreProcessor {
 
     @Override
     public InputType getOutputType(InputType inputType) throws InvalidInputTypeException {
-        val shape = hasMiniBatchDimension ? targetShape : prependMiniBatchSize(targetShape, 0);
+        long[] shape = getShape(this.targetShape, 0);
+        InputType ret;
         switch (shape.length) {
             case 2:
-                return InputType.feedForward(shape[1]);
+                ret = InputType.feedForward(shape[1]);
+                break;
             case 3:
-                return InputType.recurrent(shape[2], shape[1]);
+                ret = InputType.recurrent(shape[2], shape[1]);
+                break;
             case 4:
-                if (inputShape.length == 1 || inputType.getType() == InputType.Type.RNN){
-                    return InputType.convolutional(shape[1], shape[2], shape[3]);
-                }else {
-                    return InputType.convolutional(shape[2], shape[3], shape[1]);
+                if (inputShape.length == 1 || inputType.getType() == InputType.Type.RNN) {
+                    ret = InputType.convolutional(shape[1], shape[2], shape[3]);
+                } else {
+                    ret = InputType.convolutional(shape[2], shape[3], shape[1]);
                 }
+                break;
             default:
                 throw new UnsupportedOperationException(
                         "Cannot infer input type for reshape array " + Arrays.toString(shape));
         }
+        return ret;
     }
 }

@@ -118,6 +118,7 @@ public interface NativeOps {
                                            OpaqueDataBuffer result,
                                            @Cast("Nd4jLong *") LongPointer resultShapeInfo,
                                            @Cast("Nd4jLong *") LongPointer dresultShapeInfo,
+                                           Pointer extraParams,
                                            OpaqueDataBuffer hDimension,
                                            @Cast("Nd4jLong *") LongPointer hDimensionShape,
                                            @Cast("Nd4jLong *") LongPointer dDimensionShape);
@@ -1156,6 +1157,7 @@ public interface NativeOps {
     void setGraphContextTArguments(OpaqueContext ptr, DoublePointer arguments, int numberOfArguments);
     void setGraphContextIArguments(OpaqueContext ptr, LongPointer arguments, int numberOfArguments);
     void setGraphContextBArguments(OpaqueContext ptr, BooleanPointer arguments, int numberOfArguments);
+    void ctxAllowHelpers(OpaqueContext ptr, boolean reallyAllow);
     void deleteGraphContext(OpaqueContext ptr);
 
     OpaqueRandomGenerator createRandomGenerator(long rootSeed, long nodeSeed);

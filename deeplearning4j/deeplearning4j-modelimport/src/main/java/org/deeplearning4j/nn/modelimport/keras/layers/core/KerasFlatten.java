@@ -22,7 +22,6 @@ import org.deeplearning4j.nn.conf.InputPreProcessor;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.inputs.InputType.InputTypeConvolutional;
 import org.deeplearning4j.nn.conf.preprocessor.CnnToFeedForwardPreProcessor;
-import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.modelimport.keras.KerasLayer;
 import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurationException;
 import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
@@ -112,7 +111,7 @@ public class KerasFlatten extends KerasLayer {
             // to RNN type. Otherwise we add this trivial preprocessor (since there's nothing to flatten).
             InputType.InputTypeFeedForward it = (InputType.InputTypeFeedForward) inputType[0];
             val inputShape = new long[]{it.getSize()};
-            preprocessor = new ReshapePreprocessor(inputShape, inputShape);
+            preprocessor = new ReshapePreprocessor(inputShape, inputShape, false);
         }
         return preprocessor;
     }

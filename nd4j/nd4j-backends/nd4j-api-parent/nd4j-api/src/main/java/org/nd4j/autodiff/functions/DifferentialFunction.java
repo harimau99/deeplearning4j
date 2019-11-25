@@ -255,6 +255,11 @@ public abstract class DifferentialFunction {
 
         } else {
             try {
+                //Edge case: we store float fields as doubles, rather than introduce an extra property
+                if(target.getType() == float.class && value instanceof Double){
+                    value = ((Double) value).floatValue();
+                }
+
                 target.set(this,value);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Error setting property for function " + getClass().getName(), e);
@@ -509,7 +514,7 @@ public abstract class DifferentialFunction {
      * @return the arguments for a given function
      */
     public  SDVariable[] args() {
-        return sameDiff.getInputVariablesForOp(this);
+        return sameDiff == null ? null : sameDiff.getInputVariablesForOp(this);
     }
 
     /**

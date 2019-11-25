@@ -19,6 +19,7 @@ package org.nd4j.linalg.api.ops.impl.reduce.custom;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.base.Preconditions;
+import org.nd4j.imports.NoOpNameFoundException;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.DynamicCustomOp;
@@ -39,6 +40,7 @@ public class LogSumExp extends DynamicCustomOp {
         super(sameDiff, i_v);
         if(dimensions != null) {
             addIArgument(dimensions);
+            this.dimensions = dimensions;
         }
         addTArgument(keepDims ? 1.0 : 0.0);
         this.keepDims = keepDims;
@@ -87,10 +89,5 @@ public class LogSumExp extends DynamicCustomOp {
     @Override
     public String onnxName() {
         return "ReduceLogSumExp";
-    }
-
-    @Override
-    public String tensorflowName() {
-        return "reduce_logsumexp";
     }
 }

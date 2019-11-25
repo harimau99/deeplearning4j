@@ -30,11 +30,9 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.junit.Test;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.io.ClassPathResource;
 import org.nd4j.resources.Resources;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -257,6 +255,20 @@ public class Keras2ModelConfigurationTest extends BaseDL4JTest {
         }
     }
 
+    @Test
+    public void ReshapeEmbeddingConcatTest() throws Exception{
+        //TODO AB 2019/11/23 - known issue - see https://github.com/eclipse/deeplearning4j/issues/8373 and https://github.com/eclipse/deeplearning4j/issues/8441
+
+        try(InputStream is = Resources.asStream("/modelimport/keras/configs/keras2/reshape_embedding_concat.json")) {
+            ComputationGraphConfiguration config =
+                    new KerasModel().modelBuilder().modelJsonInputStream(is)
+                            .enforceTrainingConfig(false).buildModel().getComputationGraphConfiguration();
+            ComputationGraph model = new ComputationGraph(config);
+            model.init();
+//            System.out.println(model.summary());
+            model.outputSingle(Nd4j.zeros(1, 1), Nd4j.zeros(1, 1), Nd4j.zeros(1, 1));
+        }
+    }
 
     private void runSequentialConfigTest(String path) throws Exception {
         try(InputStream is = Resources.asStream(path)) {

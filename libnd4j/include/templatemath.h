@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015-2018 Skymind, Inc.
+ * Copyright (c) 2019 Konduit K.K.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -27,7 +28,7 @@
 #include <dll.h>
 #include <pointercast.h>
 #include <platformmath.h>
-
+#include <DataTypeUtils.h>
 
 #define BFLOAT16_MAX_VALUE 32737.
 #define HALF_MAX_VALUE 65504.
@@ -42,7 +43,6 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
 
 namespace nd4j {
 #ifdef __CUDACC__
@@ -73,6 +73,9 @@ namespace nd4j {
 
 		template<typename T, typename Z>
 		math_def inline Z nd4j_copysign(T val1, T val2);
+
+		template <typename T, typename Z>
+        math_def inline Z nd4j_softplus(T val);
 
 //#ifndef __CUDACC__
         template<typename X, typename Y, typename Z>
@@ -159,7 +162,7 @@ namespace nd4j {
 		math_def inline Z nd4j_sinh(T val);
 
 		template<typename T, typename Z>
-        math_def inline Z softplus(T val) {
+        math_def inline Z nd4j_softplus(T val) {
 			return nd4j_log<T, Z>((Z) 1.0f + nd4j_exp<T, Z>(val));
 		}
 
@@ -883,7 +886,7 @@ namespace nd4j {
             if (a > 171.624) {
                 // Correct answer too large to display. Force +infinity.
                 return Z(DOUBLE_MAX_VALUE);
-                //DataTypeUtils::infOrMax<Z>();
+//                return DataTypeUtils::infOrMax<Z>();
             }
 
             return nd4j::math::nd4j_exp<Z,Z>(nd4j::math::nd4j_lgamma<X,Z>(a));
@@ -1649,5 +1652,47 @@ inline __device__ bfloat16 nd4j_atomicDiv<bfloat16>(bfloat16* address, bfloat16 
 	}
 
 }
+
+#ifdef _OPENMP
+
+#ifndef MAX_FLOAT
+#define MAX_FLOAT 1e37
+#endif
+
+#pragma omp declare reduction(maxTF : float,double,float16,bfloat16 :              \
+                omp_out = nd4j::math::nd4j_max(omp_in, omp_out) )\
+                initializer (omp_priv=-MAX_FLOAT)
+
+#pragma omp declare reduction(minTF : float,double,float16,bfloat16 :              \
+                omp_out = nd4j::math::nd4j_min(omp_in, omp_out) )\
+                initializer (omp_priv=MAX_FLOAT)
+
+#pragma omp declare reduction(maxT : float,double,float16,bfloat16,int,Nd4jLong,Nd4jULong,int8_t,uint8_t,bool,int16_t,uint16_t,uint32_t :              \
+                omp_out = nd4j::math::nd4j_max(omp_in, omp_out) )\
+                initializer (omp_priv=0)
+
+#pragma omp declare reduction(minT : float,double,float16,bfloat16,int,Nd4jLong,Nd4jULong,int8_t,uint8_t,bool,int16_t,uint16_t,uint32_t :              \
+                omp_out = nd4j::math::nd4j_min(omp_in, omp_out) )\
+                initializer (omp_priv=0)
+
+#pragma omp declare reduction(amaxT : float,double,float16,bfloat16,int,Nd4jLong,Nd4jULong,int8_t,uint8_t,bool,int16_t,uint16_t,uint32_t :              \
+                omp_out = nd4j::math::nd4j_max(nd4j::math::nd4j_abs(omp_in), nd4j::math::nd4j_abs(omp_out)) )
+
+#pragma omp declare reduction(aminT : float,double,float16,bfloat16,int,Nd4jLong,Nd4jULong,int8_t,uint8_t,bool,int16_t,uint16_t,uint32_t :              \
+                omp_out = nd4j::math::nd4j_min(nd4j::math::nd4j_abs(omp_in), nd4j::math::nd4j_abs(omp_out)) )
+
+#pragma omp declare reduction(asumT : float,double,float16,bfloat16,int,Nd4jLong,Nd4jULong,int8_t,uint8_t,bool,int16_t,uint16_t,uint32_t :              \
+                omp_out = nd4j::math::nd4j_abs(omp_in) + nd4j::math::nd4j_abs(omp_out))\
+                initializer (omp_priv=0)
+
+#pragma omp declare reduction(sumT : float,double,float16,bfloat16,int,Nd4jLong,Nd4jULong,int8_t,uint8_t,bool,int16_t,uint16_t,uint32_t :              \
+                omp_out = omp_in + omp_out)\
+                initializer (omp_priv=0)
+
+#pragma omp declare reduction(prodT : float,double,float16,bfloat16,int,Nd4jLong,Nd4jULong,int8_t,uint8_t,bool,int16_t,uint16_t,uint32_t :              \
+                omp_out = omp_in * omp_out)\
+                initializer (omp_priv=1)
+
+#endif
 
 #endif /* TEMPLATEMATH_H_ */

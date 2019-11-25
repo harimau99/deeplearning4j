@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  * Max out activation:
- * http://arxiv.org/pdf/1302.4389.pdf
+ * https://arxiv.org/pdf/1302.4389.pdf
  *
  * @author Adam Gibson
  */
@@ -80,7 +80,8 @@ public class MaxOut extends BaseTransformOp {
 
     @Override
     public String tensorflowName() {
-        return "Maxout";
+        throw new NoOpNameFoundException("Tensorflow name not found for " + opName());
+        //return "Maxout";
     }
 
     @Override
