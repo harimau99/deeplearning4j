@@ -657,7 +657,7 @@ void execIndexReduce(Nd4jPointer *extraPointers,
                 dbX->primary(), hXShapeInfo, dbX->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hXShapeInfo).specialAsT<Nd4jLong>(),
                 extraParams,
                 dbZ->primary(), hZShapeInfo, dbZ->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hZShapeInfo).specialAsT<Nd4jLong>(),
-                dimension, dimensionLength,
+                (int *) dbDimension->special(), dimensionLength,
                 tadPack.specialShapeInfo(), tadPack.specialOffsets());
 
         InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
