@@ -231,10 +231,11 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
     public void lazyAllocateHostPointer() {
         // java side might be unaware of native-side buffer allocation
-        if (this.indexer == null || this.pointer == null)
+        if (this.indexer == null || this.pointer == null || this.pointer.address() == 0) {
             initHostPointerAndIndexer();
-        else if (allocationPoint.getHostPointer() != null && allocationPoint.getHostPointer().address() != this.pointer.address())
+        } else if (allocationPoint.getHostPointer() != null && allocationPoint.getHostPointer().address() != this.pointer.address()) {
             initHostPointerAndIndexer();
+        }
     }
 
     protected void initHostPointerAndIndexer() {

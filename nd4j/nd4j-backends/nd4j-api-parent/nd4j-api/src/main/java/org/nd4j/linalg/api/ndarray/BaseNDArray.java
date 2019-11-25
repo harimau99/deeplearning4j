@@ -4351,16 +4351,16 @@ public abstract class BaseNDArray implements INDArray, Iterable {
         //epsilon equals
         if (isScalar() && n.isScalar()) {
             if (data.dataType() == DataType.FLOAT) {
-                double val = getDouble(0);
-                double val2 = n.getDouble(0);
+                val val = getDouble(0);
+                val val2 =  n.getDouble(0);
 
                 if (Double.isNaN(val) != Double.isNaN(val2))
                     return false;
 
                 return Math.abs(val - val2) < eps;
             } else {
-                double val = getDouble(0);
-                double val2 = n.getDouble(0);
+                val val = getDouble(0);
+                val val2 = n.getDouble(0);
 
                 if (Double.isNaN(val) != Double.isNaN(val2))
                     return false;
@@ -4369,10 +4369,9 @@ public abstract class BaseNDArray implements INDArray, Iterable {
             }
 
         } else if (isVector() && n.isVector()) {
-
-            EqualsWithEps op = new EqualsWithEps(this, n, eps);
-            Nd4j.getExecutioner().exec(op);
-            double diff = op.z().getDouble(0);
+            val op = new EqualsWithEps(this, n, eps);
+            Nd4j.exec(op);
+            val diff = op.z().getDouble(0);
 
             return diff < 0.5;
         }

@@ -83,8 +83,8 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
     protected AllocationMode allocationMode;
 
-    protected transient Indexer indexer;
-    protected transient Pointer pointer;
+    protected transient Indexer indexer = null;
+    protected transient Pointer pointer = null;
 
     protected transient boolean attached = false;
     protected transient MemoryWorkspace parentWorkspace;
