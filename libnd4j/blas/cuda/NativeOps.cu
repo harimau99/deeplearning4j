@@ -2241,7 +2241,7 @@ void execReduce3All(Nd4jPointer *extraPointers,
 									Nd4jLong *xTadShapeInfo, Nd4jLong *xOffsets,
 									Nd4jLong *yTadShapeInfo, Nd4jLong *yOffsets) {
     try {
-        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY});
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbY, dbDimension});
         InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
 
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
@@ -2249,11 +2249,11 @@ void execReduce3All(Nd4jPointer *extraPointers,
 
         LaunchContext lc(extraPointers[1], extraPointers[4], extraPointers[5], extraPointers[3]);
         NativeOpExecutioner::execReduce3All(&lc, opNum,
-                dbX->primary(), hXShapeInfo, dbX->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hZShapeInfo).specialAsT<Nd4jLong>(),
+                dbX->primary(), hXShapeInfo, dbX->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hXShapeInfo).specialAsT<Nd4jLong>(),
                 extraParamsVals,
                 dbY->primary(), hYShapeInfo, dbY->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hYShapeInfo).specialAsT<Nd4jLong>(),
                 dbZ->primary(), hZShapeInfo, dbZ->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hZShapeInfo).specialAsT<Nd4jLong>(),
-                dimension, dimensionLength,
+                reinterpret_cast<int *>(dbDimension->special()), dimensionLength,
                 xTadShapeInfo, xOffsets, yTadShapeInfo, yOffsets);
 
         InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbY});
