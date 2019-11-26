@@ -38,6 +38,7 @@ import org.nd4j.linalg.api.memory.Deallocatable;
 import org.nd4j.linalg.api.memory.Deallocator;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.enums.MemoryKind;
+import org.nd4j.linalg.api.memory.enums.MirroringPolicy;
 import org.nd4j.linalg.api.memory.pointers.PagedPointer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.performance.PerformanceTracker;
@@ -356,19 +357,30 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         // allocating empty databuffer
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, type.toInt(), false);
 
-        val devicePtr = workspace.alloc(length * elementSize, MemoryKind.DEVICE, type, initialize);
+        if (workspace.getWorkspaceConfiguration().getPolicyMirroring() == MirroringPolicy.FULL) {
+            val devicePtr = workspace.alloc(length * elementSize, MemoryKind.DEVICE, type, initialize);
 
-        // allocate from workspace, and pass it  to native DataBuffer
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
+            // allocate from workspace, and pass it  to native DataBuffer
+            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
+
+            if (initialize) {
+                val ctx = AtomicAllocator.getInstance().getDeviceContext();
+                NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
+                ctx.getSpecialStream().synchronize();
+            }
+        }  else {
+            // we can register this pointer as device, because it's pinned memory
+            val devicePtr = workspace.alloc(length * elementSize, MemoryKind.HOST, type, initialize);
+            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
+
+            if (initialize) {
+                val ctx = AtomicAllocator.getInstance().getDeviceContext();
+                NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
+                ctx.getSpecialStream().synchronize();
+            }
+        }
 
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, elementSize * length);
-
-
-        if (initialize) {
-            val ctx = AtomicAllocator.getInstance().getDeviceContext();
-            NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
-            ctx.getSpecialStream().synchronize();
-        }
 
         // registering for deallocation
         Nd4j.getDeallocatorService().pickObject(this);
