@@ -48,6 +48,7 @@ import org.nd4j.linalg.memory.MemcpyDirection;
 import org.nd4j.linalg.memory.abstracts.DummyWorkspace;
 import org.nd4j.linalg.util.ArrayUtil;
 import org.nd4j.linalg.util.LongUtils;
+import org.nd4j.nativeblas.NativeOps;
 import org.nd4j.nativeblas.NativeOpsHolder;
 import org.nd4j.nativeblas.OpaqueDataBuffer;
 import org.slf4j.Logger;
@@ -322,6 +323,12 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, type.toInt(), false);
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length * type.width());
 
+        // TODO: make
+        if (initialize) {
+            val devicePtr = allocationPoint.getDevicePointer();
+            NativeOpsHolder.getInstance().getDeviceNativeOps().memsetSync(devicePtr, 0, length * elementSize, 0, null);
+        }
+
         // let deallocator pick up this object
         Nd4j.getDeallocatorService().pickObject(this);
     }
@@ -346,8 +353,16 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         // allocating empty databuffer
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, type.toInt(), false);
 
+        val devicePtr = workspace.alloc(length * elementSize, MemoryKind.DEVICE, type, initialize);
+
         // allocate from workspace, and pass it  to native DataBuffer
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, workspace.alloc(length * elementSize, MemoryKind.DEVICE, type, initialize), this.length);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
+
+
+        if (initialize) {
+            NativeOpsHolder.getInstance().getDeviceNativeOps().memsetSync(devicePtr, 0, length * elementSize, 0, null);
+        }
+
 
         // registering for deallocation
         Nd4j.getDeallocatorService().pickObject(this);
