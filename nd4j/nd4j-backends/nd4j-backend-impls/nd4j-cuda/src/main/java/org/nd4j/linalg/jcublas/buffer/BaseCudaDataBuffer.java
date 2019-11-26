@@ -323,10 +323,11 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, type.toInt(), false);
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length * type.width());
 
-        // TODO: make
         if (initialize) {
+            val ctx = AtomicAllocator.getInstance().getDeviceContext();
             val devicePtr = allocationPoint.getDevicePointer();
-            NativeOpsHolder.getInstance().getDeviceNativeOps().memsetSync(devicePtr, 0, length * elementSize, 0, null);
+            NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
+            ctx.getSpecialStream().synchronize();
         }
 
         // let deallocator pick up this object
@@ -360,7 +361,9 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
 
         if (initialize) {
-            NativeOpsHolder.getInstance().getDeviceNativeOps().memsetSync(devicePtr, 0, length * elementSize, 0, null);
+            val ctx = AtomicAllocator.getInstance().getDeviceContext();
+            NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
+            ctx.getSpecialStream().synchronize();
         }
 
 
