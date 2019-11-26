@@ -1219,9 +1219,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
     @Override
     public boolean sameUnderlyingData(DataBuffer buffer) {
-        if (1 > 0)
-            throw new UnsupportedOperationException("Pew-pew");
-        return false;
+        return ptrDataBuffer.address() == ((BaseCudaDataBuffer) buffer).ptrDataBuffer.address();
     }
 
     /**

@@ -1608,7 +1608,7 @@ void execSummaryStatsTad(Nd4jPointer *extraPointers,
                                  bool biasCorrected,
 								 Nd4jLong *tadShapeInfo, Nd4jLong *tadOffsets) {
     try {
-        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX});
+        InteropDataBuffer::prepareSpecialUse({dbZ}, {dbX, dbDimension});
         InteropDataBuffer::preparePrimaryUse({}, {dbDimension});
 
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
@@ -1619,11 +1619,11 @@ void execSummaryStatsTad(Nd4jPointer *extraPointers,
                 dbX->primary(), hXShapeInfo, dbX->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hXShapeInfo).specialAsT<Nd4jLong>(),
                 extraParams,
                 dbZ->primary(), hZShapeInfo, dbZ->special(), ConstantShapeHelper::getInstance()->bufferForShapeInfo(hZShapeInfo).specialAsT<Nd4jLong>(),
-                dimension, dimensionLength,
+                reinterpret_cast<int *>(dbDimension->special()), dimensionLength,
                 tadShapeInfo, tadOffsets,
                 biasCorrected);
 
-        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX});
+        InteropDataBuffer::registerSpecialUse({dbZ}, {dbX, dbDimension});
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage(e.what());
