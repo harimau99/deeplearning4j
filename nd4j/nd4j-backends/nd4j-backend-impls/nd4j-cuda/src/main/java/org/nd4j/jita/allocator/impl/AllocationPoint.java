@@ -29,6 +29,7 @@ import org.nd4j.jita.allocator.time.providers.MillisecondsProvider;
 import org.nd4j.jita.allocator.time.providers.OperativeProvider;
 import org.nd4j.linalg.api.buffer.BaseDataBuffer;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.jcublas.context.CudaContext;
 import org.nd4j.nativeblas.NativeOps;
 import org.nd4j.nativeblas.NativeOpsHolder;
@@ -110,6 +111,7 @@ public class AllocationPoint {
     public AllocationPoint(@NonNull OpaqueDataBuffer opaqueDataBuffer, long bytes) {
         ptrDataBuffer = opaqueDataBuffer;
         this.bytes = bytes;
+        objectId = Nd4j.getDeallocatorService().nextValue();
     }
 
     public void setPointers(Pointer primary, Pointer special, long numberOfElements) {

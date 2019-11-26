@@ -112,6 +112,8 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, this.type.toInt(), false);
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, this.type.width() * length);
         this.allocationPoint.setPointers(pointer, specialPointer, length);
+
+        Nd4j.getDeallocatorService().pickObject(this);
     }
 
     /**
@@ -359,13 +361,14 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         // allocate from workspace, and pass it  to native DataBuffer
         NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
 
+        this.allocationPoint = new AllocationPoint(ptrDataBuffer, elementSize * length);
+
 
         if (initialize) {
             val ctx = AtomicAllocator.getInstance().getDeviceContext();
             NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
             ctx.getSpecialStream().synchronize();
         }
-
 
         // registering for deallocation
         Nd4j.getDeallocatorService().pickObject(this);
@@ -420,6 +423,8 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCudaDataBuffer) underlyingBuffer).ptrDataBuffer, offset * underlyingBuffer.getElementSize());
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length);
         val hostPointer = allocationPoint.getHostPointer();
+
+        Nd4j.getDeallocatorService().pickObject(this);
 
         switch (underlyingBuffer.dataType()) {
             case DOUBLE:
