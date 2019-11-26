@@ -446,6 +446,8 @@ public class Nd4jCuda extends org.nd4j.nativeblas.Nd4jCudaHelper {
 
         public native void setPrimaryBuffer(Pointer buffer, @Cast("size_t") long length);
         public native void setSpecialBuffer(Pointer buffer, @Cast("size_t") long length);
+
+        public static native void memcpy(@Const @ByRef DataBuffer dst, @Const @ByRef DataBuffer src);
 }
 ///// IMLEMENTATION OF INLINE METHODS /////
 

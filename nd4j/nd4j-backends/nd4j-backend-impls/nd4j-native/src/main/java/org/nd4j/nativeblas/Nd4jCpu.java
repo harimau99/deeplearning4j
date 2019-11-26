@@ -467,6 +467,8 @@ public class Nd4jCpu extends org.nd4j.nativeblas.Nd4jCpuHelper {
 
         public native void setPrimaryBuffer(Pointer buffer, @Cast("size_t") long length);
         public native void setSpecialBuffer(Pointer buffer, @Cast("size_t") long length);
+
+        public static native void memcpy(@Const @ByRef DataBuffer dst, @Const @ByRef DataBuffer src);
 }
 ///// IMLEMENTATION OF INLINE METHODS /////
 

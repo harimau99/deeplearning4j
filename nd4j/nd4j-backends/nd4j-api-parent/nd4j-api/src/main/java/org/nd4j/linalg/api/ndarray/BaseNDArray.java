@@ -997,14 +997,14 @@ public abstract class BaseNDArray implements INDArray, Iterable {
             }
         }
 
-        Pair<DataBuffer, DataBuffer> tadInfo =
-                Nd4j.getExecutioner().getTADManager().getTADOnlyShapeInfo(this, dimension);
+        Pair<DataBuffer, DataBuffer> tadInfo = Nd4j.getExecutioner().getTADManager().getTADOnlyShapeInfo(this, dimension);
         DataBuffer shapeInfo = tadInfo.getFirst();
-        val shape = Shape.shape(shapeInfo);
-        val stride = Shape.stride(shapeInfo).asLong();
+        val jShapeInfo = shapeInfo.asLong();
+        val shape = Shape.shape(jShapeInfo);
+        val stride = Shape.stride(jShapeInfo);
         long offset = offset() + tadInfo.getSecond().getLong(index);
-        val ews = shapeInfo.getLong(shapeInfo.getLong(0) * 2 + 2);
-        char tadOrder = (char) shapeInfo.getInt(shapeInfo.getLong(0) * 2 + 3);
+        val ews = shapeInfo.getLong(jShapeInfo[0] * 2 + 2);
+        char tadOrder = (char) shapeInfo.getInt(jShapeInfo[0] * 2 + 3);
         val toTad = Nd4j.create(data(), shape, stride, offset, ews, tadOrder);
         return toTad;
     }

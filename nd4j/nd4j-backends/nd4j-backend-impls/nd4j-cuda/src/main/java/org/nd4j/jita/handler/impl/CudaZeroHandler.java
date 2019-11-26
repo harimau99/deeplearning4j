@@ -586,7 +586,7 @@ public class CudaZeroHandler implements MemoryHandler {
 
         synchronizeThreadDevice(Thread.currentThread().getId(), dstPoint.getDeviceId(), dstPoint);
 
-        CudaPointer p = new CudaPointer(dstPoint.getHostPointer(), buffer.length(), (buffer.offset() * buffer.getElementSize()));
+        CudaPointer p = new CudaPointer(dstPoint.getHostPointer(), buffer.length(), 0);
 
         switch (buffer.dataType()) {
             case DOUBLE:

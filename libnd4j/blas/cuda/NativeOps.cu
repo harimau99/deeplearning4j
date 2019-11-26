@@ -1350,6 +1350,7 @@ nd4j::TadPack* tadOnlyShapeInfo(Nd4jLong *dXShapeInfo, int *dimension, int dimen
     try {
         auto pack = new TadPack();
         *pack = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(dXShapeInfo, dimension, dimensionLength);
+        shape::printShapeInfoLinear("ShapeInfo C++", pack->primaryShapeInfo());
         return pack;
     } catch (std::exception &e) {
         nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
