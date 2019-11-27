@@ -120,11 +120,11 @@ public class AllocationPoint {
     }
 
     public int getDeviceId() {
-        return deviceId;
+        return 0; //NativeOpsHolder.getInstance().getDeviceNativeOps().;
     }
 
     public void setDeviceId(int deviceId) {
-        this.deviceId = deviceId;
+        throw new UnsupportedOperationException("Boom!");
     }
 
     private AtomicBoolean enqueued = new AtomicBoolean(false);
