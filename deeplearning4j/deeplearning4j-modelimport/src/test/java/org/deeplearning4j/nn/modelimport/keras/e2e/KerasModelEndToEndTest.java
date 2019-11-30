@@ -624,13 +624,7 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
                 "causal_conv1d_k4_s2_d1_cl_model.h5",
                 "causal_conv1d_k4_s3_d1_cl_model.h5"
         };
-//        String modelPath = "modelimport/keras/examples/simple_sparse_xent/simple_sparse_xent_mlp_keras_2_model.h5";
-//        String inputsOutputPath = "modelimport/keras/examples/simple_sparse_xent/simple_sparse_xent_mlp_keras_2_inputs_and_outputs.h5";
-//        MultiLayerNetwork net = importEndModelTest(modelPath, inputsOutputPath, true, true, true, true);
-//        Layer outLayer = net.getOutputLayer();
-//        assertTrue(outLayer instanceof org.deeplearning4j.nn.layers.LossLayer);
-//        LossLayer llConf = (LossLayer) outLayer.getConfig();
-//        assertEquals(new LossSparseMCXENT(), llConf.getLossFn());
+
         for(String name : names ){
             System.out.println("Starting test: " + name);
             String modelPath = "modelimport/keras/examples/causal_conv1d/" + name;
@@ -646,8 +640,9 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
             MultiLayerNetwork net = importEndModelTest(modelPath, inputsOutputPath, true, true,
                     true, true, f, nwc2ncwExpected);
             Layer l = net.getLayer(0);
-//            Convolution1DLayer c1d = (Convolution1DLayer) l.getConfig();
-//            assertEquals(ConvolutionMode.Causal, c1d.getConvolutionMode());
+            Convolution1DLayer c1d = (Convolution1DLayer) l.getConfig();
+            assertEquals(ConvolutionMode.Causal, c1d.getConvolutionMode());
+
         }
     }
 
@@ -703,13 +698,6 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
                 "conv1d_k4_s3_d1_cl_same_model.h5",
                 "conv1d_k4_s3_d1_cl_valid_model.h5",
         };
-//        String modelPath = "modelimport/keras/examples/simple_sparse_xent/simple_sparse_xent_mlp_keras_2_model.h5";
-//        String inputsOutputPath = "modelimport/keras/examples/simple_sparse_xent/simple_sparse_xent_mlp_keras_2_inputs_and_outputs.h5";
-//        MultiLayerNetwork net = importEndModelTest(modelPath, inputsOutputPath, true, true, true, true);
-//        Layer outLayer = net.getOutputLayer();
-//        assertTrue(outLayer instanceof org.deeplearning4j.nn.layers.LossLayer);
-//        LossLayer llConf = (LossLayer) outLayer.getConfig();
-//        assertEquals(new LossSparseMCXENT(), llConf.getLossFn());
         int pass = 0;
         int exception = 0;
         for(String name : names ){
