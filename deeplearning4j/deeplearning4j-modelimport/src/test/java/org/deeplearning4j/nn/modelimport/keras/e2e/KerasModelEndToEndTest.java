@@ -24,6 +24,8 @@ import org.deeplearning4j.eval.ROCMultiClass;
 import org.deeplearning4j.gradientcheck.GradientCheckUtil;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.layers.IOutputLayer;
+import org.deeplearning4j.nn.conf.ConvolutionMode;
+import org.deeplearning4j.nn.conf.layers.Convolution1DLayer;
 import org.deeplearning4j.nn.conf.layers.FeedForwardLayer;
 import org.deeplearning4j.nn.conf.layers.LossLayer;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
@@ -47,6 +49,7 @@ import org.nd4j.linalg.activations.impl.*;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.function.Function;
 import org.nd4j.linalg.learning.config.NoOp;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.lossfunctions.impl.LossSparseMCXENT;
@@ -58,10 +61,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -598,6 +598,136 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
         model.summary();
     }
 
+    @Test
+    public void testCausalCon1D() throws Exception {
+        String[] names = new String[]{
+                "causal_conv1d_k2_s1_d1_cl_model.h5",
+                "causal_conv1d_k2_s1_d2_cl_model.h5",
+                "causal_conv1d_k2_s2_d1_cl_model.h5",
+                "causal_conv1d_k2_s3_d1_cl_model.h5",
+                "causal_conv1d_k3_s1_d1_cl_model.h5",
+                "causal_conv1d_k3_s1_d2_cl_model.h5",
+                "causal_conv1d_k3_s2_d1_cl_model.h5",
+                "causal_conv1d_k3_s3_d1_cl_model.h5",
+                "causal_conv1d_k4_s1_d1_cl_model.h5",
+                "causal_conv1d_k4_s1_d2_cl_model.h5",
+                "causal_conv1d_k4_s2_d1_cl_model.h5",
+                "causal_conv1d_k4_s3_d1_cl_model.h5"
+        };
+//        String modelPath = "modelimport/keras/examples/simple_sparse_xent/simple_sparse_xent_mlp_keras_2_model.h5";
+//        String inputsOutputPath = "modelimport/keras/examples/simple_sparse_xent/simple_sparse_xent_mlp_keras_2_inputs_and_outputs.h5";
+//        MultiLayerNetwork net = importEndModelTest(modelPath, inputsOutputPath, true, true, true, true);
+//        Layer outLayer = net.getOutputLayer();
+//        assertTrue(outLayer instanceof org.deeplearning4j.nn.layers.LossLayer);
+//        LossLayer llConf = (LossLayer) outLayer.getConfig();
+//        assertEquals(new LossSparseMCXENT(), llConf.getLossFn());
+        for(String name : names ){
+            System.out.println("Starting test: " + name);
+            String modelPath = "modelimport/keras/examples/causal_conv1d/" + name;
+            String inputsOutputPath = "modelimport/keras/examples/causal_conv1d/" + (name.substring(0,name.length()-"model.h5".length()) + "inputs_and_outputs.h5");
+            Function<INDArray,INDArray> f = new Function<INDArray, INDArray>() {
+                @Override
+                public INDArray apply(INDArray i) {
+                    //NWC to NCW
+                    return i.permute(0, 2, 1);
+                }
+            };
+            MultiLayerNetwork net = importEndModelTest(modelPath, inputsOutputPath, true, true,
+                    true, true, f);
+            Layer l = net.getLayer(0);
+//            Convolution1DLayer c1d = (Convolution1DLayer) l.getConfig();
+//            assertEquals(ConvolutionMode.Causal, c1d.getConvolutionMode());
+        }
+    }
+
+    @Test
+    public void testCon1D() throws Exception {
+        String[] names = new String[]{
+                "conv1d_k2_s1_d1_cf_same_model.h5",
+                "conv1d_k2_s1_d1_cf_valid_model.h5",
+                "conv1d_k2_s1_d1_cl_same_model.h5",
+                "conv1d_k2_s1_d1_cl_valid_model.h5",
+                "conv1d_k2_s1_d2_cf_same_model.h5",
+                "conv1d_k2_s1_d2_cf_valid_model.h5",
+                "conv1d_k2_s1_d2_cl_same_model.h5",
+                "conv1d_k2_s1_d2_cl_valid_model.h5",
+                "conv1d_k2_s2_d1_cf_same_model.h5",
+                "conv1d_k2_s2_d1_cf_valid_model.h5",
+                "conv1d_k2_s2_d1_cl_same_model.h5",
+                "conv1d_k2_s2_d1_cl_valid_model.h5",
+                "conv1d_k2_s3_d1_cf_same_model.h5",
+                "conv1d_k2_s3_d1_cf_valid_model.h5",
+                "conv1d_k2_s3_d1_cl_same_model.h5",
+                "conv1d_k2_s3_d1_cl_valid_model.h5",
+                "conv1d_k3_s1_d1_cf_same_model.h5",
+                "conv1d_k3_s1_d1_cf_valid_model.h5",
+                "conv1d_k3_s1_d1_cl_same_model.h5",
+                "conv1d_k3_s1_d1_cl_valid_model.h5",
+                "conv1d_k3_s1_d2_cf_same_model.h5",
+                "conv1d_k3_s1_d2_cf_valid_model.h5",
+                "conv1d_k3_s1_d2_cl_same_model.h5",
+                "conv1d_k3_s1_d2_cl_valid_model.h5",
+                "conv1d_k3_s2_d1_cf_same_model.h5",
+                "conv1d_k3_s2_d1_cf_valid_model.h5",
+                "conv1d_k3_s2_d1_cl_same_model.h5",
+                "conv1d_k3_s2_d1_cl_valid_model.h5",
+                "conv1d_k3_s3_d1_cf_same_model.h5",
+                "conv1d_k3_s3_d1_cf_valid_model.h5",
+                "conv1d_k3_s3_d1_cl_same_model.h5",
+                "conv1d_k3_s3_d1_cl_valid_model.h5",
+                "conv1d_k4_s1_d1_cf_same_model.h5",
+                "conv1d_k4_s1_d1_cf_valid_model.h5",
+                "conv1d_k4_s1_d1_cl_same_model.h5",
+                "conv1d_k4_s1_d1_cl_valid_model.h5",
+                "conv1d_k4_s1_d2_cf_same_model.h5",
+                "conv1d_k4_s1_d2_cf_valid_model.h5",
+                "conv1d_k4_s1_d2_cl_same_model.h5",
+                "conv1d_k4_s1_d2_cl_valid_model.h5",
+                "conv1d_k4_s2_d1_cf_same_model.h5",
+                "conv1d_k4_s2_d1_cf_valid_model.h5",
+                "conv1d_k4_s2_d1_cl_same_model.h5",
+                "conv1d_k4_s2_d1_cl_valid_model.h5",
+                "conv1d_k4_s3_d1_cf_same_model.h5",
+                "conv1d_k4_s3_d1_cf_valid_model.h5",
+                "conv1d_k4_s3_d1_cl_same_model.h5",
+                "conv1d_k4_s3_d1_cl_valid_model.h5",
+        };
+//        String modelPath = "modelimport/keras/examples/simple_sparse_xent/simple_sparse_xent_mlp_keras_2_model.h5";
+//        String inputsOutputPath = "modelimport/keras/examples/simple_sparse_xent/simple_sparse_xent_mlp_keras_2_inputs_and_outputs.h5";
+//        MultiLayerNetwork net = importEndModelTest(modelPath, inputsOutputPath, true, true, true, true);
+//        Layer outLayer = net.getOutputLayer();
+//        assertTrue(outLayer instanceof org.deeplearning4j.nn.layers.LossLayer);
+//        LossLayer llConf = (LossLayer) outLayer.getConfig();
+//        assertEquals(new LossSparseMCXENT(), llConf.getLossFn());
+        int pass = 0;
+        int exception = 0;
+        for(String name : names ){
+            System.out.println("Starting test: " + name);
+            String modelPath = "modelimport/keras/examples/conv1d/" + name;
+            String inputsOutputPath = "modelimport/keras/examples/conv1d/" + (name.substring(0,name.length()-"model.h5".length()) + "inputs_and_outputs.h5");
+            Function<INDArray,INDArray> f = name.contains("_cf_") ? null : new Function<INDArray, INDArray>() {
+                @Override
+                public INDArray apply(INDArray i) {
+                    //NWC to NCW
+                    return i.permute(0, 2, 1);
+                }
+            };
+            try {
+                MultiLayerNetwork net = importEndModelTest(modelPath, inputsOutputPath, true, true,
+                        true, true, f);
+                pass++;
+            } catch (Throwable t ){
+                t.printStackTrace();
+                exception++;
+            }
+//            Layer l = net.getLayer(0);
+//            Convolution1DLayer c1d = (Convolution1DLayer) l.getConfig();
+//            assertEquals(ConvolutionMode.Causal, c1d.getConvolutionMode());
+        }
+
+        System.out.println("PASS: " + pass + ", EXCEPTION: " + exception);
+    }
+
     private ComputationGraph importFunctionalModelH5Test(String modelPath) throws Exception {
         return importFunctionalModelH5Test(modelPath, null, false);
     }
@@ -640,6 +770,11 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
 
     public MultiLayerNetwork importEndModelTest(String modelPath, String inputsOutputsPath, boolean tfOrdering, boolean checkPredictions,
                                     boolean checkGradients, boolean enforceTrainingConfig) throws Exception {
+        return importEndModelTest(modelPath, inputsOutputsPath, tfOrdering, checkPredictions, checkGradients, enforceTrainingConfig, null);
+    }
+
+    public MultiLayerNetwork importEndModelTest(String modelPath, String inputsOutputsPath, boolean tfOrdering, boolean checkPredictions,
+                                                boolean checkGradients, boolean enforceTrainingConfig, Function<INDArray,INDArray> inputPreProc) throws Exception {
         MultiLayerNetwork model;
         try(InputStream is = Resources.asStream(modelPath)) {
             File modelFile = createTempFile(TEMP_MODEL_FILENAME, H5_EXTENSION);
@@ -658,6 +793,9 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
 
             if (checkPredictions) {
                 INDArray input = getInputs(outputsArchive, tfOrdering)[0];
+                if(inputPreProc != null)
+                    input = inputPreProc.apply(input);
+
                 Map<String, INDArray> activationsKeras = getActivations(outputsArchive, tfOrdering);
                 for (int i = 0; i < model.getLayers().length; i++) {
                     String layerName = model.getLayerNames().get(i);
@@ -666,7 +804,6 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
                         if (activationsDl4j.shape().length == 3)
                             activationsDl4j = activationsDl4j.permute(0, 2, 1);
                         compareINDArrays(layerName, activationsKeras.get(layerName), activationsDl4j, EPS);
-
                     }
                 }
 
@@ -760,20 +897,23 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
         return predictions;
     }
 
-    private static void compareINDArrays(String label, INDArray a, INDArray b, double eps) {
-        INDArray diff = a.sub(b.castTo(a.dataType()));
+    private static void compareINDArrays(String label, INDArray expected, INDArray actual, double eps) {
+        if(!expected.equalShapes(actual)){
+            throw new IllegalStateException("Shapes do not match: got " + Arrays.toString(expected.shape()) + " vs " + Arrays.toString(actual.shape()));
+        }
+        INDArray diff = expected.sub(actual.castTo(expected.dataType()));
         double min = diff.minNumber().doubleValue();
         double max = diff.maxNumber().doubleValue();
-        log.info(label + ": " + a.equalsWithEps(b, eps) + ", " + min + ", " + max);
+        log.info(label + ": " + expected.equalsWithEps(actual, eps) + ", " + min + ", " + max);
         double threshold = 1e-7;
-        double aAbsMax = Math.max(Math.abs(a.minNumber().doubleValue()), Math.abs(a.maxNumber().doubleValue()));
-        double bAbsMax = Math.max(Math.abs(b.minNumber().doubleValue()), Math.abs(b.maxNumber().doubleValue()));
+        double aAbsMax = Math.max(Math.abs(expected.minNumber().doubleValue()), Math.abs(expected.maxNumber().doubleValue()));
+        double bAbsMax = Math.max(Math.abs(actual.minNumber().doubleValue()), Math.abs(actual.maxNumber().doubleValue()));
 
         // skip too small absolute inputs
         if (Math.abs(aAbsMax) > threshold && Math.abs(bAbsMax) > threshold) {
-            assertTrue(a.equalsWithEps(b.castTo(a.dataType()), eps));
+            boolean eq = expected.equalsWithEps(actual.castTo(expected.dataType()), eps);
+            assertTrue("Output differs: " + label, eq);
         }
-
     }
 
     private static void compareMulticlassAUC(String label, INDArray target, INDArray a, INDArray b, int nbClasses,
