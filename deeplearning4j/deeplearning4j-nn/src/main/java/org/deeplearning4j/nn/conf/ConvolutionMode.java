@@ -69,6 +69,11 @@ package org.deeplearning4j.nn.conf;
  * <br>
  * <br>
  * <br>
+ * <b>Causal</b>: Causal padding mode can only be used for 1D convolutional neural networks.
+ * The motivation behind
+ * <br>
+ * <br>
+ * <br>
  * For further information on output sizes for convolutional neural networks, see the "Spatial arrangement" section at
  * <a href="http://cs231n.github.io/convolutional-networks/">http://cs231n.github.io/convolutional-networks/</a>
  *
@@ -76,6 +81,6 @@ package org.deeplearning4j.nn.conf;
  */
 public enum ConvolutionMode {
 
-    Strict, Truncate, Same
+    Strict, Truncate, Same, Causal
 
 }
