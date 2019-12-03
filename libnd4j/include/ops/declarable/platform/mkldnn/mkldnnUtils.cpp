@@ -154,9 +154,15 @@ namespace nd4j {
             dnnl::memory::dims conv_bias_tz = { oC };
             dnnl::memory::dims conv_dst_tz = { bS, oC, oH, oW };
 
+            const int eKH = (kH - 1) * dH + 1;
+            const int eKW = (kW - 1) * dW + 1;
+
+            const int pHSame = ((oH - 1) * sH + eKH - iH) / 2;
+            const int pWSame = ((oW - 1) * sW + eKW - iW) / 2;
+
             conv_strides   = { sH, sW };
             conv_padding   = { pH, pW };
-            conv_padding_r = { (oH - 1) * sH - iH + kH - pH, (oW - 1) * sW - iW + kW - pW };
+            conv_padding_r = { (oH - 1) * sH - iH + kH - pHSame, (oW - 1) * sW - iW + kW - pWSame };
             conv_dilation  = { dH-1, dW-1};
 
             auto type = dnnl::memory::data_type::f32;
