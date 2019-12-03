@@ -31,54 +31,7 @@ namespace helpers {
 ///////////////////////////////////////////////////////////////////
 // modified Lentz’s algorithm for continued fractions,
 // reference: Lentz, W.J. 1976, “Generating Bessel Functions in Mie Scattering Calculations Using Continued Fractions”
-template <typename T>
-static T betacf(const T a, const T b, const T x) {
 
-	const T FPMIN = DataTypeUtils::min<T>() / DataTypeUtils::eps<T>();
-
-	int m,m2;
-	double aa,c,d,del,h,aPlusb,qam,qap;
-	aPlusb=a+b;
-
-	qap=a+1.0;
-	qam=a-1.0;
-	c=1.0;
-
-	d=1.0-aPlusb*x/(a+1.0);
-	if (fabs(d) < FPMIN) d=FPMIN;
-	d=1.0/d;
-	h=d;
-	for (m=1;m<10000;m++) {
-		m2=2*m;
-
-		aa=m*(b-m)*x/((a-1.0+m2)*(a+m2));
-
-		d=1.0+aa*d;
-		if (fabs(d) < FPMIN) d=FPMIN;
-		d=1.0/d;
-
-		c=1.0+aa/c;
-		if (fabs(c) < FPMIN) c=FPMIN;
-
-		h *= d*c;
-
-		aa = -(a+m)*(aPlusb+m)*x/((a+m2)*(a+1.0+m2));
-
-		d=1.0+aa*d;
-		if (fabs(d) < FPMIN) d=FPMIN;
-		d=1.0/d;
-
-		c=1.0+aa/c;
-		if (fabs(c) < FPMIN) c=FPMIN;
-
-		del=d*c;
-		h *= del;
-
-		if (fabs(del-1.0) <= DataTypeUtils::eps<T>())
-			break;
-	}
-	return h;
-}
 template <typename T>
 static T continuedFraction(const T a, const T b, const T x) {
 

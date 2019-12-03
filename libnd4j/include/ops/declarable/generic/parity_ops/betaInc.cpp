@@ -40,7 +40,7 @@ CONFIGURABLE_OP_IMPL(betainc, 3, 1, false, 0, 0) {
 
     // just skip op if input is empty
     if (x->isEmpty()) {
-        x = DataTypeUtils::nanOrZero<T>();
+        *x = DataTypeUtils::nanOrZero<float>();
         return Status::OK();
     }
 
