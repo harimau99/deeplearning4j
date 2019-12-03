@@ -32,60 +32,102 @@ namespace helpers {
 // modified Lentz’s algorithm for continued fractions,
 // reference: Lentz, W.J. 1976, “Generating Bessel Functions in Mie Scattering Calculations Using Continued Fractions”
 template <typename T>
+static T betacf(const T a, const T b, const T x) {
+
+	const T FPMIN = DataTypeUtils::min<T>() / DataTypeUtils::eps<T>();
+
+	int m,m2;
+	double aa,c,d,del,h,aPlusb,qam,qap;
+	aPlusb=a+b;
+
+	qap=a+1.0;
+	qam=a-1.0;
+	c=1.0;
+
+	d=1.0-aPlusb*x/(a+1.0);
+	if (fabs(d) < FPMIN) d=FPMIN;
+	d=1.0/d;
+	h=d;
+	for (m=1;m<10000;m++) {
+		m2=2*m;
+
+		aa=m*(b-m)*x/((a-1.0+m2)*(a+m2));
+
+		d=1.0+aa*d;
+		if (fabs(d) < FPMIN) d=FPMIN;
+		d=1.0/d;
+
+		c=1.0+aa/c;
+		if (fabs(c) < FPMIN) c=FPMIN;
+
+		h *= d*c;
+
+		aa = -(a+m)*(aPlusb+m)*x/((a+m2)*(a+1.0+m2));
+
+		d=1.0+aa*d;
+		if (fabs(d) < FPMIN) d=FPMIN;
+		d=1.0/d;
+
+		c=1.0+aa/c;
+		if (fabs(c) < FPMIN) c=FPMIN;
+
+		del=d*c;
+		h *= del;
+
+		if (fabs(del-1.0) <= DataTypeUtils::eps<T>())
+			break;
+	}
+	return h;
+}
+template <typename T>
 static T continuedFraction(const T a, const T b, const T x) {
 
 	const T min = DataTypeUtils::min<T>() / DataTypeUtils::eps<T>();
     const T aPlusb = a + b;
-    T val, delta, aPlus2i;
+    T val, aPlus2i;
 
-    // first iteration
-    T c = 1;
-    T d = static_cast<T>(1) - aPlusb * x / (a + static_cast<T>(1));
-    if(math::nd4j_abs<T>(d) < min)
-		d = min;
-	d = static_cast<T>(1) / d;
-    T f = d;
+    T t2 = 1;
+    T t1 = static_cast<T>(1) - aPlusb * x / (a + static_cast<T>(1));
+    if(math::nd4j_abs<T>(t1) < min)
+		t1 = min;
+	t1 = static_cast<T>(1) / t1;
+    T result = t1;
 
-    for(uint i = 1; i <= maxIter; i += 2) {
+    for(uint i = 1; i <= maxIter; ++i) {
 
     	aPlus2i = a + static_cast<T>(2*i);
-
-		/***** even part *****/
 		val = i * (b - i) * x / ((aPlus2i - static_cast<T>(1)) * aPlus2i);
-		// d
-		d = static_cast<T>(1) + val * d;
-		if(math::nd4j_abs<T>(d) < min)
-			d = min;
-		d = static_cast<T>(1) / d;
-		// c
-		c = static_cast<T>(1) + val / c;
-		if(math::nd4j_abs<T>(c) < min)
-			c = min;
-		// f
-		f *= c * d;
-
-
-		/***** odd part *****/
+		// t1
+		t1 = static_cast<T>(1) + val * t1;
+		if(math::nd4j_abs<T>(t1) < min)
+			t1 = min;
+		t1 = static_cast<T>(1) / t1;
+		// t2
+		t2 = static_cast<T>(1) + val / t2;
+		if(math::nd4j_abs<T>(t2) < min)
+			t2 = min;
+		// result
+		result *= t2 * t1;
 		val = -(a + i) * (aPlusb + i) * x / ((aPlus2i + static_cast<T>(1)) * aPlus2i);
-		// d
-		d = static_cast<T>(1) + val * d;
-		if(math::nd4j_abs<T>(d) < min)
-			d = min;
-		d = static_cast<T>(1) / d;
-		// c
-		c = static_cast<T>(1) + val / c;
-		if(math::nd4j_abs<T>(c) < min)
-			c = min;
-		// f
-		delta = c * d;
-		f *= delta;
+		// t1
+		t1 = static_cast<T>(1) + val * t1;
+		if(math::nd4j_abs<T>(t1) < min)
+			t1 = min;
+		t1 = static_cast<T>(1) / t1;
+		// t2
+		t2 = static_cast<T>(1) + val / t2;
+		if(math::nd4j_abs<T>(t2) < min)
+			t2 = min;
+		// result
+		val = t2 * t1;
+		result *= val;
 
 		// condition to stop loop
-		if(math::nd4j_abs<T>(delta - static_cast<T>(1)) <= DataTypeUtils::eps<T>())
-			return f;
+		if(math::nd4j_abs<T>(val - static_cast<T>(1)) <= DataTypeUtils::eps<T>())
+			return result;
     }
 
-    return std::numeric_limits<float>::infinity(); // no convergence, more iterations is required
+    return DataTypeUtils::infOrMax<T>(); // no convergence, more iterations is required, return infinity
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -110,10 +152,9 @@ static T betaIncCore(T a, T b, T x) {
     const T front = math::nd4j_exp<T,T>(math::nd4j_log<T, T>(x) * a + math::nd4j_log<T, T>(1.f - x) * b - gammaPart);
 
 	if (x <= (a + static_cast<T>(1)) / (a + b + static_cast<T>(2)))
-		return front * continuedFraction(a, b, x) / a;
-	else // symmetry relation
-		return static_cast<T>(1) - front * continuedFraction(b, a, static_cast<T>(1) - x) / b;
-
+		return front * continuedFraction<T>(a, b, x) / a;
+	else		 // symmetry relation
+		return static_cast<T>(1) - front * continuedFraction<T>(b, a, static_cast<T>(1) - x) / b;
 }
 
 ///////////////////////////////////////////////////////////////////
