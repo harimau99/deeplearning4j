@@ -821,6 +821,8 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
 
                 INDArray predictionsKeras = getPredictions(outputsArchive, tfOrdering)[0];
                 INDArray predictionsDl4j = model.output(input, false);
+                if(expectedPreProc != null)
+                    predictionsKeras = expectedPreProc.apply("output", predictionsKeras);
                 compareINDArrays("predictions", predictionsKeras, predictionsDl4j, EPS);
                 INDArray outputs = getOutputs(outputsArchive, true)[0];
 
