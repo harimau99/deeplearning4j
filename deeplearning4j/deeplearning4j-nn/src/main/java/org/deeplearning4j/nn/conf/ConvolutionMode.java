@@ -69,8 +69,13 @@ package org.deeplearning4j.nn.conf;
  * <br>
  * <br>
  * <br>
- * <b>Causal</b>: Causal padding mode can only be used for 1D convolutional neural networks.
- * The motivation behind
+ * <b>Causal</b>: Causal padding mode can only be used for 1D convolutional neural networks.<br>
+ * The motivation behind causal padding mode is that the output time steps depend only on current and past time steps.<br>
+ * That is, out[t] (for time t) depends on only on values in[T] for t < T<br>
+ * The output size of 1D convolution/subsampling layers is the same as with SAME convolution mode -
+ * i.e., outSize = ceil( inputSize / stride )<br>
+ * Padding is also the same as SAME mode, but all padding in on the left (start of sequence) instead of being on both
+ * left and right of the input<br>
  * <br>
  * <br>
  * <br>
