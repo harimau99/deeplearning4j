@@ -134,14 +134,14 @@ public class KerasInput extends KerasLayer {
                             break;
                         case NONE:
                             //Assume RNN in [mb, seqLen, size] format
-                            myInputType = new InputType.InputTypeRecurrent(this.inputShape[1], this.inputShape[0]);
+                            myInputType = new InputType.InputTypeRecurrent(this.inputShape[0], this.inputShape[1]);
                             break;
                         default:
                             throw new IllegalStateException("Unknown/not supported dimension ordering: " + this.dimOrder);
                     }
                 } else {
                     //Assume RNN in [mb, seqLen, size] format
-                    myInputType = new InputType.InputTypeRecurrent(this.inputShape[1], this.inputShape[0]);
+                    myInputType = new InputType.InputTypeRecurrent(this.inputShape[0], this.inputShape[1]);
                 }
 
                 break;
