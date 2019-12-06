@@ -29,7 +29,7 @@
 #include <NDArray.h>
 
 namespace nd4j {
-    class StringUtils {
+    class ND4J_EXPORT StringUtils {
     public:
         template <typename T>
         static FORCEINLINE std::string valueToString(T value) {

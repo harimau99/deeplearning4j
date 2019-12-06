@@ -21,10 +21,9 @@ import onnx.Onnx;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.base.Preconditions;
-import org.nd4j.imports.NoOpNameFoundException;
 import org.nd4j.linalg.api.buffer.DataType;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.DynamicCustomOp;
-import org.nd4j.linalg.api.shape.LongShapeDescriptor;
 import org.nd4j.linalg.factory.Nd4j;
 import org.tensorflow.framework.AttrValue;
 import org.tensorflow.framework.GraphDef;
@@ -37,6 +36,10 @@ import java.util.Map;
 
 @Slf4j
 public class MergeAvg extends DynamicCustomOp {
+
+    public MergeAvg(INDArray... inputs){
+        super(inputs, null);
+    }
 
     public MergeAvg(SameDiff sameDiff, SDVariable... inputs) {
         super(null, sameDiff, inputs);
@@ -67,16 +70,6 @@ public class MergeAvg extends DynamicCustomOp {
     @Override
     public void initFromOnnx(Onnx.NodeProto node, SameDiff initWith, Map<String, Onnx.AttributeProto> attributesForNode, Onnx.GraphProto graph) {
         super.initFromOnnx(node, initWith, attributesForNode, graph);
-    }
-
-    @Override
-    public String onnxName() {
-        throw new NoOpNameFoundException("No onnx op opName found for " +  opName());
-    }
-
-    @Override
-    public String tensorflowName() {
-        return "MergeAvg";
     }
 
     @Override

@@ -16,6 +16,7 @@
 
 package org.nd4j.linalg.custom;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.Ignore;
@@ -29,24 +30,33 @@ import org.nd4j.linalg.api.ops.DynamicCustomOp;
 import org.nd4j.linalg.api.ops.custom.*;
 import org.nd4j.linalg.api.ops.executioner.OpExecutioner;
 import org.nd4j.linalg.api.ops.executioner.OpStatus;
-import org.nd4j.linalg.api.ops.impl.reduce.Mmul;
+import org.nd4j.linalg.api.ops.impl.controlflow.Where;
+import org.nd4j.linalg.api.ops.impl.image.CropAndResize;
+import org.nd4j.linalg.api.ops.impl.image.NonMaxSuppression;
+import org.nd4j.linalg.api.ops.impl.image.ResizeBilinear;
+import org.nd4j.linalg.api.ops.impl.layers.convolution.MaxPoolWithArgmax;
+import org.nd4j.linalg.api.ops.impl.layers.convolution.config.Pooling2DConfig;
 import org.nd4j.linalg.api.ops.impl.reduce.MmulBp;
+import org.nd4j.linalg.api.ops.impl.shape.Create;
 import org.nd4j.linalg.api.ops.impl.transforms.any.IsMax;
 import org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic.AddOp;
 import org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic.ModOp;
 import org.nd4j.linalg.api.ops.random.compat.RandomStandardNormal;
+import org.nd4j.linalg.api.ops.random.impl.DropOut;
 import org.nd4j.linalg.api.shape.LongShapeDescriptor;
 import org.nd4j.linalg.api.shape.Shape;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.indexing.conditions.Conditions;
 import org.nd4j.nativeblas.NativeOpsHolder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.Float.NaN;
 import static org.junit.Assert.*;
 
 /**
@@ -823,6 +833,17 @@ public class CustomOpsTests extends BaseNd4jTest {
         assertEquals(expected, out);
     }
 
+    @Ignore("AS 11/13/2019 https://github.com/eclipse/deeplearning4j/issues/8374")
+    @Test
+    public void testAdjustContrastShape(){
+        DynamicCustomOp op = DynamicCustomOp.builder("adjust_contrast_v2")
+                .addInputs(Nd4j.create(DataType.FLOAT, 256, 256,3), Nd4j.scalar(0.5f))
+                .build();
+        List<LongShapeDescriptor> lsd = op.calculateOutputShape();
+        assertEquals(1, lsd.size());
+        assertArrayEquals(new long[]{256, 256, 3}, lsd.get(0).getShape());
+    }
+
     @Test
     public void testAdjustContrastV2() {
         INDArray in = Nd4j.linspace(DataType.DOUBLE,1.0,1.0, 4*4*3).reshape(4,4,3);
@@ -840,6 +861,36 @@ public class CustomOpsTests extends BaseNd4jTest {
         assertEquals(expected, out);
     }
 
+    @Ignore("AS 11/13/2019 https://github.com/eclipse/deeplearning4j/issues/8374")
+    @Test
+    public void testBitCastShape(){
+        INDArray out = Nd4j.createUninitialized(1,10);
+        BitCast op = new BitCast(Nd4j.zeros(1,10), DataType.FLOAT.toInt(), out);
+        List<LongShapeDescriptor> lsd = op.calculateOutputShape();
+        assertEquals(1, lsd.size());
+        assertArrayEquals(new long[]{1,10}, lsd.get(0).getShape());
+    }
+
+    @Test
+    public void testAdjustSaturation() {
+        INDArray in = Nd4j.createFromArray(new double[]{50,100,78, 118.5,220,112.5,190,163.5,230, 255,128.5,134}).reshape(2,2,3);
+        INDArray out = Nd4j.create(in.shape());
+        INDArray expected = Nd4j.createFromArray(new double[]{0,100,56, 17,220,5, 150,97,230, 255,2,13}).reshape(2,2,3);
+
+        Nd4j.exec(new AdjustSaturation(in, 2.0, out));
+        assertEquals(expected, out);
+    }
+
+    @Test
+    public void testAdjustHue() {
+        INDArray in = Nd4j.createFromArray(new double[]{0,100,56, 17,220,5, 150,97,230, 255,2,13}).reshape(2,2,3);
+        INDArray out = Nd4j.create(in.shape());
+        INDArray expected = Nd4j.createFromArray(new double[]{100,0,44, 208,5,220, 177,230,97, 2,255,244}).reshape(2,2,3);
+
+        Nd4j.exec(new AdjustHue(in, 0.5, out));
+        assertEquals(expected, out);
+    }
+
     @Test
     public void testBitCast() {
         INDArray in = Nd4j.linspace(DataType.FLOAT, 1.0f, 1.0f, 8).reshape(2,2,2);
@@ -850,6 +901,79 @@ public class CustomOpsTests extends BaseNd4jTest {
         INDArray expected = Nd4j.createFromArray(new double[]{2., 512., 8192., 131072.032 }).reshape(2,2);
         assertArrayEquals(new long[]{2,2}, out.shape());
         assertEquals(expected, out);
+    }
+
+    @Ignore("AS 11/13/2019 https://github.com/eclipse/deeplearning4j/issues/8374")
+    @Test
+    public void testDrawBoundingBoxesShape() {
+        INDArray images = Nd4j.createFromArray(new float[]{0.7788f, 0.8012f, 0.7244f,  0.2309f, 0.7271f,
+                        0.1804f,0.5056f,0.8925f,0.5461f,0.9234f,0.0856f,0.7938f,0.6591f,0.5555f,0.1596f,
+                        0.3087f,0.1548f,0.4695f,0.9939f,0.6113f,0.6765f,0.1800f,0.6750f,0.2246f,0.0509f,
+                        0.4601f,0.8284f,0.2354f,0.9752f,0.8361f,0.2585f,0.4189f,0.7028f,0.7679f,0.5373f,
+                        0.7234f,0.2690f,0.0062f,0.0327f,0.0644f,0.8428f,0.7494f,0.0755f,0.6245f,0.3491f,
+                        0.5793f,0.5730f,0.1822f,0.6420f,0.9143f}).reshape(2,5,5,1);
+        INDArray boxes = Nd4j.createFromArray(new float[]{0.7717f,    0.9281f,    0.9846f,    0.4838f,
+                                                          0.6433f,    0.6041f,    0.6501f,    0.7612f,
+                                                          0.7605f,    0.3948f,    0.9493f,    0.8600f,
+                                                          0.7876f,    0.8945f,    0.4638f,    0.7157f}).reshape(2,2,4);
+        INDArray colors = Nd4j.createFromArray(new float[]{0.9441f, 0.5957f}).reshape(1,2);
+        INDArray output = Nd4j.create(DataType.FLOAT, images.shape());
+        val op = new DrawBoundingBoxes(images, boxes, colors, output);
+        Nd4j.exec(op);
+        INDArray expected = Nd4j.createFromArray(new float[]{0.7788f, 0.8012f, 0.7244f, 0.2309f, 0.7271f,
+                           0.1804f, 0.5056f, 0.8925f, 0.5461f, 0.9234f, 0.0856f, 0.7938f, 0.9441f,
+                           0.9441f, 0.1596f, 0.3087f, 0.1548f, 0.4695f, 0.9939f, 0.6113f, 0.6765f,
+                           0.1800f, 0.6750f, 0.2246f, 0.0509f, 0.4601f, 0.8284f, 0.2354f, 0.9752f, 0.8361f,
+                0.2585f, 0.4189f,0.7028f,0.7679f,0.5373f,0.7234f,0.2690f,0.0062f,0.0327f,0.0644f,
+               0.8428f, 0.9441f,0.9441f,0.9441f,0.3491f,0.5793f,0.5730f,0.1822f,0.6420f,0.9143f});
+        assertEquals(expected, output);
+    }
+
+    @Ignore(" 2019/11/15 - failure https://github.com/eclipse/deeplearning4j/issues/8402")
+    @Test
+    public void testFakeQuantAgainstTF_1() {
+        INDArray x = Nd4j.createFromArray(new float[]{ 0.7788f,    0.8012f,    0.7244f,    0.2309f,    0.7271f,
+     0.1804f,    0.5056f,    0.8925f,    0.5461f,    0.9234f,
+     0.0856f,    0.7938f,    0.6591f,    0.5555f,    0.1596f}).reshape(3,5);
+        INDArray min = Nd4j.createFromArray(new float[]{ -0.2283f,   -0.0719f,   -0.0154f,   -0.5162f,   -0.3567f});
+        INDArray max = Nd4j.createFromArray(new float[]{ 0.9441f,    0.5957f,    0.8669f,    0.3502f,    0.5100f});
+
+        INDArray expected = Nd4j.createFromArray(new float[]{0.7801f,    0.5966f,    0.7260f,    0.2320f,    0.5084f,
+             0.1800f,    0.5046f,    0.8684f,    0.3513f,    0.5084f,
+             0.0877f,    0.5966f,    0.6600f,    0.3513f,    0.1604f}).reshape(3,5);
+
+        INDArray out = Nd4j.createUninitialized(x.shape());
+        val op = new FakeQuantWithMinMaxVarsPerChannel(x,min,max,out);
+        Nd4j.exec(op);
+        assertEquals(expected, out);
+
+        /*TF: [[    0.7801,    0.5966,    0.7260,    0.2320,    0.5084],
+ [    0.1800,    0.5046,    0.8684,    0.3513,    0.5084],
+ [    0.0877,    0.5966,    0.6600,    0.3513,    0.1604]]
+        SD: [[    0.7770,    0.5969,    0.7232,    0.2310,    0.5098],
+ [    0.1793,    0.5053,    0.8685,    0.3500,    0.5098],
+ [    0.0874,    0.5969,    0.6574,    0.3500,    0.1597]]*/
+    }
+
+    @Test
+    public void testWhereFail() {
+        INDArray in = Nd4j.createFromArray(new float[]{0f,    1.0000f,    1.0000f,    1.0000f,    1.0000f});
+        INDArray out = Nd4j.createUninitialized(4,1);
+        INDArray expected = Nd4j.createFromArray(4,1);
+        val op = new Where(new INDArray[]{in}, new INDArray[]{out});
+        Nd4j.exec(op);
+        assertArrayEquals(new long[]{4,1} , out.shape());
+    }
+
+    @Ignore("2019/11/15 - failure https://github.com/eclipse/deeplearning4j/issues/8403")
+    @Test
+    public void testResizeBilinear1() {
+
+        INDArray x = Nd4j.rand(1, 2,3,4);
+        INDArray z = Nd4j.createUninitialized(x.shape());
+        boolean align = false;
+        val op = new ResizeBilinear(x, z, 10, 10, align, false);
+        Nd4j.exec(op);
     }
 
     @Test
@@ -932,6 +1056,30 @@ public class CustomOpsTests extends BaseNd4jTest {
         System.out.println(distance);
     }
 
+    @Ignore("2019/11/15 AS - https://github.com/eclipse/deeplearning4j/issues/8399")
+    @Test
+    public void testCropAndResize() {
+        INDArray image = Nd4j.createUninitialized(DataType.FLOAT, 1, 2, 2, 1);
+        INDArray boxes = Nd4j.createFromArray(new float[]{1,2,3,4}).reshape(1,4);
+        INDArray box_indices = Nd4j.createFromArray(new int[]{1});
+        INDArray crop_size = Nd4j.createFromArray(new int[]{1,2}).reshape(1,2);
+
+        //Output shape mismatch - TF [2, 2, 1, 1] vs SD: [1, 2, 1, 1]
+        INDArray output = Nd4j.create(DataType.FLOAT, 2,2,1,1);
+
+
+        Nd4j.exec(new CropAndResize(image, boxes, box_indices, crop_size, CropAndResize.Method.BILINEAR, 0.5,
+                 output));
+    }
+
+    @Test
+    public void testLayersDropoutFail() {
+        INDArray input = Nd4j.rand(4, 5);
+        INDArray output = Nd4j.createUninitialized(4, 5);
+        DropOut op = new DropOut(input, output, 0.1);
+        Nd4j.exec(op);
+        System.out.println(output);
+    }
 
     @Test
     public void testRange(){
@@ -962,5 +1110,255 @@ public class CustomOpsTests extends BaseNd4jTest {
         List<LongShapeDescriptor> lsd = op.calculateOutputShape();
         assertEquals(1, lsd.size());
         assertArrayEquals(new long[]{1,10, 2}, lsd.get(0).getShape());
+    }
+
+    @Test
+    public void testBetaInc() {
+        Nd4j.getRandom().setSeed(10);
+        INDArray a = Nd4j.linspace(DataType.BFLOAT16, 0.1, 0.1, 9).reshape(3,3);
+        INDArray b = Nd4j.linspace(DataType.BFLOAT16, 0.1, 0.1, 9).reshape(3,3);
+        INDArray x = Nd4j.linspace(DataType.BFLOAT16, 0.1, 0.1, 9).reshape(3,3);
+        INDArray expected = Nd4j.createFromArray(new float[]{0.4121f, 0.3926f, 0.4082f,
+                0.4414f, 0.5000f, 0.5703f,
+                0.6562f, 0.7656f, 0.8828f}).reshape(3,3);
+
+        BetaInc op = new BetaInc(a,b,x);
+        INDArray[] out = Nd4j.exec(op);
+        assertArrayEquals(expected.shape(), out[0].shape());
+        for (int i = 0; i < 3; ++i)
+            assertArrayEquals(expected.toDoubleMatrix()[i], out[0].toDoubleMatrix()[i], 1e-4);
+    }
+
+    @Test
+    public void testFusedBatchNorm() {
+        INDArray x = Nd4j.linspace(DataType.DOUBLE, 1.0, 1.0, 2*2*3*4).reshape(2,2,3,4);
+        INDArray scale = Nd4j.create(DataType.DOUBLE, 4);
+        scale.assign(0.5);
+        INDArray offset = Nd4j.create(DataType.DOUBLE, 4);
+        offset.assign(2.0);
+
+        INDArray y = Nd4j.createUninitialized(DataType.DOUBLE, x.shape());
+        INDArray batchMean = Nd4j.create(4);
+        INDArray batchVar = Nd4j.create(4);
+
+        FusedBatchNorm op = new FusedBatchNorm(x,scale,offset,0,1,
+                                                y, batchMean, batchVar);
+
+        INDArray expectedY = Nd4j.createFromArray(new double[]{1.20337462,  1.20337462,  1.20337462,
+                1.20337462, 1.34821558,  1.34821558,  1.34821558,  1.34821558, 1.49305654,  1.49305654,
+                1.49305654,  1.49305654, 1.63789749,  1.63789749,  1.63789749,  1.63789749, 1.78273857,
+                1.78273857,  1.78273857,  1.78273857, 1.92757952,  1.92757952,  1.92757952,  1.92757952,
+                2.0724206 ,  2.0724206 ,  2.0724206 ,  2.0724206 , 2.21726155,  2.21726155,  2.21726155,
+                2.21726155, 2.36210251,  2.36210251,  2.36210251,  2.36210251, 2.50694346,  2.50694346,
+                2.50694346,  2.50694346, 2.65178442,  2.65178442,  2.65178442,  2.65178442, 2.79662538,
+                2.79662538,  2.79662538,  2.79662538}).reshape(x.shape());
+        INDArray expectedBatchMean = Nd4j.createFromArray(new double[]{23.,  24.,  25.,  26.});
+        INDArray expectedBatchVar = Nd4j.createFromArray(new double[]{208.00001526,  208.00001526,  208.00001526,  208.00001526});
+        Nd4j.exec(op);
+        assertArrayEquals(expectedY.shape(), y.shape());
+        assertArrayEquals(expectedBatchMean.shape(), batchMean.shape());
+        assertArrayEquals(expectedBatchVar.shape(), batchVar.shape());
+    }
+
+    @Test
+    public void testMatrixBandPart() {
+        INDArray x = Nd4j.linspace(DataType.DOUBLE, 1.0, 1.0, 2*3*3).reshape(2,3,3);
+        val op = new MatrixBandPart(x,1,1);
+        INDArray expected = Nd4j.linspace(DataType.DOUBLE, 1.0, 1.0, 2*3*3).reshape(2,3,3);
+        /*expected.putScalar(0, 0, 2, 0.);
+        expected.putScalar(1, 0, 2, 0.);
+        expected.putScalar(0, 2, 0, 0.);
+        expected.putScalar(1, 2, 0, 0.);*/
+
+        INDArray[] out = Nd4j.exec(op);
+        assertEquals(expected, x);
+    }
+
+    @Ignore("AS failed 2019/12/04")
+    @Test
+    public void testPolygamma() {
+        INDArray n = Nd4j.linspace(DataType.FLOAT, 1.0, 1.0, 9).reshape(3,3);
+        INDArray x = Nd4j.create(DataType.FLOAT, 3,3);
+        x.assign(0.5);
+        INDArray expected = Nd4j.createFromArray(new float[]{4.934802f, -16.828796f, 97.409088f, -771.474243f,
+                7691.113770f, -92203.460938f, 1290440.250000f, -20644900.000000f, 3.71595e+08f}).reshape(3,3);
+        INDArray output = Nd4j.create(DataType.FLOAT, expected.shape());
+        val op = new Polygamma(x,n,output);
+        Nd4j.exec(op);
+        assertEquals(expected, output);
+    }
+
+    @Test
+    public void testRandomCrop() {
+        INDArray x = Nd4j.createFromArray(new double[]{1.8, 2.5,  4.,  9., 2.1, 2.4,  3.,  9.,2.1, 2.1, 0.7, 0.1,3., 4.2, 2.2, 1. }).reshape(2,2,4);
+        INDArray shape = Nd4j.createFromArray(new int[] {1,2,3});
+        val op = new RandomCrop(x, shape);
+        INDArray[] res = Nd4j.exec(op);
+    }
+
+    @Test
+    public void testRoll() {
+        INDArray x = Nd4j.createFromArray(new double[]{    11.11, 11.12, 11.21, 11.22, 11.31, 11.32, 11.41, 11.42,     12.11, 12.12, 12.21, 12.22, 12.31, 12.32, 12.41, 12.42,
+                21.11, 21.12, 21.21, 21.22, 21.31, 21.32, 21.41, 21.42,     22.11, 22.12, 22.21, 22.22, 22.31, 22.32, 22.41, 22.42}).
+                reshape(2,2,4,2);
+
+        INDArray expected = Nd4j.createFromArray(new double[]{    22.21, 22.22, 22.31, 22.32, 22.41, 22.42, 11.11, 11.12, 11.21, 11.22, 11.31, 11.32, 11.41, 11.42,
+                12.11, 12.12, 12.21, 12.22, 12.31, 12.32, 12.41, 12.42, 21.11, 21.12, 21.21, 21.22, 21.31, 21.32,
+                21.41, 21.42, 22.11, 22.12
+        }).reshape(x.shape());
+        val op = new Roll(x, 6);
+        INDArray[] res = Nd4j.exec(op);
+        assertEquals(expected, res[0]);
+    }
+
+    @Test
+    public void testToggleBits() {
+        INDArray input = Nd4j.createFromArray(new int[]{2,2});
+        INDArray expected = Nd4j.createFromArray(new int[]{-3,-3});
+        ToggleBits op = new ToggleBits(input);
+        val result = Nd4j.exec(op);
+        assertEquals(expected, result[0]);
+    }
+
+    @Ignore("AS 11.28.2019 - https://github.com/eclipse/deeplearning4j/issues/8449")
+    @Test
+    public void testNonMaxSuppression() {
+        INDArray boxes = Nd4j.createFromArray(new float[] {0.8115f,    0.4121f,    0.0771f,    0.4863f,
+                            0.7412f,    0.7607f,    0.1543f,    0.5479f,
+                            0.8223f,    0.2246f,    0.0049f,    0.6465f}).reshape(3,4);
+        INDArray scores = Nd4j.createFromArray(new float[]{0.0029f,    0.8135f,    0.4873f});
+        val op = new NonMaxSuppression(boxes,scores,2,0.5,0.5);
+        val res = Nd4j.exec(op);
+        assertEquals(new long[]{1}, res[0].shape());
+    }
+
+    @Test
+    public void testMatrixBand() {
+        INDArray input = Nd4j.createFromArray(new float[]{0.7788f,0.8012f,0.7244f,0.2309f,
+                                               0.7271f,0.1804f,0.5056f,0.8925f,
+                                               0.5461f,0.9234f,0.0856f,0.7938f}).reshape(3,4);
+        MatrixBandPart op = new MatrixBandPart(input,1,-1);
+        List<LongShapeDescriptor> lsd = op.calculateOutputShape();
+        assertEquals(1, lsd.size());
+    }
+
+    @Ignore("Failed AS 11.26.2019 - https://github.com/eclipse/deeplearning4j/issues/8450")
+    @Test
+    public void testBetaInc1() {
+        INDArray a = Nd4j.createFromArray(new float[]{0.7788f,    0.8012f,    0.7244f,    0.2309f});
+        INDArray b = Nd4j.createFromArray(new float[]{0.7717f,    0.9281f,    0.9846f,    0.4838f});
+        INDArray c = Nd4j.createFromArray(new float[]{0.9441f,    0.5957f,    0.8669f,    0.3502f});
+        BetaInc op = new BetaInc(a,b,c);
+        INDArray[] ret = Nd4j.exec(op);
+        INDArray expected = Nd4j.createFromArray(new float[]{0.9122f,    0.6344f,    0.8983f,    0.6245f});
+        assertEquals(expected, ret[0]);
+    }
+
+    @Ignore("Failure AS 11.28.2019 - https://github.com/eclipse/deeplearning4j/issues/8452")
+    @Test
+    public void testPolygamma1() {
+        INDArray a = Nd4j.createFromArray(new float[]{0.7788f,    0.8012f,    0.7244f,    0.2309f,
+                                        0.7271f,    0.1804f,    0.5056f,    0.8925f,
+                                        0.5461f,    0.9234f,    0.0856f,    0.7938f}).reshape(3,4);
+        INDArray b = Nd4j.createFromArray(new float[]{0.7717f,    0.9281f,    0.9846f,    0.4838f,
+                                        0.6433f,    0.6041f,    0.6501f,    0.7612f,
+                                        0.7605f,    0.3948f,    0.9493f,    0.8600f}).reshape(3,4);
+        INDArray expected = Nd4j.createFromArray(new float[]{NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN, }).reshape(3,4);
+        Polygamma op = new Polygamma(a,b);
+        INDArray[] ret = Nd4j.exec(op);
+        assertEquals(expected, ret[0]);
+    }
+
+    @Ignore("Failure AS 11.28.2019 - https://github.com/eclipse/deeplearning4j/issues/8453")
+    @Test
+    public void testRoll1() {
+        INDArray a = Nd4j.createFromArray(new float[]{0.7788f,    0.8012f,    0.7244f,    0.2309f});
+        Roll op = new Roll(a,Nd4j.scalar(2),Nd4j.scalar(0));
+        INDArray[] ret = Nd4j.exec(op);
+        INDArray expected = Nd4j.createFromArray(new float[]{0.7244f,    0.2309f,    0.7788f,    0.8012f});
+        assertEquals(expected, ret[0]);
+    }
+
+    @Test
+    public void testAdjustHueShape(){
+        INDArray image = Nd4j.createFromArray(new float[]{0.7788f,    0.8012f,    0.7244f,
+            0.2309f,    0.7271f,    0.1804f, 0.5056f,    0.8925f,    0.5461f,
+            0.9234f,    0.0856f,    0.7938f, 0.6591f,    0.5555f,    0.1596f,
+            0.3087f,    0.1548f,    0.4695f, 0.9939f,    0.6113f,    0.6765f,
+            0.1800f,    0.6750f,    0.2246f, 0.0509f,    0.4601f,    0.8284f,
+            0.2354f,    0.9752f,    0.8361f, 0.2585f,    0.4189f,    0.7028f,
+            0.7679f,    0.5373f,    0.7234f,  0.2690f,    0.0062f,    0.0327f,
+            0.0644f,    0.8428f,    0.7494f,  0.0755f,    0.6245f,    0.3491f,
+            0.5793f,    0.5730f,    0.1822f,  0.6420f,    0.9143f,    0.3019f,
+            0.3574f,    0.1704f,    0.8395f, 0.5468f,    0.0744f,    0.9011f,
+            0.6574f,    0.4124f,    0.2445f, 0.4248f,    0.5219f,    0.6952f,
+            0.4900f,    0.2158f,    0.9549f, 0.1386f,    0.1544f,    0.5365f,
+            0.0134f,    0.4163f,    0.1456f, 0.4109f,    0.2484f,    0.3330f,
+            0.2974f,    0.6636f,    0.3808f, 0.8664f,    0.1896f,    0.7530f,
+            0.7215f,    0.6612f,    0.7270f, 0.5704f,    0.2666f,    0.7453f,
+            0.0444f,    0.3024f,    0.4850f, 0.7982f,    0.0965f,    0.7843f,
+            0.5075f,    0.0844f,    0.8370f, 0.6103f,    0.4604f,    0.6087f,
+            0.8594f,    0.4599f,    0.6714f, 0.2744f,    0.1981f,    0.4143f,
+            0.7821f,    0.3505f,    0.5040f, 0.1180f,    0.8307f,    0.1817f,
+            0.8442f,    0.5074f,    0.4471f, 0.5105f,    0.6666f,    0.2576f,
+            0.2341f,    0.6801f,    0.2652f, 0.5394f,    0.4690f,    0.6146f,
+            0.1210f,    0.2576f,    0.0769f, 0.4643f,    0.1628f,    0.2026f,
+            0.3774f,    0.0506f,    0.3462f, 0.5720f,    0.0838f,    0.4228f,
+            0.0588f,    0.5362f,    0.4756f, 0.2530f,    0.1778f,    0.0751f,
+            0.8977f,    0.3648f,    0.3065f, 0.4739f,    0.7014f,    0.4473f,
+            0.5171f,    0.1744f,    0.3487f, 0.7759f,    0.9491f,    0.2072f,
+            0.2182f,    0.6520f,    0.3092f, 0.9545f,    0.1881f,    0.9579f,
+            0.1785f,    0.9636f,    0.4830f, 0.6569f,    0.3353f,    0.9997f,
+            0.5869f,    0.5747f,    0.0238f, 0.2943f,    0.5248f,    0.5879f,
+            0.7266f,    0.1965f,    0.9167f, 0.9726f,    0.9206f,    0.0519f,
+            0.2997f,    0.0039f,    0.7652f, 0.5498f,    0.3794f,    0.3791f,
+            0.3528f,    0.2873f,    0.8082f,  0.4732f,    0.4399f,    0.6606f,
+            0.5991f,    0.0034f,    0.4874f}).reshape(8,8,3);
+
+        AdjustHue op = new AdjustHue(image, 0.2f);
+        INDArray[] res = Nd4j.exec(op);
+        System.out.println(res[0]);
+        List<LongShapeDescriptor> lsd = op.calculateOutputShape();
+        assertEquals(1, lsd.size());
+        assertArrayEquals(new long[]{8, 8, 3}, lsd.get(0).getShape());
+    }
+
+    @Test
+    public void testBitCastShape_3(){
+        val x = Nd4j.createFromArray(new int[]{1, 2, 3, 4, 5, 6, 7, 8}).reshape(1, 4, 2);
+        val e = Nd4j.createFromArray(new long[]{8589934593L, 17179869187L, 25769803781L, 34359738375L}).reshape(1, 4);
+        val z = Nd4j.exec(new BitCast(x, DataType.LONG.toInt()))[0];
+
+        assertEquals(e, z);
+    }
+
+
+    @Test
+    public void testMatch_1() {
+        INDArray x = Nd4j.ones(DataType.FLOAT, 3,3);
+        INDArray y = Nd4j.linspace(DataType.FLOAT, -5, 9, 1).reshape(3, 3);
+        val c =  Conditions.equals(0.0);
+
+        System.out.println("Y:\n" + y);
+
+        INDArray z = x.match(y, c);
+        INDArray exp = Nd4j.createFromArray(new boolean[][]{
+                {false, false, false},
+                {false, false, false},
+                {true,  false, false}
+        });
+
+        assertEquals(exp, z);
+    }
+
+
+    @Test
+    public void testCreateOp_1() {
+        val shape = Nd4j.createFromArray(new int[] {3, 4, 5});
+        val exp = Nd4j.create(DataType.INT, 3, 4, 5);
+
+        val result = Nd4j.exec(new Create(shape, 'c', true, DataType.INT))[0];
+
+        assertEquals(exp, result);
     }
 }

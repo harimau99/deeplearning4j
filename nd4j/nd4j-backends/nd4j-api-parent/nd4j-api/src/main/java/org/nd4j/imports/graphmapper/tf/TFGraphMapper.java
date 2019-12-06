@@ -56,6 +56,14 @@ import java.util.*;
 public class TFGraphMapper {
 
     /**
+     * @deprecated Use static methods - {@link #importGraph(File)} etc
+     */
+    @Deprecated
+    public static TFGraphMapper getInstance(){
+        return new TFGraphMapper();
+    }
+
+    /**
      * Import a frozen TensorFlow protobuf (.pb) file from the specified file
      *
      * @param f Frozen TensorFlow model pb file to import
@@ -267,7 +275,7 @@ public class TFGraphMapper {
                         https://github.com/eclipse/deeplearning4j/issues/8285
                          */
                         DifferentialFunction dfInstance = DifferentialFunctionClassHolder.getInstance().getOpWithTensorflowName(opName);
-                        Preconditions.checkState(dfInstance != null, "Could not find class for TF Ops: {}", opName);
+                        Preconditions.checkState(dfInstance != null, "Could not find class for TF Ops: %s", opName);
 
                         DifferentialFunction df;
                         try {

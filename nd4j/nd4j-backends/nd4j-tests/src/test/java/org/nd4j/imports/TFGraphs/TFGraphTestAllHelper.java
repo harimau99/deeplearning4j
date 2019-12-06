@@ -1,5 +1,6 @@
-/*******************************************************************************
+/* ******************************************************************************
  * Copyright (c) 2015-2018 Skymind, Inc.
+ * Copyright (c) 2019 Konduit K.K.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -30,6 +31,7 @@ import org.nd4j.autodiff.execution.conf.ExecutorConfiguration;
 import org.nd4j.autodiff.execution.conf.OutputMode;
 import org.nd4j.autodiff.functions.DifferentialFunction;
 import org.nd4j.autodiff.listeners.Listener;
+import org.nd4j.autodiff.listeners.debugging.ExecDebuggingListener;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.samediff.internal.InferenceSession;
 import org.nd4j.autodiff.samediff.internal.SameDiffOp;
@@ -40,6 +42,7 @@ import org.nd4j.autodiff.validation.TestCase;
 import org.nd4j.base.Preconditions;
 import org.nd4j.imports.TFGraphs.listener.OpExecOrderListener;
 import org.nd4j.imports.graphmapper.tf.TFGraphMapper;
+import org.nd4j.imports.listeners.ExecPrintListener;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.iter.NdIndexIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -137,7 +140,7 @@ public class TFGraphTestAllHelper {
 
     protected static void checkOnlyOutput(Map<String, INDArray> inputs, Map<String, INDArray> predictions, String modelName,
                                           String baseDir, String modelFilename, ExecuteWith execType, BiFunction<File,String,SameDiff> loader,
-                                          Double maxRelErrorOverride, Double minAbsErrorOverride) throws IOException {
+                                          Double maxRelErrorOverride, Double minAbsErrorOverride, boolean printArraysDebugging) throws IOException {
         Preconditions.checkArgument((maxRelErrorOverride == null) == (minAbsErrorOverride == null), "Both maxRelErrorOverride and minAbsErrorOverride" +
                 " must be null or both must be provided");
         Nd4j.EPS_THRESHOLD = 1e-3;
@@ -152,7 +155,7 @@ public class TFGraphTestAllHelper {
             outputsToCheck.add(s);
         }
 
-        Pair<SameDiff,Map<String,INDArray>> p = getGraphAfterExec(baseDir, modelFilename, modelName, inputs, execType, loader, null, outputsToCheck);
+        Pair<SameDiff,Map<String,INDArray>> p = getGraphAfterExec(baseDir, modelFilename, modelName, inputs, execType, loader, null, outputsToCheck, printArraysDebugging);
         SameDiff graph = p.getFirst();
         Map<String,INDArray> sameDiffPredictions = p.getSecond();
 
@@ -296,18 +299,18 @@ public class TFGraphTestAllHelper {
     }
 
     public static void checkIntermediate(Map<String, INDArray> inputs, String modelName, String baseDir, String modelFileName,
-                                         ExecuteWith execType, File localTestDir) throws IOException {
-        checkIntermediate(inputs, modelName, baseDir, modelFileName, execType, LOADER, null, null, localTestDir);
+                                         ExecuteWith execType, File localTestDir, boolean printArraysDebugging) throws IOException {
+        checkIntermediate(inputs, modelName, baseDir, modelFileName, execType, LOADER, null, null, localTestDir, printArraysDebugging);
     }
 
     public static void checkIntermediate(Map<String, INDArray> inputs, String modelName, String baseDir, String modelFileName,
                                          ExecuteWith execType, BiFunction<File,String,SameDiff> loader,
-                                         Double maxRelErrorOverride, Double minAbsErrorOverride, File localTestDir) throws IOException {
+                                         Double maxRelErrorOverride, Double minAbsErrorOverride, File localTestDir, boolean printArraysDebugging) throws IOException {
         Preconditions.checkArgument((maxRelErrorOverride == null) == (minAbsErrorOverride == null), "Both maxRelErrorOverride and minAbsErrorOverride" +
                 " must be null or both must be provided");
         Nd4j.EPS_THRESHOLD = 1e-3;
         OpExecOrderListener listener = new OpExecOrderListener();       //Used to collect exec order
-        Pair<SameDiff, Map<String,INDArray>> p = getGraphAfterExec(baseDir, modelFileName, modelName, inputs, execType, loader, Collections.singletonList(listener), null);
+        Pair<SameDiff, Map<String,INDArray>> p = getGraphAfterExec(baseDir, modelFileName, modelName, inputs, execType, loader, Collections.singletonList(listener), null, printArraysDebugging);
         SameDiff graph = p.getFirst();
         Map<String,INDArray> sdPredictions = p.getSecond();
 
@@ -388,11 +391,15 @@ public class TFGraphTestAllHelper {
 
     public static Pair<SameDiff, Map<String,INDArray>> getGraphAfterExec(String baseDir, String modelFilename, String modelName, Map<String, INDArray> inputs,
                                              ExecuteWith executeWith, BiFunction<File,String,SameDiff> graphLoaderFunction, List<Listener> listeners,
-                                                                         Set<String> requiredOutputs) throws IOException {
+                                                                         Set<String> requiredOutputs, boolean printArraysDebugging) throws IOException {
         log.info("\n\tRUNNING TEST " + modelName + "...");
         SameDiff graph = graphLoaderFunction.apply(new ClassPathResource(baseDir + "/" + modelName + "/" + modelFilename).getFile(), modelName);
         if(listeners != null){
             graph.setListeners(listeners);
+        }
+
+        if(printArraysDebugging){
+            graph.addListeners(new ExecPrintListener());
         }
 
         if(requiredOutputs == null){
@@ -587,7 +594,7 @@ public class TFGraphTestAllHelper {
                                         val key = modelDir + "/" + okey;
 
                                         // parse type directly
-                                        val value = ArrayOptionsHelper.dataType(split[1]);
+                                        DataType value = ArrayOptionsHelper.dataType(split[1]);
 
                                         // adding key directly
                                         //if (dtypes.containsKey(key))
@@ -635,7 +642,7 @@ public class TFGraphTestAllHelper {
         for (int i = 0; i < resources.size(); i++) {
             URI u = resources.get(i).getFirst().getURI();
             String varName = u.toString();
-            int idx = varName.lastIndexOf(modelName);
+            int idx = varName.indexOf(modelName);
             varName = varName.substring(idx + modelName.length()+1);    //+1 for "/"
             varName = varName.replaceAll("____","/");
             varName = varName.replaceAll(".placeholder.shape","");
@@ -665,12 +672,35 @@ public class TFGraphTestAllHelper {
             INDArray varValue;
             if(filtered.size() == 0){
                 //Scalar
-                float[] varContents;
-                try(InputStream is = new BufferedInputStream(resources.get(i).getSecond().getInputStream())){
-                    varContents = Nd4j.readNumpy(is, ",").data().asFloat();
+                String content = IOUtils.toString(resources.get(i).getSecond().getInputStream(), StandardCharsets.UTF_8);
+                switch (type){
+                    case DOUBLE:
+                    case FLOAT:
+                    case HALF:
+                    case BFLOAT16:
+                        varValue = Nd4j.scalar(type, parseDouble(content));
+                        break;
+                    case LONG:
+                    case INT:
+                    case SHORT:
+                    case UBYTE:
+                    case BYTE:
+                    case UINT16:
+                    case UINT32:
+                    case UINT64:
+                        varValue = Nd4j.scalar(type, parseLong(content));
+                        break;
+                    case BOOL:
+                        varValue = Nd4j.scalar(parseBoolean(content));
+                        break;
+                    case UTF8:
+                        varValue = Nd4j.scalar(content);
+                        break;
+                    case COMPRESSED:
+                    case UNKNOWN:
+                    default:
+                        throw new UnsupportedOperationException("Unknown / not implemented datatype: " + type);
                 }
-                Preconditions.checkState(varContents.length == 1, "Expected length 1 content for scalar shape; got length %s", varContents.length);
-                varValue = Nd4j.scalar(type, varContents[0]);
             } else {
                 int[] varShape = new int[filtered.size()];
                 for( int j=0; j<filtered.size(); j++ ){
@@ -709,18 +739,55 @@ public class TFGraphTestAllHelper {
                             throw new IllegalStateException("Empty data but non-empty shape: " + resources.get(i).getSecond());
                         }
                     } else {
-                        content = content.replaceAll("False", "0");
-                        content = content.replaceAll("True", "1");
-                        val varContents = Nd4j.readNumpy(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), ",").data().asDouble();
+                        if(varShape.length == 1 && varShape[0] == 0)        //Annoyingly, some scalars have shape [0] instead of []
+                            varShape = new int[0];
 
-                        if (varShape.length == 1) {
-                            if (varShape[0] == 0) {
-                                varValue = Nd4j.scalar(type, varContents[0]);
-                            } else {
-                                varValue = Nd4j.create(varContents, new long[]{varContents.length}, type);
-                            }
-                        } else {
-                            varValue = Nd4j.create(varContents, ArrayUtil.toLongArray(varShape), type);
+                        String[] cLines = content.split("\n");
+                        switch (type){
+                            case DOUBLE:
+                            case FLOAT:
+                            case HALF:
+                            case BFLOAT16:
+                                double[] dArr = new double[cLines.length];
+                                int x=0;
+                                while(x < dArr.length){
+                                    dArr[x] = parseDouble(cLines[x]);
+                                    x++;
+                                }
+                                varValue = Nd4j.createFromArray(dArr).castTo(type).reshape('c', varShape);
+                                break;
+                            case LONG:
+                            case INT:
+                            case SHORT:
+                            case UBYTE:
+                            case BYTE:
+                            case UINT16:
+                            case UINT32:
+                            case UINT64:
+                                long[] lArr = new long[cLines.length];
+                                int y=0;
+                                while(y < lArr.length){
+                                    lArr[y] = parseLong(cLines[y]);
+                                    y++;
+                                }
+                                varValue = Nd4j.createFromArray(lArr).castTo(type).reshape('c', varShape);
+                                break;
+                            case BOOL:
+                                boolean[] bArr = new boolean[cLines.length];
+                                int z=0;
+                                while(z < bArr.length){
+                                    bArr[z] = parseBoolean(cLines[z]);
+                                    z++;
+                                }
+                                varValue = Nd4j.createFromArray(bArr).reshape('c', varShape);
+                                break;
+                            case UTF8:
+                                varValue = Nd4j.create(cLines).reshape('c', varShape);
+                                break;
+                            case COMPRESSED:
+                            case UNKNOWN:
+                            default:
+                                throw new UnsupportedOperationException("Unknown / not implemented datatype: " + type);
                         }
                     }
                 } catch (NumberFormatException e) {
@@ -732,6 +799,39 @@ public class TFGraphTestAllHelper {
             varMap.put(varName, varValue);
         }
         return varMap;
+    }
+
+    private static long parseLong(String line){
+        line = line.trim();       //Handle whitespace
+        if(line.matches("-?\\d+\\.0+")){
+            //Annoyingly, some integer data is stored with redundant/unnecessary zeros - like "-7.0000000"
+            return Long.parseLong(line.substring(0, line.indexOf('.')));
+        } else {
+            return Long.parseLong(line);
+        }
+    }
+
+    private static double parseDouble(String line){
+        line = line.trim();   //Handle whitespace - some lines are like "      -inf"
+        if("nan".equalsIgnoreCase(line)){
+            return Double.NaN;
+        } else if("inf".equalsIgnoreCase(line)) {
+            return Double.POSITIVE_INFINITY;
+        } else if("-inf".equalsIgnoreCase(line)){
+            return Double.NEGATIVE_INFINITY;
+        } else {
+            return Double.parseDouble(line);
+        }
+    }
+
+    private static boolean parseBoolean(String line){
+        line = line.trim();
+        if(line.matches("1(\\.0*)?")){          //Booleans are ocassionally represented like 1.000000 or 0.000000
+            return true;
+        } else if(line.matches("0(\\.0*)?")){
+            return false;
+        }
+        return Boolean.parseBoolean(line);
     }
 
 
@@ -752,7 +852,8 @@ public class TFGraphTestAllHelper {
             return (t, s) -> Nd4j.sort(t, true).equals(Nd4j.sort(s, true));
         }
 
-        if(modelName.startsWith("alpha_dropout") || modelName.startsWith("layers_dropout"))
+        if(modelName.startsWith("alpha_dropout") || modelName.startsWith("layers_dropout") || modelName.equals("dropout"))
+            //We can't compare dropout using simple equality due to randomness
             return (t, s) -> {
                 double[] tfNums = t.ravel().toDoubleVector();
                 double[] sdNums = s.ravel().toDoubleVector();

@@ -219,6 +219,7 @@ void execBroadcastBool(Nd4jPointer *extraPointers,
                               OpaqueDataBuffer *dbX, Nd4jLong *hXShapeInfo, Nd4jLong *dXShapeInfo,
                               OpaqueDataBuffer *dbY, Nd4jLong *hYShapeInfo, Nd4jLong *dYShapeInfo,
                               OpaqueDataBuffer *dbZ, Nd4jLong *hZShapeInfo, Nd4jLong *dZShapeInfo,
+                              void *extraParams,
                               OpaqueDataBuffer *dbDimension, Nd4jLong *hDimensionShape, Nd4jLong *dDimensionShape) {
     try {
         auto dimension = reinterpret_cast<int *>(dbDimension->primary());
@@ -246,6 +247,7 @@ void execBroadcastBool(Nd4jPointer *extraPointers,
                                                dYShapeInfo,
                                                dbZ->primary(), hZShapeInfo,
                                                dbZ->special(), dZShapeInfo,
+                                               extraParams,
                                                dimension,
                                                dimensionLength, hTADShapeInfo, hTADOffsets, hTADShapeInfoZ,
                                                hTADOffsetsZ);

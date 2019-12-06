@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015-2018 Skymind, Inc.
+ * Copyright (c) 2019 Konduit K.K.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -512,7 +513,6 @@ namespace nd4j {
         /**
         * This op calculates polygamma function psi^(n)(x). Implementation is based on serial representation written in
         * terms of the Hurwitz zeta function: polygamma = (-1)^{n+1} * n! * zeta(n+1, x).
-        * Currently the case n = 0 is not supported.
         *
         * Input arrays:
         *    0: n - define derivative order (n+1), type integer (however currently is implemented as float casted to integer)
@@ -525,6 +525,20 @@ namespace nd4j {
         */
         #if NOT_EXCLUDED(OP_polygamma)
         DECLARE_CONFIGURABLE_OP(polygamma, 2, 1, false, 0, 0);
+        #endif
+
+        /**
+        * This op calculates digamma function psi(x) = derivative of log(Gamma(x))
+        *
+        * Input arrays:
+        *    0: x - abscissa points where to evaluate the digamma function, type float
+        *
+        * Output array:
+        *    0: values of digamma function at corresponding x, type float
+        *
+        */
+        #if NOT_EXCLUDED(OP_digamma)
+        DECLARE_CONFIGURABLE_OP(digamma, 1, 1, false, 0, 0);
         #endif
 
         /**
@@ -574,44 +588,47 @@ namespace nd4j {
          * This operation adjusts image hue by delta
          * Input arrays:
          * 0 - input array with rank >= 3, must have at least one dimension equal 3, that is dimension containing channels.
+         * 1 - optional argument, input scalar-array containing delta
          *
          * T arguments:
-         * 0 - delta value
+         * 0 - optional argument, delta value
          *
          * Int arguments:
          * 0 - optional argument, corresponds to dimension with 3 channels
          */
         #if NOT_EXCLUDED(OP_adjust_hue)
-        DECLARE_CONFIGURABLE_OP(adjust_hue, 1, 1, true, 1, -2);
+        DECLARE_CONFIGURABLE_OP(adjust_hue, 1, 1, true, 0, 0);
         #endif
 
         /**
          * This operation adjusts image saturation by delta
          * Input arrays:
          * 0 - input array with rank >= 3, must have at least one dimension equal 3, that is dimension containing channels.
+         * 1 - optional argument, input scalar-array containing saturation factor
          *
          * T arguments:
-         * 0 - saturation factor
+         * 0 - optional argument, saturation factor
          *
          * Int arguments:
          * 0 - optional argument, corresponds to dimension with 3 channels
          */
         #if NOT_EXCLUDED(OP_adjust_saturation)
-        DECLARE_CONFIGURABLE_OP(adjust_saturation, 1, 1, true, 1, -2);
+        DECLARE_CONFIGURABLE_OP(adjust_saturation, 1, 1, true, 0, 0);
         #endif
 
         /**
          * This operation adjusts image contrast by given factor ( z = (x - mean) * factor + mean )
          * Input arrays:
          * 0 - input array with rank >= 3, must have last one dimension equal 3, that is dimension containing channels.
+         * 1 - optional argument, input scalar-array containing saturation contrast factor
          *
          * T arguments:
-         * 0 - contrast factor
+         * 0 - optional argument, contrast factor
          *
          */
         #if NOT_EXCLUDED(OP_adjust_contrast)
-        DECLARE_CONFIGURABLE_OP(adjust_contrast, 1, 1, true, -2, 0);
-        DECLARE_CONFIGURABLE_OP(adjust_contrast_v2, 1, 1, true, -2, 0);
+        DECLARE_CONFIGURABLE_OP(adjust_contrast, 1, 1, true, 0, 0);
+        DECLARE_CONFIGURABLE_OP(adjust_contrast_v2, 1, 1, true, 0, 0);
         #endif
 
 
@@ -1594,7 +1611,7 @@ namespace nd4j {
         DECLARE_CUSTOM_OP(reduce_logsumexp, 1, 1, false, 0, 0);
         #endif
 
-        /**
+       /**
         * This op make bilinear or nearest neighbor interpolated resize for given tensor
         *
         * input array:
@@ -1616,7 +1633,7 @@ namespace nd4j {
         DECLARE_CUSTOM_OP(crop_and_resize, 4, 1, false, -1, -1);
         #endif
 
-        /**
+       /**
         * This op make bilinear interpolated resize for given tensor
         *
         * input array:
@@ -1637,7 +1654,7 @@ namespace nd4j {
         DECLARE_CUSTOM_OP(resize_bilinear, 1, 1, false, 0, -2);
         #endif
 
-        /**
+       /**
         * This op make nearest neighbor interpolated resize for given tensor
         *
         * input array:
@@ -1649,7 +1666,7 @@ namespace nd4j {
         *   1 - new height
         *
         * output array:
-        *   the 4D-Tensor with calculated backproped dots
+        *   the 4D-Tensor with resized image (shape is {batch, newWidth, newHeight, channels})
         *
         * CAUTION: either size tensor or a pair of int params should be provided.
         */
@@ -1658,21 +1675,57 @@ namespace nd4j {
         DECLARE_CUSTOM_OP(resize_nearest_neighbor, 1, 1, false, 0, -2);
         #endif
 
-        /**
-        * This op calculates backprop dot for two tensors along given dimensions
+       /**
+        * This op make bicubic interpolated resize for given tensor
         *
         * input array:
-        *    x: tensor to calculate dot for
-        *    y: tensor to calculate dot for
-        *    z: tensor with gradient output of the FF dot for x and y
-        *
-        * int arguments:
-        *   list of integers - dimensions to calculate dot along,
-        *   default corresponds to empty list in which case calculation
-        *   is performed for all dimensions and scalar is returned.
+        *    0 - 4D-Tensor with shape (batch, sizeX, sizeY, channels)
+        *    1 - 1D-Tensor with 2 values (newWidth, newHeight)
         *
         * output array:
-        *   the tensor with calculated backproped dots
+        *   the 4D-Tensor with resized image (shape is {batch, newWidth, newHeight, channels})
+        *
+        */
+        #if NOT_EXCLUDED(OP_resize_bicubic)
+        DECLARE_CUSTOM_OP(resize_bicubic, 1, 1, false, 0, -2);
+        #endif
+
+       /**
+        * This op make interpolated resize for given tensor with given algorithm.
+        * Supported algorithms are bilinear, bicubic, nearest_neighbor.
+        * Need to implement to full compatibility with TF: lanczos5, gaussian, area and mitchellcubic
+        *
+        * input array:
+        *    0 - 4D-Tensor with shape (batch, sizeX, sizeY, channels)
+        *    1 - 1D-Tensor with 2 values (newWidth, newHeight)
+        *
+        * optional int args:
+        *    0 - algorithm - bilinear by default
+        * optional bool args:
+        *    0 - preserve_aspect_ratio - default False
+        *    1 - antialias - default False
+        *
+        * output array:
+        *   the 4D-Tensor with resized by given algorithm image (shape is {batch, newWidth, newHeight, channels})
+        *
+        */
+
+        #if NOT_EXCLUDED(OP_image_resize)
+        DECLARE_CUSTOM_OP(image_resize, 2, 1, false, 0, 0);
+        #endif
+
+       /**
+        * Copy a tensor setting everything outside a central band in each innermost matrix
+        *
+        * input array:
+        *    x: given tensor with shape {..., M, N} - as vector (matrix) of matricies MxN
+        *
+        * int arguments:
+        *   lower band
+        *   upper band
+        *
+        * output array:
+        *   matrix with given bands between lower and upper diagonals
         *
         */
 
@@ -1684,8 +1737,9 @@ namespace nd4j {
         #if NOT_EXCLUDED(OP_Assert)
         DECLARE_OP(Assert, 1, 1, false);
         #endif
-        /*
-         * image.non_max_suppression op.
+
+        /**
+         * image.non_max_suppression ops.
          * input:
          *     0 - boxes - 2D-tensor with shape (num_boxes, 4) by float type
          *     1 - scales - 1D-tensor with shape (num_boxes) by float type
@@ -1702,6 +1756,9 @@ namespace nd4j {
          * */
         #if NOT_EXCLUDED(OP_image_non_max_suppression)
         DECLARE_CUSTOM_OP(non_max_suppression, 2, 1, false, 0, 0);
+        #endif
+        #if NOT_EXCLUDED(OP_image_non_max_suppression_v3)
+                DECLARE_CUSTOM_OP(non_max_suppression_v3, 2, 1, false, 0, 0);
         #endif
 
         /*
@@ -1791,7 +1848,7 @@ namespace nd4j {
         #endif
 
         /**
-         * compare_and_bitpack - compare with greater and pack result with uint8 
+         * compare_and_bitpack - compare with greater and pack result with uint8
          *
          * input params:
          *    0 - NDArray (input)

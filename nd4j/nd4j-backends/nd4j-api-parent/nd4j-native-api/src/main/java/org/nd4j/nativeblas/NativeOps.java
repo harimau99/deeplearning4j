@@ -118,6 +118,7 @@ public interface NativeOps {
                                            OpaqueDataBuffer result,
                                            @Cast("Nd4jLong *") LongPointer resultShapeInfo,
                                            @Cast("Nd4jLong *") LongPointer dresultShapeInfo,
+                                           Pointer extraParams,
                                            OpaqueDataBuffer hDimension,
                                            @Cast("Nd4jLong *") LongPointer hDimensionShape,
                                            @Cast("Nd4jLong *") LongPointer dDimensionShape);

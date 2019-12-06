@@ -16,15 +16,14 @@
 
 package org.nd4j.linalg.api.ops.impl.transforms.custom;
 
+import lombok.NonNull;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.base.Preconditions;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.DynamicCustomOp;
-import org.nd4j.linalg.api.ops.impl.transforms.BaseDynamicTransformOp;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,20 +39,18 @@ public class IsStrictlyIncreasing extends DynamicCustomOp {
         super(null, sameDiff, args, inPlace);
     }
 
-    public IsStrictlyIncreasing( INDArray[] inputs, INDArray[] outputs) {
-        super(null, inputs, outputs);
+    public IsStrictlyIncreasing(@NonNull INDArray input){
+        this(input, null);
+    }
+
+    public IsStrictlyIncreasing(@NonNull INDArray input, INDArray output) {
+        super(null, new INDArray[]{input}, wrapOrNull(output));
     }
 
 
     @Override
     public String opName() {
         return "is_strictly_increasing";
-    }
-
-
-    @Override
-    public String tensorflowName() {
-        return "IsStrictlyIncreasing";
     }
 
     @Override
