@@ -129,6 +129,8 @@ class ND4J_EXPORT DataBuffer {
 
         void setPrimaryBuffer(void *buffer, size_t length);
         void setSpecialBuffer(void *buffer, size_t length);
+
+        static void memcpy(const DataBuffer &dst, const DataBuffer &src);
 };
 ///// IMLEMENTATION OF INLINE METHODS /////
 

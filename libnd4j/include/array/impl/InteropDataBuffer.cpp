@@ -20,11 +20,14 @@
 
 #include <array/InteropDataBuffer.h>
 #include <execution/AffinityManager.h>
+#include <helpers/logger.h>
 
 namespace nd4j {
     InteropDataBuffer::InteropDataBuffer(InteropDataBuffer &dataBuffer, Nd4jLong offset) {
         _dataBuffer = dataBuffer.getDataBuffer();
-        _offset = offset + dataBuffer.offset();
+
+        // offset is always absolute to the original buffer
+        _offset = offset;
     }
 
     InteropDataBuffer::InteropDataBuffer(std::shared_ptr<DataBuffer> databuffer) {
@@ -49,11 +52,11 @@ namespace nd4j {
     }
 
     void* InteropDataBuffer::primary() const {
-        return _dataBuffer->primary();
+        return reinterpret_cast<int8_t *>(_dataBuffer->primary()) + _offset;
     }
 
     void* InteropDataBuffer::special() const {
-        return _dataBuffer->special();
+        return reinterpret_cast<int8_t *>(_dataBuffer->special()) + _offset;
     }
 
     void InteropDataBuffer::setPrimary(void* ptr, size_t length) {

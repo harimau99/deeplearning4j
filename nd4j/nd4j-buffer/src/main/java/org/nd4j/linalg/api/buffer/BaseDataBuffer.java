@@ -83,8 +83,8 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
     protected AllocationMode allocationMode;
 
-    protected transient Indexer indexer;
-    protected transient Pointer pointer;
+    protected transient Indexer indexer = null;
+    protected transient Pointer pointer = null;
 
     protected transient boolean attached = false;
     protected transient MemoryWorkspace parentWorkspace;
@@ -329,7 +329,8 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         if (offset() > 0) {
             Pointer ret;
-            final long retAddress = pointer().address() + getElementSize() * offset();
+            // offset is accounted at native side
+            final long retAddress = pointer().address();
             // directly set address at construction since Pointer.address has not setter.
             if (dataType() == DataType.DOUBLE) {
                 ret = new DoublePointer(pointer()) {
@@ -374,7 +375,7 @@ public abstract class BaseDataBuffer implements DataBuffer {
         if (released)
             throw new IllegalStateException("You can't use DataBuffer once it was released");
 
-        return pointer().address() + getElementSize() * offset();
+        return pointer().address();
     }
 
     @Override
@@ -665,7 +666,7 @@ public abstract class BaseDataBuffer implements DataBuffer {
                 try {
                     UByteIndexer u = (UByteIndexer) indexer;
                     for (int i = 0; i < length(); i++) {
-                        dos.writeByte(u.get(offset() + i));
+                        dos.writeByte(u.get(i));
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -823,29 +824,29 @@ public abstract class BaseDataBuffer implements DataBuffer {
         }
         switch (dataType()) {
             case FLOAT:
-                return ((FloatIndexer) indexer).get(offset() + i);
+                return ((FloatIndexer) indexer).get(i);
             case UINT32:
             case INT:
-                return ((IntIndexer) indexer).get(offset() + i);
+                return ((IntIndexer) indexer).get(i);
             case BFLOAT16:
-                return ((Bfloat16Indexer) indexer).get(offset() + i);
+                return ((Bfloat16Indexer) indexer).get(i);
             case HALF:
-                return ((HalfIndexer) indexer).get(offset() + i);
+                return ((HalfIndexer) indexer).get(i);
             case UINT16:
-                return ((UShortIndexer) indexer).get(offset() + i);
+                return ((UShortIndexer) indexer).get(i);
             case SHORT:
-                return ((ShortIndexer) indexer).get(offset() + i);
+                return ((ShortIndexer) indexer).get(i);
             case UINT64:
             case LONG:
-                return ((LongIndexer) indexer).get(offset() + i);
+                return ((LongIndexer) indexer).get(i);
             case BOOL:
-                return ((BooleanIndexer) indexer).get(offset() + i) ? 1.0 : 0.0;
+                return ((BooleanIndexer) indexer).get(i) ? 1.0 : 0.0;
             case DOUBLE:
-                return ((DoubleIndexer) indexer).get(offset() + i);
+                return ((DoubleIndexer) indexer).get(i);
             case BYTE:
-                return ((ByteIndexer) indexer).get(offset() + i);
+                return ((ByteIndexer) indexer).get(i);
             case UBYTE:
-                return ((UByteIndexer) indexer).get(offset() + i);
+                return ((UByteIndexer) indexer).get(i);
             default:
                 throw new UnsupportedOperationException("Cannot get double value from buffer of type " + dataType());
         }
@@ -858,29 +859,29 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case FLOAT:
-                return (long) ((FloatIndexer) indexer).get(offset() + i);
+                return (long) ((FloatIndexer) indexer).get(i);
             case DOUBLE:
-                return (long) ((DoubleIndexer) indexer).get(offset() + i);
+                return (long) ((DoubleIndexer) indexer).get(i);
             case BFLOAT16:
-                return (long) ((Bfloat16Indexer) indexer).get(offset() + i);
+                return (long) ((Bfloat16Indexer) indexer).get(i);
             case HALF:
-                return (long) ((HalfIndexer) indexer).get(offset() + i);
+                return (long) ((HalfIndexer) indexer).get( i);
             case UINT64:
             case LONG:
-                return ((LongIndexer) indexer).get(offset() + i);
+                return ((LongIndexer) indexer).get(i);
             case UINT32:
             case INT:
-                return (long) ((IntIndexer) indexer).get(offset() + i);
+                return (long) ((IntIndexer) indexer).get(i);
             case UINT16:
-                return (long) ((UShortIndexer) indexer).get(offset() + i);
+                return (long) ((UShortIndexer) indexer).get(i);
             case SHORT:
-                return (long) ((ShortIndexer) indexer).get(offset() + i);
+                return (long) ((ShortIndexer) indexer).get(i);
             case BYTE:
-                return (long) ((ByteIndexer) indexer).get(offset() + i);
+                return (long) ((ByteIndexer) indexer).get(i);
             case UBYTE:
-                return (long) ((UByteIndexer) indexer).get(offset() + i);
+                return (long) ((UByteIndexer) indexer).get(i);
             case BOOL:
-                return  ((BooleanIndexer) indexer).get(offset() + i) ? 1L : 0L;
+                return  ((BooleanIndexer) indexer).get(i) ? 1L : 0L;
             default:
                 throw new UnsupportedOperationException("Cannot get long value from buffer of type " + dataType());
         }
@@ -897,26 +898,26 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case DOUBLE:
-                return (short) ((DoubleIndexer) indexer).get(offset() + i);
+                return (short) ((DoubleIndexer) indexer).get(i);
             case BFLOAT16:
-                return (short) ((Bfloat16Indexer) indexer).get(offset() + i);
+                return (short) ((Bfloat16Indexer) indexer).get(i);
             case HALF:
-                return (short) ((HalfIndexer) indexer).get(offset() + i);
+                return (short) ((HalfIndexer) indexer).get(i);
             case BOOL:
-                return (short) (((BooleanIndexer) indexer).get(offset() + i) ? 1 : 0);
+                return (short) (((BooleanIndexer) indexer).get(i) ? 1 : 0);
             case UINT32:
             case INT:
-                return (short) ((IntIndexer) indexer).get(offset() + i);
+                return (short) ((IntIndexer) indexer).get(i);
             case UINT16:
             case SHORT:
-                return ((ShortIndexer) indexer).get(offset() + i);
+                return ((ShortIndexer) indexer).get(i);
             case BYTE:
-                return  (short) ((ByteIndexer) indexer).get(offset() + i);
+                return  (short) ((ByteIndexer) indexer).get(i);
             case UINT64:
             case LONG:
-                return (short) ((LongIndexer) indexer).get(offset() + i);
+                return (short) ((LongIndexer) indexer).get(i);
             case FLOAT:
-                return (short) ((FloatIndexer) indexer).get(offset() + i);
+                return (short) ((FloatIndexer) indexer).get(i);
             default:
                 throw new UnsupportedOperationException("Cannot get short value from buffer of type " + dataType());
         }
@@ -938,29 +939,29 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case DOUBLE:
-                return (float) ((DoubleIndexer) indexer).get(offset() + i);
+                return (float) ((DoubleIndexer) indexer).get(i);
             case BOOL:
-                return ((BooleanIndexer) indexer).get(offset() + i) ? 1.f : 0.f;
+                return ((BooleanIndexer) indexer).get(i) ? 1.f : 0.f;
             case UINT32:
             case INT:
-                return (float) ((IntIndexer) indexer).get(offset() + i);
+                return (float) ((IntIndexer) indexer).get(i);
             case UINT16:
-                return ((UShortIndexer) indexer).get(offset() + i);
+                return ((UShortIndexer) indexer).get(i);
             case SHORT:
-                return (float) ((ShortIndexer) indexer).get(offset() + i);
+                return (float) ((ShortIndexer) indexer).get(i);
             case BFLOAT16:
-                return ((Bfloat16Indexer) indexer).get(offset() + i);
+                return ((Bfloat16Indexer) indexer).get(i);
             case HALF:
-                return ((HalfIndexer) indexer).get(offset() + i);
+                return ((HalfIndexer) indexer).get(i);
             case UBYTE:
-                return (float) ((UByteIndexer) indexer).get(offset() + i);
+                return (float) ((UByteIndexer) indexer).get(i);
             case BYTE:
-                return (float) ((ByteIndexer) indexer).get(offset() + i);
+                return (float) ((ByteIndexer) indexer).get(i);
             case UINT64:
             case LONG:
-                return (float)  ((LongIndexer) indexer).get(offset() + i);
+                return (float)  ((LongIndexer) indexer).get(i);
             case FLOAT:
-                return ((FloatIndexer) indexer).get(offset() + i);
+                return ((FloatIndexer) indexer).get(i);
             default:
                 throw new UnsupportedOperationException("Cannot get float value from buffer of type " + dataType());
         }
@@ -973,29 +974,29 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case DOUBLE:
-                return (int) ((DoubleIndexer) indexer).get(offset() + i);
+                return (int) ((DoubleIndexer) indexer).get(i);
             case BOOL:
-                return ((BooleanIndexer) indexer).get(offset() + i) ? 1 : 0;
+                return ((BooleanIndexer) indexer).get(i) ? 1 : 0;
             case UINT32:
             case INT:
-                return ((IntIndexer) indexer).get(offset() + i);
+                return ((IntIndexer) indexer).get(i);
             case BFLOAT16:
-                return (int) ((Bfloat16Indexer) indexer).get(offset() + i);
+                return (int) ((Bfloat16Indexer) indexer).get(i);
             case HALF:
-                return (int) ((HalfIndexer) indexer).get(offset() + i);
+                return (int) ((HalfIndexer) indexer).get(i);
             case UINT16:
-                return ((UShortIndexer) indexer).get(offset() + i);
+                return ((UShortIndexer) indexer).get(i);
             case SHORT:
-                return ((ShortIndexer) indexer).get(offset() + i);
+                return ((ShortIndexer) indexer).get(i);
             case UBYTE:
-                return ((UByteIndexer) indexer).get(offset() + i);
+                return ((UByteIndexer) indexer).get(i);
             case BYTE:
-                return ((ByteIndexer) indexer).get(offset() + i);
+                return ((ByteIndexer) indexer).get(i);
             case UINT64:
             case LONG:
-                return (int) ((LongIndexer) indexer).get(offset() + i);
+                return (int) ((LongIndexer) indexer).get(i);
             case FLOAT:
-                return (int) ((FloatIndexer) indexer).get(offset() + i);
+                return (int) ((FloatIndexer) indexer).get(i);
             default:
                 throw new UnsupportedOperationException("Cannot get integer value from buffer of type " + dataType());
         }
@@ -1042,39 +1043,39 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case BOOL:
-                ((BooleanIndexer) indexer).put(offset() + i, element == 0.0 ? false : true);
+                ((BooleanIndexer) indexer).put(i, element == 0.0 ? false : true);
                 break;
             case BYTE:
-                ((ByteIndexer) indexer).put(offset() + i, (byte) element);
+                ((ByteIndexer) indexer).put(i, (byte) element);
                 break;
             case UBYTE:
-                ((UByteIndexer) indexer).put(offset() + i,  (int) element);
+                ((UByteIndexer) indexer).put(i,  (int) element);
                 break;
             case UINT16:
-                ((UShortIndexer) indexer).put(offset() + i,  (int)element);
+                ((UShortIndexer) indexer).put(i,  (int)element);
                 break;
             case SHORT:
-                ((ShortIndexer) indexer).put(offset() + i,  (short) element);
+                ((ShortIndexer) indexer).put(i,  (short) element);
                 break;
             case UINT32:
             case INT:
-                ((IntIndexer) indexer).put(offset() + i, (int) element);
+                ((IntIndexer) indexer).put(i, (int) element);
                 break;
             case UINT64:
             case LONG:
-                ((LongIndexer) indexer).put(offset() + i, (long) element);
+                ((LongIndexer) indexer).put(i, (long) element);
                 break;
             case BFLOAT16:
-                ((Bfloat16Indexer) indexer).put(offset() + i,  element);
+                ((Bfloat16Indexer) indexer).put(i,  element);
                 break;
             case HALF:
-                ((HalfIndexer) indexer).put(offset() + i,  element);
+                ((HalfIndexer) indexer).put(i,  element);
                 break;
             case FLOAT:
-                ((FloatIndexer) indexer).put(offset() + i, element);
+                ((FloatIndexer) indexer).put(i, element);
                 break;
             case DOUBLE:
-                ((DoubleIndexer) indexer).put(offset() + i, element);
+                ((DoubleIndexer) indexer).put(i, element);
                 break;
             default:
                 throw new IllegalStateException("Unsupported type: " + dataType());
@@ -1092,39 +1093,39 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case BOOL:
-                ((BooleanIndexer) indexer).put(offset() + i,  element > 0.0);
+                ((BooleanIndexer) indexer).put(i,  element > 0.0);
                 break;
             case BYTE:
-                ((ByteIndexer) indexer).put(offset() + i, (byte) element);
+                ((ByteIndexer) indexer).put(i, (byte) element);
                 break;
             case UBYTE:
-                ((UByteIndexer) indexer).put(offset() + i, (short) element);
+                ((UByteIndexer) indexer).put(i, (short) element);
                 break;
             case UINT16:
-                ((UShortIndexer) indexer).put(offset() + i,  (int) element);
+                ((UShortIndexer) indexer).put(i,  (int) element);
                 break;
             case SHORT:
-                ((ShortIndexer) indexer).put(offset() + i,  (short) element);
+                ((ShortIndexer) indexer).put(i,  (short) element);
                 break;
             case UINT32:
             case INT:
-                ((IntIndexer) indexer).put(offset() + i, (int) element);
+                ((IntIndexer) indexer).put(i, (int) element);
                 break;
             case UINT64:
             case LONG:
-                ((LongIndexer) indexer).put(offset() + i, (long) element);
+                ((LongIndexer) indexer).put(i, (long) element);
                 break;
             case BFLOAT16:
-                ((Bfloat16Indexer) indexer).put(offset() + i, (float) element);
+                ((Bfloat16Indexer) indexer).put(i, (float) element);
                 break;
             case HALF:
-                ((HalfIndexer) indexer).put(offset() + i, (float) element);
+                ((HalfIndexer) indexer).put(i, (float) element);
                 break;
             case FLOAT:
-                ((FloatIndexer) indexer).put(offset() + i, (float) element);
+                ((FloatIndexer) indexer).put(i, (float) element);
                 break;
             case DOUBLE:
-                ((DoubleIndexer) indexer).put(offset() + i, element);
+                ((DoubleIndexer) indexer).put(i, element);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported data type: " + dataType());
@@ -1142,39 +1143,39 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case BOOL:
-                ((BooleanIndexer) indexer).put(offset() + i, element == 0 ? false : true);
+                ((BooleanIndexer) indexer).put(i, element == 0 ? false : true);
                 break;
             case BYTE:
-                ((ByteIndexer) indexer).put(offset() + i,  (byte) element);
+                ((ByteIndexer) indexer).put(i,  (byte) element);
                 break;
             case UBYTE:
-                ((UByteIndexer) indexer).put(offset() + i,  element);
+                ((UByteIndexer) indexer).put(i,  element);
                 break;
             case UINT16:
-                ((UShortIndexer) indexer).put(offset() + i,  element);
+                ((UShortIndexer) indexer).put(i,  element);
                 break;
             case SHORT:
-                ((ShortIndexer) indexer).put(offset() + i,  (short) element);
+                ((ShortIndexer) indexer).put(i,  (short) element);
                 break;
             case UINT32:
             case INT:
-                ((IntIndexer) indexer).put(offset() + i, element);
+                ((IntIndexer) indexer).put(i, element);
                 break;
             case UINT64:
             case LONG:
-                ((LongIndexer) indexer).put(offset() + i, element);
+                ((LongIndexer) indexer).put(i, element);
                 break;
             case BFLOAT16:
-                ((Bfloat16Indexer) indexer).put(offset() + i, element);
+                ((Bfloat16Indexer) indexer).put(i, element);
                 break;
             case HALF:
-                ((HalfIndexer) indexer).put(offset() + i, element);
+                ((HalfIndexer) indexer).put(i, element);
                 break;
             case FLOAT:
-                ((FloatIndexer) indexer).put(offset() + i, element);
+                ((FloatIndexer) indexer).put(i, element);
                 break;
             case DOUBLE:
-                ((DoubleIndexer) indexer).put(offset() + i, element);
+                ((DoubleIndexer) indexer).put(i, element);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported data type: " + dataType());
@@ -1192,39 +1193,39 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case BOOL:
-                ((BooleanIndexer) indexer).put(offset() + i, element);
+                ((BooleanIndexer) indexer).put(i, element);
                 break;
             case BYTE:
-                ((ByteIndexer) indexer).put(offset() + i, element ? (byte)1 : (byte) 0);
+                ((ByteIndexer) indexer).put(i, element ? (byte)1 : (byte) 0);
                 break;
             case UBYTE:
-                ((UByteIndexer) indexer).put(offset() + i, element ? (byte)1 : (byte) 0);
+                ((UByteIndexer) indexer).put(i, element ? (byte)1 : (byte) 0);
                 break;
             case UINT16:
-                ((UShortIndexer) indexer).put(offset() + i,  element ? 1 : 0);
+                ((UShortIndexer) indexer).put(i,  element ? 1 : 0);
                 break;
             case SHORT:
-                ((ShortIndexer) indexer).put(offset() + i, element ? (short) 1 : (short) 0);
+                ((ShortIndexer) indexer).put(i, element ? (short) 1 : (short) 0);
                 break;
             case INT:
             case UINT32:
-                ((IntIndexer) indexer).put(offset() + i, element ? 1 : 0);
+                ((IntIndexer) indexer).put(i, element ? 1 : 0);
                 break;
             case UINT64:
             case LONG:
-                ((LongIndexer) indexer).put(offset() + i, element ? 1 : 0);
+                ((LongIndexer) indexer).put(i, element ? 1 : 0);
                 break;
             case BFLOAT16:
-                ((Bfloat16Indexer) indexer).put(offset() + i, element ? 1.0f : 0.0f);
+                ((Bfloat16Indexer) indexer).put(i, element ? 1.0f : 0.0f);
                 break;
             case HALF:
-                ((HalfIndexer) indexer).put(offset() + i, element ? 1.0f : 0.0f);
+                ((HalfIndexer) indexer).put(i, element ? 1.0f : 0.0f);
                 break;
             case FLOAT:
-                ((FloatIndexer) indexer).put(offset() + i, element ? 1.0f : 0.0f);
+                ((FloatIndexer) indexer).put(i, element ? 1.0f : 0.0f);
                 break;
             case DOUBLE:
-                ((DoubleIndexer) indexer).put(offset() + i,  element ? 1.0 : 0.0);
+                ((DoubleIndexer) indexer).put(i,  element ? 1.0 : 0.0);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported data type: " + dataType());
@@ -1242,39 +1243,39 @@ public abstract class BaseDataBuffer implements DataBuffer {
 
         switch (dataType()) {
             case BOOL:
-                ((BooleanIndexer) indexer).put(offset() + i, element == 0 ? false : true);
+                ((BooleanIndexer) indexer).put(i, element == 0 ? false : true);
                 break;
             case BYTE:
-                ((ByteIndexer) indexer).put(offset() + i, (byte) element);
+                ((ByteIndexer) indexer).put(i, (byte) element);
                 break;
             case UBYTE:
-                ((UByteIndexer) indexer).put(offset() + i, (short) element);
+                ((UByteIndexer) indexer).put(i, (short) element);
                 break;
             case UINT16:
-                ((UShortIndexer) indexer).put(offset() + i,  (int) element);
+                ((UShortIndexer) indexer).put(i,  (int) element);
                 break;
             case SHORT:
-                ((ShortIndexer) indexer).put(offset() + i, (short) element);
+                ((ShortIndexer) indexer).put(i, (short) element);
                 break;
             case UINT32:
             case INT:
-                ((IntIndexer) indexer).put(offset() + i, (int) element);
+                ((IntIndexer) indexer).put(i, (int) element);
                 break;
             case UINT64:
             case LONG:
-                ((LongIndexer) indexer).put(offset() + i, element);
+                ((LongIndexer) indexer).put(i, element);
                 break;
             case BFLOAT16:
-                ((Bfloat16Indexer) indexer).put(offset() + i, (float) element);
+                ((Bfloat16Indexer) indexer).put(i, (float) element);
                 break;
             case HALF:
-                ((HalfIndexer) indexer).put(offset() + i, (float) element);
+                ((HalfIndexer) indexer).put(i, (float) element);
                 break;
             case FLOAT:
-                ((FloatIndexer) indexer).put(offset() + i, (float) element);
+                ((FloatIndexer) indexer).put(i, (float) element);
                 break;
             case DOUBLE:
-                ((DoubleIndexer) indexer).put(offset() + i, (double) element);
+                ((DoubleIndexer) indexer).put(i, (double) element);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported data type: " + dataType());

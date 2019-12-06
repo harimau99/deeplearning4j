@@ -997,14 +997,14 @@ public abstract class BaseNDArray implements INDArray, Iterable {
             }
         }
 
-        Pair<DataBuffer, DataBuffer> tadInfo =
-                Nd4j.getExecutioner().getTADManager().getTADOnlyShapeInfo(this, dimension);
+        Pair<DataBuffer, DataBuffer> tadInfo = Nd4j.getExecutioner().getTADManager().getTADOnlyShapeInfo(this, dimension);
         DataBuffer shapeInfo = tadInfo.getFirst();
-        val shape = Shape.shape(shapeInfo);
-        val stride = Shape.stride(shapeInfo).asLong();
+        val jShapeInfo = shapeInfo.asLong();
+        val shape = Shape.shape(jShapeInfo);
+        val stride = Shape.stride(jShapeInfo);
         long offset = offset() + tadInfo.getSecond().getLong(index);
-        val ews = shapeInfo.getLong(shapeInfo.getLong(0) * 2 + 2);
-        char tadOrder = (char) shapeInfo.getInt(shapeInfo.getLong(0) * 2 + 3);
+        val ews = shapeInfo.getLong(jShapeInfo[0] * 2 + 2);
+        char tadOrder = (char) shapeInfo.getInt(jShapeInfo[0] * 2 + 3);
         val toTad = Nd4j.create(data(), shape, stride, offset, ews, tadOrder);
         return toTad;
     }
@@ -4351,16 +4351,16 @@ public abstract class BaseNDArray implements INDArray, Iterable {
         //epsilon equals
         if (isScalar() && n.isScalar()) {
             if (data.dataType() == DataType.FLOAT) {
-                double val = getDouble(0);
-                double val2 = n.getDouble(0);
+                val val = getDouble(0);
+                val val2 =  n.getDouble(0);
 
                 if (Double.isNaN(val) != Double.isNaN(val2))
                     return false;
 
                 return Math.abs(val - val2) < eps;
             } else {
-                double val = getDouble(0);
-                double val2 = n.getDouble(0);
+                val val = getDouble(0);
+                val val2 = n.getDouble(0);
 
                 if (Double.isNaN(val) != Double.isNaN(val2))
                     return false;
@@ -4369,10 +4369,9 @@ public abstract class BaseNDArray implements INDArray, Iterable {
             }
 
         } else if (isVector() && n.isVector()) {
-
-            EqualsWithEps op = new EqualsWithEps(this, n, eps);
-            Nd4j.getExecutioner().exec(op);
-            double diff = op.z().getDouble(0);
+            val op = new EqualsWithEps(this, n, eps);
+            Nd4j.exec(op);
+            val diff = op.z().getDouble(0);
 
             return diff < 0.5;
         }

@@ -434,6 +434,7 @@ public class Nd4jTestsC extends BaseNd4jTest {
     }
 
     @Test
+    @Ignore
     public void testMmulOp() throws Exception {
         INDArray arr = Nd4j.create(new double[][] {{1, 2, 3}, {4, 5, 6}});
         INDArray z = Nd4j.create(2, 2);
@@ -6047,6 +6048,7 @@ public class Nd4jTestsC extends BaseNd4jTest {
     }
 
     @Test
+    //@Ignore
     public void testMatmul_128by256() {
         val mA = Nd4j.create(128, 156).assign(1.0f);
         val mB = Nd4j.create(156, 256).assign(1.0f);
@@ -6935,6 +6937,7 @@ public class Nd4jTestsC extends BaseNd4jTest {
     }
 
     @Test
+    @Ignore
     public void testMatmul_vs_tf() throws Exception {
 
         // uncomment this line to initialize & propagate sgemm/dgemm pointer

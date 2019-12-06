@@ -30,7 +30,7 @@ namespace nd4j {
             ALLOCATE(newBuffer, _workspace, size, int8_t);
 
             // copy data from existing buffer
-            memcpy(newBuffer, _primaryBuffer, _lenInBytes);
+            std::memcpy(newBuffer, _primaryBuffer, _lenInBytes);
 
             RELEASE(reinterpret_cast<int8_t *>(_primaryBuffer), _workspace);
 
@@ -121,6 +121,15 @@ void DataBuffer::memcpy(const DataBuffer &dst, const DataBuffer &src) {
 
     std::memcpy(dst._primaryBuffer, src._primaryBuffer, dst._lenInBytes);
 }
+
+/////////////////////////
+void DataBuffer::memcpy(const DataBuffer &dst, const DataBuffer &src) {
+    if (src._lenInBytes < dst._lenInBytes)
+        throw std::runtime_error("DataBuffer::memcpy: Source data buffer is smaller than destination");
+
+    std::memcpy(dst._primaryBuffer, src._primaryBuffer, dst._lenInBytes);
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 void DataBuffer::writePrimary() const    { }

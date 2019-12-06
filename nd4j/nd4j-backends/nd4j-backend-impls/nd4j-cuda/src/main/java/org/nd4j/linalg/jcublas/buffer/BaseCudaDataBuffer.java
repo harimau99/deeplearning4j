@@ -38,6 +38,7 @@ import org.nd4j.linalg.api.memory.Deallocatable;
 import org.nd4j.linalg.api.memory.Deallocator;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.enums.MemoryKind;
+import org.nd4j.linalg.api.memory.enums.MirroringPolicy;
 import org.nd4j.linalg.api.memory.pointers.PagedPointer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.performance.PerformanceTracker;
@@ -48,6 +49,7 @@ import org.nd4j.linalg.memory.MemcpyDirection;
 import org.nd4j.linalg.memory.abstracts.DummyWorkspace;
 import org.nd4j.linalg.util.ArrayUtil;
 import org.nd4j.linalg.util.LongUtils;
+import org.nd4j.nativeblas.NativeOps;
 import org.nd4j.nativeblas.NativeOpsHolder;
 import org.nd4j.nativeblas.OpaqueDataBuffer;
 import org.slf4j.Logger;
@@ -111,6 +113,8 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, this.type.toInt(), false);
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, this.type.width() * length);
         this.allocationPoint.setPointers(pointer, specialPointer, length);
+
+        Nd4j.getDeallocatorService().pickObject(this);
     }
 
     /**
@@ -231,10 +235,11 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
     public void lazyAllocateHostPointer() {
         // java side might be unaware of native-side buffer allocation
-        if (this.indexer == null || this.pointer == null)
+        if (this.indexer == null || this.pointer == null || this.pointer.address() == 0) {
             initHostPointerAndIndexer();
-        else if (allocationPoint.getHostPointer() != null && allocationPoint.getHostPointer().address() != this.pointer.address())
+        } else if (allocationPoint.getHostPointer() != null && allocationPoint.getHostPointer().address() != this.pointer.address()) {
             initHostPointerAndIndexer();
+        }
     }
 
     protected void initHostPointerAndIndexer() {
@@ -321,6 +326,13 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, type.toInt(), false);
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length * type.width());
 
+        if (initialize) {
+            val ctx = AtomicAllocator.getInstance().getDeviceContext();
+            val devicePtr = allocationPoint.getDevicePointer();
+            NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
+            ctx.getSpecialStream().synchronize();
+        }
+
         // let deallocator pick up this object
         Nd4j.getDeallocatorService().pickObject(this);
     }
@@ -345,8 +357,30 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         // allocating empty databuffer
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, type.toInt(), false);
 
-        // allocate from workspace, and pass it  to native DataBuffer
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, workspace.alloc(length * elementSize, MemoryKind.DEVICE, type, initialize), this.length);
+        if (workspace.getWorkspaceConfiguration().getPolicyMirroring() == MirroringPolicy.FULL) {
+            val devicePtr = workspace.alloc(length * elementSize, MemoryKind.DEVICE, type, initialize);
+
+            // allocate from workspace, and pass it  to native DataBuffer
+            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
+
+            if (initialize) {
+                val ctx = AtomicAllocator.getInstance().getDeviceContext();
+                NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
+                ctx.getSpecialStream().synchronize();
+            }
+        }  else {
+            // we can register this pointer as device, because it's pinned memory
+            val devicePtr = workspace.alloc(length * elementSize, MemoryKind.HOST, type, initialize);
+            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
+
+            if (initialize) {
+                val ctx = AtomicAllocator.getInstance().getDeviceContext();
+                NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(devicePtr, 0, length * elementSize, 0, ctx.getSpecialStream());
+                ctx.getSpecialStream().synchronize();
+            }
+        }
+
+        this.allocationPoint = new AllocationPoint(ptrDataBuffer, elementSize * length);
 
         // registering for deallocation
         Nd4j.getDeallocatorService().pickObject(this);
@@ -398,9 +432,11 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ((BaseCudaDataBuffer) underlyingBuffer).lazyAllocateHostPointer();
 
         // we're creating view of the native DataBuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCudaDataBuffer) underlyingBuffer).ptrDataBuffer, offset);
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCudaDataBuffer) underlyingBuffer).ptrDataBuffer, offset * underlyingBuffer.getElementSize());
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length);
         val hostPointer = allocationPoint.getHostPointer();
+
+        Nd4j.getDeallocatorService().pickObject(this);
 
         switch (underlyingBuffer.dataType()) {
             case DOUBLE:
@@ -1200,9 +1236,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
     @Override
     public boolean sameUnderlyingData(DataBuffer buffer) {
-        if (1 > 0)
-            throw new UnsupportedOperationException("Pew-pew");
-        return false;
+        return ptrDataBuffer.address() == ((BaseCudaDataBuffer) buffer).ptrDataBuffer.address();
     }
 
     /**

@@ -28,6 +28,8 @@ namespace nd4j {
             auto input = INPUT_VARIABLE(0);
             auto output = OUTPUT_VARIABLE(0);
             std::string str;
+
+            input->printShapeInfo("Input ShapeInfo");
             if (block.width() == 2) {
                 auto message = INPUT_VARIABLE(1);
                 REQUIRE_TRUE(message->isS(), 0, "print_variable: message variable must be a String");

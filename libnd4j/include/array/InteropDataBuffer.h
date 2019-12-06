@@ -33,7 +33,7 @@ namespace nd4j {
     class InteropDataBuffer {
     private:
         std::shared_ptr<DataBuffer> _dataBuffer;
-        uint64_t _offset;
+        uint64_t _offset = 0;
     public:
         InteropDataBuffer(InteropDataBuffer &dataBuffer, Nd4jLong offset);
         InteropDataBuffer(std::shared_ptr<DataBuffer> databuffer);

@@ -185,7 +185,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
                         x, (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.x().shapeInfoDataBuffer()), (LongPointer) xShapeInfo,
                         y, (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.y().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.y().shapeInfoDataBuffer(),context),
                         z, (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.z().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.z().shapeInfoDataBuffer(), context),
-                        ((BaseCudaDataBuffer) op.dimensions()).getOpaqueDataBuffer(), (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.dimensions().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.dimensions(), context));
+                        ((BaseCudaDataBuffer) op.dimensions().data()).getOpaqueDataBuffer(), (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.dimensions().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.dimensions().shapeInfoDataBuffer(), context));
                 break;
             case BROADCAST_BOOL:
                 nativeOps.execBroadcastBool(xShapeInfoHostPointer, op.opNum(),
@@ -193,7 +193,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
                         y, (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.y().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.y().shapeInfoDataBuffer(),context),
                         z, (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.z().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.z().shapeInfoDataBuffer(), context),
                         null,
-                        ((BaseCudaDataBuffer) op.dimensions()).getOpaqueDataBuffer(), (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.dimensions().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.dimensions(), context));
+                        ((BaseCudaDataBuffer) op.dimensions().data()).getOpaqueDataBuffer(), (LongPointer) AtomicAllocator.getInstance().getHostPointer(op.dimensions().shapeInfoDataBuffer()), (LongPointer) AtomicAllocator.getInstance().getPointer(op.dimensions().shapeInfoDataBuffer(), context));
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown op type: " + op.getOpType());
@@ -1339,14 +1339,11 @@ public class CudaExecutioner extends DefaultOpExecutioner {
         val y = op.y() == null ? null : ((BaseCudaDataBuffer) op.y().data()).getOpaqueDataBuffer();
         val z = op.z() == null ? null : ((BaseCudaDataBuffer) op.z().data()).getOpaqueDataBuffer();
 
-
         if (op.y() != null) {
             Pointer yShapeInfo = allocator.getPointer(op.y().shapeInfoDataBuffer(), context);
 
             if (op.x().length() != op.y().length() || op.x().length() != op.z().length())
                 throw new ND4JIllegalStateException("X, Y and Z arguments should have the same length for PairwiseTransform");
-
-            ///log.info("X: {}; Y: {}; Z: {}; E: {};", x.address(), y.address(), z.address(), extraArgs != null ? extraArgs.address() : null);
 
             switch (op.getOpType()) {
                 case TRANSFORM_BOOL:
@@ -1370,7 +1367,7 @@ public class CudaExecutioner extends DefaultOpExecutioner {
                 case TRANSFORM_ANY:
                     nativeOps.execTransformAny(xShapeInfoHostPointer, op.opNum(),
                             x, (LongPointer) hostXShapeInfo, (LongPointer) xShapeInfo,
-                            y, (LongPointer) hostZShapeInfo, (LongPointer) zShapeInfo,
+                            z, (LongPointer) hostZShapeInfo, (LongPointer) zShapeInfo,
                             extraArgs);
                     break;
                 case TRANSFORM_FLOAT:
