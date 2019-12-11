@@ -477,7 +477,7 @@ public class InferenceSession extends AbstractSession<INDArray, SameDiffOp> {
                 }
                 throw new IllegalStateException(s);
             }
-            return ((Assert) op).outputArguments();
+            return ((Assert) op).outputArguments().toArray(new INDArray[0]);
         } else if (op instanceof CustomOp) {
             CustomOp c = (CustomOp) op;
             Nd4j.exec(c);
