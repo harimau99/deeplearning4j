@@ -114,13 +114,6 @@ void DataBuffer::allocateSpecial() {
 void DataBuffer::migrate() {
 
 }
-///////////////////////////////////////////////////////////////////////
-void DataBuffer::memcpy(const DataBuffer &dst, const DataBuffer &src) {
-    if (src._lenInBytes < dst._lenInBytes)
-        throw std::runtime_error("DataBuffer::memcpy: Source data buffer is smaller than destination");
-
-    std::memcpy(dst._primaryBuffer, src._primaryBuffer, dst._lenInBytes);
-}
 
 /////////////////////////
 void DataBuffer::memcpy(const DataBuffer &dst, const DataBuffer &src) {

@@ -755,13 +755,16 @@ TEST_F(LegacyOpsTests, test_legacy_reduce_empty_4) {
     auto z = NDArrayFactory::create<float>('c', {0, 2});
     auto e = NDArrayFactory::create<float>('c', {0, 2});
 
+    InteropDataBuffer xdb(x.dataBuffer());
+    InteropDataBuffer ddb(d.dataBuffer());
+    InteropDataBuffer zdb(z.dataBuffer());
 
 
     ::execReduceSame2(nullptr, reduce::SameOps::Sum,
-            x.buffer(), x.shapeInfo(), x.specialBuffer(), x.specialShapeInfo(),
+            &xdb, x.shapeInfo(), x.specialShapeInfo(),
             nullptr,
-            z.buffer(), z.shapeInfo(), z.specialBuffer(), z.specialShapeInfo(),
-            d.buffer(), d.shapeInfo(), d.specialBuffer(), d.specialShapeInfo());
+            &zdb, z.shapeInfo(), z.specialShapeInfo(),
+            &ddb, d.shapeInfo(), d.specialShapeInfo());
 
 }
 

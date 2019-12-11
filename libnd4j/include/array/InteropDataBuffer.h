@@ -30,7 +30,7 @@ namespace nd4j {
     /**
      * This class is a wrapper for DataBuffer, suitable for sharing DataBuffer between front-end and back-end languages
      */
-    class InteropDataBuffer {
+    class ND4J_EXPORT InteropDataBuffer {
     private:
         std::shared_ptr<DataBuffer> _dataBuffer;
         uint64_t _offset = 0;
