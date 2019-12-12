@@ -127,9 +127,11 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
     public BaseCudaDataBuffer(Pointer pointer, Indexer indexer, long length) {
         super(pointer, indexer, length);
 
-        //cuda specific bits
-        this.allocationPoint = AtomicAllocator.getInstance().allocateMemory(this, new AllocationShape(length, elementSize, dataType()), false);
+        // allocating interop buffer
+        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, type.toInt(), false);
 
+        //cuda specific bits
+        this.allocationPoint = new AllocationPoint(ptrDataBuffer, length * elementSize);
         Nd4j.getDeallocatorService().pickObject(this);
 
         // now we're
