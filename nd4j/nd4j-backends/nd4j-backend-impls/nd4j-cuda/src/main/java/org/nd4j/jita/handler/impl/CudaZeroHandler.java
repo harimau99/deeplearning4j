@@ -533,11 +533,11 @@ public class CudaZeroHandler implements MemoryHandler {
         }
 
         if (dstPoint.getDevicePointer() == null)
-            throw new RuntimeException("NullPointer");
+            return null;
 
 
-        // return pointer with offset if needed. length is specified for constructor compatibility purposes
-        val p = new CudaPointer(dstPoint.getDevicePointer(), buffer.length(), (buffer.offset() * buffer.getElementSize()));
+        // return pointer. length is specified for constructor compatibility purposes. Offset is accounted at C++ side
+        val p = new CudaPointer(dstPoint.getDevicePointer(), buffer.length(), 0);
 
         if (OpProfiler.getInstance().getConfig().isCheckLocality())
              NativeOpsHolder.getInstance().getDeviceNativeOps().tryPointer(context.getOldStream(), p, 1);
