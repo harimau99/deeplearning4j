@@ -566,36 +566,24 @@ public class JCublasNDArray extends BaseNDArray {
         AtomicAllocator allocator = AtomicAllocator.getInstance();
         val context = (CudaContext) allocator.getDeviceContext();
 
-        AllocationPoint srcPoint = null; //allocator.getAllocationPoint(this);
-        AllocationPoint dstPoint = null; //allocator.getAllocationPoint(ret);
-        if (1 > 0)
-            throw new UnsupportedOperationException("Pew-pew");
+        AllocationPoint srcPoint = allocator.getAllocationPoint(this);
+        AllocationPoint dstPoint = allocator.getAllocationPoint(ret);
 
         int route = 0;
 //        long time1 = System.currentTimeMillis();
         MemcpyDirection direction = MemcpyDirection.HOST_TO_HOST;
         val prof = PerformanceTracker.getInstance().helperStartTransaction();
 
-        if (dstPoint.getAllocationStatus() == AllocationStatus.DEVICE && srcPoint.getAllocationStatus() == AllocationStatus.DEVICE) {
-            // d2d copy
+        if (srcPoint.isActualOnDeviceSide()) {
             route = 1;
             NativeOpsHolder.getInstance().getDeviceNativeOps().memcpyAsync(dstPoint.getDevicePointer(), srcPoint.getDevicePointer(), this.data.length() * this.data.getElementSize(), CudaConstants.cudaMemcpyDeviceToDevice, blocking ? context.getOldStream() : context.getSpecialStream());
             dstPoint.tickDeviceWrite();
             direction = MemcpyDirection.DEVICE_TO_DEVICE;
-        } else if (dstPoint.getAllocationStatus() == AllocationStatus.HOST && srcPoint.getAllocationStatus() == AllocationStatus.DEVICE) {
-            route = 2;
-            NativeOpsHolder.getInstance().getDeviceNativeOps().memcpyAsync(dstPoint.getHostPointer(), srcPoint.getDevicePointer(), this.data.length() * this.data.getElementSize(), CudaConstants.cudaMemcpyDeviceToHost, blocking ? context.getOldStream() : context.getSpecialStream());
-            dstPoint.tickHostWrite();
-            direction = MemcpyDirection.DEVICE_TO_HOST;
-        } else if (dstPoint.getAllocationStatus() == AllocationStatus.DEVICE && srcPoint.getAllocationStatus() == AllocationStatus.HOST) {
+        } else {
             route = 3;
             NativeOpsHolder.getInstance().getDeviceNativeOps().memcpyAsync(dstPoint.getDevicePointer(), srcPoint.getHostPointer(), this.data.length() * this.data.getElementSize(), CudaConstants.cudaMemcpyHostToDevice, blocking ? context.getOldStream() : context.getSpecialStream());
             dstPoint.tickDeviceWrite();
             direction = MemcpyDirection.HOST_TO_DEVICE;
-        } else {
-            route = 4;
-            NativeOpsHolder.getInstance().getDeviceNativeOps().memcpyAsync(dstPoint.getHostPointer(), srcPoint.getHostPointer(), this.data.length() * this.data.getElementSize(), CudaConstants.cudaMemcpyHostToHost, blocking ? context.getOldStream() : context.getSpecialStream());
-            dstPoint.tickHostWrite();
         }
 
 

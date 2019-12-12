@@ -571,7 +571,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         switch (dataType()) {
             case BOOL: {
                     val pointer = new BytePointer(ArrayUtil.toBytes(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -581,7 +581,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case BYTE: {
                     val pointer = new BytePointer(ArrayUtil.toBytes(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -597,7 +597,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case SHORT: {
                     val pointer = new ShortPointer(ArrayUtil.toShorts(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -607,7 +607,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case INT: {
                     val pointer = new IntPointer(data);
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -617,7 +617,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case LONG: {
                     val pointer = new LongPointer(LongUtils.toLongs(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -627,7 +627,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case HALF: {
                     val pointer = new ShortPointer(ArrayUtil.toHalfs(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -637,7 +637,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case FLOAT: {
                     val pointer = new FloatPointer(ArrayUtil.toFloats(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -647,7 +647,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case DOUBLE: {
                     val pointer = new DoublePointer(ArrayUtil.toDouble(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -666,7 +666,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         switch (dataType()) {
             case BOOL: {
                     val pointer = new BytePointer(ArrayUtil.toBytes(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -676,7 +676,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case BYTE: {
                     val pointer = new BytePointer(ArrayUtil.toBytes(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -695,7 +695,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 data = ArrayUtil.cutBelowZero(data);
             case SHORT: {
                     val pointer = new ShortPointer(ArrayUtil.toShorts(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -707,7 +707,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 data = ArrayUtil.cutBelowZero(data);
             case INT: {
                     val pointer = new IntPointer(ArrayUtil.toInts(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -719,7 +719,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 data = ArrayUtil.cutBelowZero(data);
             case LONG: {
                     val pointer = new LongPointer(data);
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -729,7 +729,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case BFLOAT16: {
                 val pointer = new ShortPointer(ArrayUtil.toBfloats(data));
-                val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                 allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -739,7 +739,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
             break;
             case HALF: {
                     val pointer = new ShortPointer(ArrayUtil.toHalfs(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -749,7 +749,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case FLOAT: {
                     val pointer = new FloatPointer(ArrayUtil.toFloats(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -759,7 +759,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case DOUBLE: {
                     val pointer = new DoublePointer(ArrayUtil.toDouble(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
                     // we're keeping pointer reference for JVM
@@ -785,7 +785,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         switch (dataType()) {
             case BOOL: {
                     val pointer = new BytePointer(ArrayUtil.toBytes(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -795,7 +795,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case BYTE: {
                     val pointer = new BytePointer(ArrayUtil.toBytes(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -811,7 +811,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case SHORT: {
                     val pointer = new ShortPointer(ArrayUtil.toShorts(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -821,7 +821,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case INT: {
                     val pointer = new IntPointer(ArrayUtil.toInts(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -831,7 +831,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case LONG: {
                     val pointer = new LongPointer(ArrayUtil.toLongArray(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -841,7 +841,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case HALF: {
                     val pointer = new ShortPointer(ArrayUtil.toHalfs(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -851,7 +851,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case FLOAT: {
                     val pointer = new FloatPointer(data);
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -861,7 +861,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case DOUBLE: {
                     DoublePointer pointer = new DoublePointer(ArrayUtil.toDoubles(data));
-                    Pointer srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    Pointer srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -887,7 +887,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         switch (dataType()) {
             case BOOL:  {
                     val pointer = new BytePointer(ArrayUtil.toBytes(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -897,7 +897,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case BYTE: {
                     val pointer = new BytePointer(ArrayUtil.toBytes(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -913,7 +913,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case SHORT: {
                     val pointer = new ShortPointer(ArrayUtil.toShorts(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -923,7 +923,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case INT: {
                     val pointer = new IntPointer(ArrayUtil.toInts(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -933,7 +933,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case LONG: {
                     val pointer = new LongPointer(ArrayUtil.toLongs(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -943,7 +943,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case HALF: {
                     val pointer = new ShortPointer(ArrayUtil.toHalfs(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -953,7 +953,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case FLOAT: {
                     val pointer = new FloatPointer(ArrayUtil.toFloats(data));
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 
@@ -963,7 +963,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 break;
             case DOUBLE: {
                     val pointer = new DoublePointer(data);
-                    val srcPtr = new CudaPointer(pointer.address() + (dstOffset * elementSize));
+                    val srcPtr = new CudaPointer(pointer.address() + (srcOffset * elementSize));
 
                     allocator.memcpyAsync(this, srcPtr, length * elementSize, dstOffset * elementSize);
 

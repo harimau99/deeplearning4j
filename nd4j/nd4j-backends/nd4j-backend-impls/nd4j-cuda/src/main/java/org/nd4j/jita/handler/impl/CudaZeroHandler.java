@@ -347,6 +347,8 @@ public class CudaZeroHandler implements MemoryHandler {
 
             var prof = PerformanceTracker.getInstance().helperStartTransaction();
 
+            flowController.commitTransfer(tContext.getSpecialStream());
+
             if (nativeOps.memcpyAsync(rDP, srcPointer, length, CudaConstants.cudaMemcpyHostToDevice, tContext.getSpecialStream()) == 0)
                 throw new IllegalStateException("MemcpyAsync H2D failed: [" + srcPointer.address() + "] -> [" + rDP.address() + "]");
 
