@@ -354,6 +354,29 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             throw new IllegalArgumentException("Unknown datatype: " + dataType());
     }
 
+    @Override
+    public Pointer addressPointer() {
+        // we're fetching actual pointer right from C++
+        val tempPtr = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer));
+
+        switch (this.type) {
+            case DOUBLE: return tempPtr.asDoublePointer();
+            case FLOAT: return tempPtr.asFloatPointer();
+            case UINT16:
+            case SHORT:
+            case BFLOAT16:
+            case HALF: return tempPtr.asShortPointer();
+            case UINT32:
+            case INT: return tempPtr.asIntPointer();
+            case UBYTE:
+            case BYTE: return tempPtr.asBytePointer();
+            case UINT64:
+            case LONG: return tempPtr.asLongPointer();
+            case BOOL: return tempPtr.asBoolPointer();
+            default: return tempPtr.asBytePointer();
+        }
+    }
+
     protected BaseCpuDataBuffer(long length, boolean initialize, MemoryWorkspace workspace) {
         if (length < 1)
             throw new IllegalArgumentException("Length must be >= 1");

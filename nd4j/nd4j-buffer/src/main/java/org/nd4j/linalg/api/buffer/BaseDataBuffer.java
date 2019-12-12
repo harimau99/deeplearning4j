@@ -322,6 +322,9 @@ public abstract class BaseDataBuffer implements DataBuffer {
         //return referencing;
     }
 
+    public abstract Pointer addressPointer();
+
+    /*
     @Override
     public Pointer addressPointer() {
         if (released)
@@ -369,6 +372,7 @@ public abstract class BaseDataBuffer implements DataBuffer {
         }
         return pointer();
     }
+    */
 
     @Override
     public long address() {

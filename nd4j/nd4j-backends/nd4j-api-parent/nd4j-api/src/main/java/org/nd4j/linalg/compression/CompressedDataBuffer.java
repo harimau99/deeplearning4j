@@ -89,6 +89,11 @@ public class CompressedDataBuffer extends BaseDataBuffer {
         // no-op
     }
 
+    @Override
+    public Pointer addressPointer() {
+        return pointer;
+    }
+
     /**
      * Drop-in replacement wrapper for BaseDataBuffer.read() method, aware of CompressedDataBuffer
      * @param s

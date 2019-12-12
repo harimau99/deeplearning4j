@@ -2842,7 +2842,6 @@ public class Nd4jTestsC extends BaseNd4jTest {
         assertEquals(25, Nd4j.getBlasWrapper().dot(row, row), 1e-1);
     }
 
-
     @Test
     public void testIdentity() {
         INDArray eye = Nd4j.eye(5);
