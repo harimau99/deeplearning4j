@@ -27,6 +27,9 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.pointers.PagedPointer;
+import org.nd4j.linalg.cpu.nativecpu.ops.NativeOpExecutioner;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.nativeblas.NativeOpsHolder;
 
 import java.nio.ByteBuffer;
 
@@ -115,6 +118,12 @@ public class LongBuffer extends BaseCpuDataBuffer {
 
         this.pointer = new PagedPointer(hostPointer, numberOfElements).asLongPointer();
         indexer = LongIndexer.create((LongPointer) this.pointer);
+
+        // we still want this buffer to have native representation
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, DataType.INT64.toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, this.pointer, numberOfElements * 8);
+
+        Nd4j.getDeallocatorService().pickObject(this);
     }
 
     @Override

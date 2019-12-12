@@ -45,7 +45,7 @@ import static org.nd4j.linalg.api.buffer.DataType.INT8;
  */
 public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallocatable {
 
-    private OpaqueDataBuffer ptrDataBuffer;
+    protected OpaqueDataBuffer ptrDataBuffer;
 
     private final long instanceId = Nd4j.getDeallocatorService().nextValue();
 
@@ -150,8 +150,12 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
         // for vew we need "externally managed" pointer and deallocator registration
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCpuDataBuffer) underlyingBuffer).ptrDataBuffer, offset * underlyingBuffer.getElementSize());
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, new PagedPointer(this.addressPointer()), length);
+        //NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, new PagedPointer(this.addressPointer()), length);
         Nd4j.getDeallocatorService().pickObject(this);
+
+
+        // update pointer now
+        actualizePointerAndIndexer();
     }
 
     @Override
@@ -159,9 +163,12 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
         type = currentType;
 
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length(), type.toInt(), false);
+        if (ptrDataBuffer == null) {
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length(), type.toInt(), false);
+            Nd4j.getDeallocatorService().pickObject(this);
+        }
+
         actualizePointerAndIndexer();
-        Nd4j.getDeallocatorService().pickObject(this);
     }
 
     /**
