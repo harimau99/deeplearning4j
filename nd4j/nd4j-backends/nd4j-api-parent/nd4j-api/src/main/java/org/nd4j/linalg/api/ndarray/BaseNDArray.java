@@ -4749,8 +4749,8 @@ public abstract class BaseNDArray implements INDArray, Iterable {
             return this;
 
         checkArrangeArray(rearrange);
-        int[] newShape = doPermuteSwap(shapeOf(), rearrange);
-        int[] newStride = doPermuteSwap(strideOf(), rearrange);
+        val newShape = doPermuteSwap(shape(), rearrange);
+        val newStride = doPermuteSwap(stride(), rearrange);
 
         char newOrder = Shape.getOrder(newShape, newStride, 1);
 
@@ -4776,23 +4776,11 @@ public abstract class BaseNDArray implements INDArray, Iterable {
             return this;
 
         checkArrangeArray(rearrange);
-        val newShape = doPermuteSwap(Shape.shapeOf(shapeInfo), rearrange);
-        val newStride = doPermuteSwap(Shape.stride(shapeInfo), rearrange);
+        val newShape = doPermuteSwap(shape(), rearrange);
+        val newStride = doPermuteSwap(stride(), rearrange);
         char newOrder = Shape.getOrder(newShape, newStride, 1);
 
-        //Set the shape information of this array: shape, stride, order.
-        //Shape info buffer: [rank, [shape], [stride], offset, elementwiseStride, order]
-        /*for( int i=0; i<rank; i++ ){
-            shapeInfo.put(1+i,newShape[i]);
-            shapeInfo.put(1+i+rank,newStride[i]);
-        }
-        shapeInfo.put(3+2*rank,newOrder);
-        */
         val ews = shapeInfo.get(2 * rank + 2);
-        /*
-        if (ews < 1 && !attemptedToFindElementWiseStride)
-            throw new RuntimeException("EWS is -1");
-            */
 
         val si = Nd4j.getShapeInfoProvider().createShapeInformation(newShape, newStride,  ews, newOrder, dataType(), isEmpty());
         setShapeInformation(si);
@@ -4812,6 +4800,7 @@ public abstract class BaseNDArray implements INDArray, Iterable {
     }
 
 
+    @Deprecated
     protected long[] doPermuteSwap(LongBuffer shape, int[] rearrange) {
         val ret = new long[rearrange.length];
         for (int i = 0; i < rearrange.length; i++) {
@@ -4820,6 +4809,7 @@ public abstract class BaseNDArray implements INDArray, Iterable {
         return ret;
     }
 
+    @Deprecated
     protected int[] doPermuteSwap(IntBuffer shape, int[] rearrange) {
         int[] ret = new int[rearrange.length];
         for (int i = 0; i < rearrange.length; i++) {
@@ -4828,10 +4818,19 @@ public abstract class BaseNDArray implements INDArray, Iterable {
         return ret;
     }
 
+    @Deprecated
     protected int[] doPermuteSwap(DataBuffer shape, int[] rearrange) {
         int[] ret = new int[rearrange.length];
         for (int i = 0; i < rearrange.length; i++) {
             ret[i] = shape.getInt(rearrange[i]);
+        }
+        return ret;
+    }
+
+    protected long[] doPermuteSwap(long[] shape, int[] rearrange) {
+        val ret = new long[rearrange.length];
+        for (int i = 0; i < rearrange.length; i++) {
+            ret[i] = shape[rearrange[i]];
         }
 
         return ret;

@@ -444,10 +444,10 @@ public class Nd4jCuda extends org.nd4j.nativeblas.Nd4jCudaHelper {
         public native void copyBufferFrom(@Const @ByRef DataBuffer other, @Cast("size_t") long sizeToCopyinBytes/*=0*/, @Cast("const Nd4jLong") long offsetThis/*=0*/, @Cast("const Nd4jLong") long offsetOther/*=0*/);
         public native void copyBufferFrom(@Const @ByRef DataBuffer other);
 
+        public static native void memcpy(@Const @ByRef DataBuffer dst, @Const @ByRef DataBuffer src);
+
         public native void setPrimaryBuffer(Pointer buffer, @Cast("size_t") long length);
         public native void setSpecialBuffer(Pointer buffer, @Cast("size_t") long length);
-
-        public static native void memcpy(@Const @ByRef DataBuffer dst, @Const @ByRef DataBuffer src);
 }
 ///// IMLEMENTATION OF INLINE METHODS /////
 
@@ -4501,6 +4501,7 @@ public native @Cast("bool") boolean isOptimalRequirementsMet();
         *  returns reference on array element with given index
         */
 
+
         /**
         *  returns array element with given index
         *  i - element index in array
@@ -5088,11 +5089,15 @@ NDArray& NDArray::operator()(const Nd4jLong* idx) {
 
 
 
-////////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////////
+
+
+    
 
     
 
@@ -7546,9 +7551,9 @@ public static final int PREALLOC_SIZE = 33554432;
  * the given shape info buffer
  * represents a scalar shape
  */
-    @Namespace("shape") public static native int isScalar(@Cast("Nd4jLong*") LongPointer info);
-    @Namespace("shape") public static native int isScalar(@Cast("Nd4jLong*") LongBuffer info);
-    @Namespace("shape") public static native int isScalar(@Cast("Nd4jLong*") long[] info);
+    @Namespace("shape") public static native int isScalar(@Cast("const Nd4jLong*") LongPointer info);
+    @Namespace("shape") public static native int isScalar(@Cast("const Nd4jLong*") LongBuffer info);
+    @Namespace("shape") public static native int isScalar(@Cast("const Nd4jLong*") long[] info);
 
 /**
  * Returns whether
@@ -7952,6 +7957,9 @@ public static final int PREALLOC_SIZE = 33554432;
     @Namespace("shape") public static native void index2coords(@Cast("Nd4jLong") long index, int rank, @Cast("const Nd4jLong*") LongPointer shape, @Cast("Nd4jLong*") LongPointer coords);
     @Namespace("shape") public static native void index2coords(@Cast("Nd4jLong") long index, int rank, @Cast("const Nd4jLong*") LongBuffer shape, @Cast("Nd4jLong*") LongBuffer coords);
     @Namespace("shape") public static native void index2coords(@Cast("Nd4jLong") long index, int rank, @Cast("const Nd4jLong*") long[] shape, @Cast("Nd4jLong*") long[] coords);
+    @Namespace("shape") public static native void index2coords(@Cast("Nd4jLong") long index, int rank, @Cast("const Nd4jLong*") LongPointer shape, IntPointer coords);
+    @Namespace("shape") public static native void index2coords(@Cast("Nd4jLong") long index, int rank, @Cast("const Nd4jLong*") LongBuffer shape, IntBuffer coords);
+    @Namespace("shape") public static native void index2coords(@Cast("Nd4jLong") long index, int rank, @Cast("const Nd4jLong*") long[] shape, int[] coords);
     /**
     * take into account only dimensions stored in tadDims, tadDims must be sorted in increasing order!
     */
@@ -9021,6 +9029,8 @@ public static final int PREALLOC_SIZE = 33554432;
     //////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////
 
