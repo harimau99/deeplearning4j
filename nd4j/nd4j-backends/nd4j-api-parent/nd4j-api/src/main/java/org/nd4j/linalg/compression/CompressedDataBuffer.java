@@ -199,10 +199,15 @@ public class CompressedDataBuffer extends BaseDataBuffer {
      */
     @Override
     public DataBuffer create(int[] data) {
-        throw new UnsupportedOperationException("This operation isn't supported for CompressedDataBuffer");
+        throw new UnsupportedOperationException("This method isn't supported by CompressedDataBuffer");
     }
 
     public void pointerIndexerByCurrentType(DataType currentType) {
-        throw new UnsupportedOperationException("This operation isn't supported for CompressedDataBuffer");
+        throw new UnsupportedOperationException("This method isn't supported by CompressedDataBuffer");
+    }
+
+    @Override
+    public DataBuffer reallocate(long length) {
+        throw new UnsupportedOperationException("This method isn't supported by CompressedDataBuffer");
     }
 }

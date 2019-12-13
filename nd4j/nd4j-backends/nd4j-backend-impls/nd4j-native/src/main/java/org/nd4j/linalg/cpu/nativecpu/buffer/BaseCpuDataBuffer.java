@@ -45,7 +45,7 @@ import static org.nd4j.linalg.api.buffer.DataType.INT8;
  */
 public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallocatable {
 
-    protected OpaqueDataBuffer ptrDataBuffer;
+    protected transient OpaqueDataBuffer ptrDataBuffer;
 
     private final long instanceId = Nd4j.getDeallocatorService().nextValue();
 
@@ -562,6 +562,11 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         //log.info("Allocating FloatPointer from array of {} elements", data.length);
 
         pointer = workspace.alloc(data.length * getElementSize(), dataType(), false).asFloatPointer().put(data);
+
+        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, pointer, this.length);
+        Nd4j.getDeallocatorService().pickObject(this);
+
         workspaceGenerationId = workspace.getGenerationId();
         setIndexer(FloatIndexer.create((FloatPointer) pointer));
         //wrappedBuffer = pointer.asByteBuffer();
@@ -579,6 +584,11 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         //log.info("Allocating FloatPointer from array of {} elements", data.length);
 
         pointer = workspace.alloc(data.length * getElementSize(), dataType(), false).asDoublePointer().put(data);
+
+        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, pointer, this.length);
+        Nd4j.getDeallocatorService().pickObject(this);
+
         workspaceGenerationId = workspace.getGenerationId();
         indexer = DoubleIndexer.create((DoublePointer) pointer);
         //wrappedBuffer = pointer.asByteBuffer();
@@ -597,6 +607,11 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         //log.info("Allocating FloatPointer from array of {} elements", data.length);
 
         pointer = workspace.alloc(data.length * getElementSize(), dataType(), false).asIntPointer().put(data);
+
+        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, pointer, this.length);
+        Nd4j.getDeallocatorService().pickObject(this);
+
         workspaceGenerationId = workspace.getGenerationId();
         indexer = IntIndexer.create((IntPointer) pointer);
         //wrappedBuffer = pointer.asByteBuffer();
@@ -614,6 +629,11 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         //log.info("Allocating FloatPointer from array of {} elements", data.length);
 
         pointer = workspace.alloc(data.length * getElementSize(), dataType(), false).asLongPointer().put(data);
+
+        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, pointer, this.length);
+        Nd4j.getDeallocatorService().pickObject(this);
+
         workspaceGenerationId = workspace.getGenerationId();
         indexer = LongIndexer.create((LongPointer) pointer);
         //wrappedBuffer = pointer.asByteBuffer();
@@ -747,5 +767,118 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         this(data, true, workspace);
     }
 
+    /**
+     * Reallocate the native memory of the buffer
+     * @param length the new length of the buffer
+     * @return this databuffer
+     * */
+    @Override
+    public DataBuffer reallocate(long length) {
+        val oldPointer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer);
+
+        if (isAttached()) {
+            val capacity = length * getElementSize();
+            val nPtr = getParentWorkspace().alloc(capacity, dataType(), false);
+            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, nPtr, length);
+
+            switch (dataType()) {
+                case BOOL:
+                    pointer = nPtr.asBoolPointer();
+                    indexer = BooleanIndexer.create((BooleanPointer) pointer);
+                    break;
+                case UTF8:
+                case BYTE:
+                case UBYTE:
+                    pointer = nPtr.asBytePointer();
+                    indexer = ByteIndexer.create((BytePointer) pointer);
+                    break;
+                case UINT16:
+                case SHORT:
+                    pointer = nPtr.asShortPointer();
+                    indexer = ShortIndexer.create((ShortPointer) pointer);
+                    break;
+                case UINT32:
+                case INT:
+                    pointer = nPtr.asIntPointer();
+                    indexer = IntIndexer.create((IntPointer) pointer);
+                    break;
+                case DOUBLE:
+                    pointer = nPtr.asDoublePointer();
+                    indexer = DoubleIndexer.create((DoublePointer) pointer);
+                    break;
+                case FLOAT:
+                    pointer = nPtr.asFloatPointer();
+                    indexer = FloatIndexer.create((FloatPointer) pointer);
+                    break;
+                case HALF:
+                    pointer = nPtr.asShortPointer();
+                    indexer = HalfIndexer.create((ShortPointer) pointer);
+                    break;
+                case BFLOAT16:
+                    pointer = nPtr.asShortPointer();
+                    indexer = Bfloat16Indexer.create((ShortPointer) pointer);
+                    break;
+                case UINT64:
+                case LONG:
+                    pointer = nPtr.asLongPointer();
+                    indexer = LongIndexer.create((LongPointer) pointer);
+                    break;
+            }
+
+            Pointer.memcpy(pointer, oldPointer, this.length() * getElementSize());
+            workspaceGenerationId = getParentWorkspace().getGenerationId();
+        } else {
+            NativeOpsHolder.getInstance().getDeviceNativeOps().dbExpand(this.ptrDataBuffer, length);
+            val nPtr = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer), length);
+
+            switch (dataType()) {
+                case BOOL:
+                    pointer = nPtr.asBoolPointer();
+                    indexer = BooleanIndexer.create((BooleanPointer) pointer);
+                    break;
+                case UTF8:
+                case BYTE:
+                case UBYTE:
+                    pointer = nPtr.asBytePointer();
+                    indexer = ByteIndexer.create((BytePointer) pointer);
+                    break;
+                case UINT16:
+                case SHORT:
+                    pointer = nPtr.asShortPointer();
+                    indexer = ShortIndexer.create((ShortPointer) pointer);
+                    break;
+                case UINT32:
+                case INT:
+                    pointer = nPtr.asIntPointer();
+                    indexer = IntIndexer.create((IntPointer) pointer);
+                    break;
+                case DOUBLE:
+                    pointer = nPtr.asDoublePointer();
+                    indexer = DoubleIndexer.create((DoublePointer) pointer);
+                    break;
+                case FLOAT:
+                    pointer = nPtr.asFloatPointer();
+                    indexer = FloatIndexer.create((FloatPointer) pointer);
+                    break;
+                case HALF:
+                    pointer = nPtr.asShortPointer();
+                    indexer = HalfIndexer.create((ShortPointer) pointer);
+                    break;
+                case BFLOAT16:
+                    pointer = nPtr.asShortPointer();
+                    indexer = Bfloat16Indexer.create((ShortPointer) pointer);
+                    break;
+                case UINT64:
+                case LONG:
+                    pointer = nPtr.asLongPointer();
+                    indexer = LongIndexer.create((LongPointer) pointer);
+                    break;
+            }
+        }
+
+        this.underlyingLength = length;
+        this.length = length;
+        return this;
+    }
 
 }

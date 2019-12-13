@@ -375,8 +375,8 @@ public class AtomicAllocator implements Allocator {
 
         val cPtr = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(((BaseCudaDataBuffer) buffer).getOpaqueDataBuffer());
 
-        assert oPtr.address() == cPtr.address();
-        assert buffer.address() == oPtr.address();
+        //assert oPtr.address() == cPtr.address();
+        //assert buffer.address() == oPtr.address();
     }
 
 

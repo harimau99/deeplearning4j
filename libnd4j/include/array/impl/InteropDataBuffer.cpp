@@ -19,6 +19,7 @@
 //
 
 #include <array/InteropDataBuffer.h>
+#include <array/DataTypeUtils.h>
 #include <execution/AffinityManager.h>
 #include <helpers/logger.h>
 
@@ -125,5 +126,9 @@ namespace nd4j {
             v->getDataBuffer()->syncToPrimary(LaunchContext::defaultContext());
             v->getDataBuffer()->readPrimary();
         }
+    }
+
+    void InteropDataBuffer::expand(size_t newlength) {
+        _dataBuffer->expand(newlength * DataTypeUtils::sizeOf(_dataBuffer->getDataType()));
     }
 }

@@ -3798,3 +3798,7 @@ void dbTickDeviceRead(OpaqueDataBuffer *dataBuffer) {
 void dbTickDeviceWrite(OpaqueDataBuffer *dataBuffer) {
     dataBuffer->dataBuffer()->writeSpecial();
 }
+
+void dbExpand(OpaqueDataBuffer *dataBuffer, Nd4jLong elements) {
+    dataBuffer->expand(elements);
+}

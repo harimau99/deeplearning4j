@@ -1895,63 +1895,7 @@ public abstract class BaseDataBuffer implements DataBuffer {
         return null;
     }
 
-    /**
-     * Reallocate the native memory of the buffer
-     * @param length the new length of the buffer
-     * @return this databuffer
-     * */
-    @Override
-    public DataBuffer reallocate(long length) {
-
-        Pointer oldPointer = pointer;
-        if (isAttached()) {
-            long capacity = length * getElementSize();
-            switch (dataType()) {
-                case DOUBLE:
-                    pointer = getParentWorkspace().alloc(capacity, DataType.DOUBLE, false).asDoublePointer();
-                    indexer = DoubleIndexer.create((DoublePointer) pointer);
-                    break;
-                case FLOAT:
-                    pointer = getParentWorkspace().alloc(capacity, DataType.FLOAT, false).asFloatPointer();
-                    indexer = FloatIndexer.create((FloatPointer) pointer);
-                    break;
-                case INT:
-                    pointer = getParentWorkspace().alloc(capacity, DataType.INT, false).asIntPointer();
-                    indexer = IntIndexer.create((IntPointer) pointer);
-                    break;
-                case LONG:
-                    pointer = getParentWorkspace().alloc(capacity, DataType.LONG, false).asLongPointer();
-                    indexer = LongIndexer.create((LongPointer) pointer);
-                    break;
-            }
-
-            workspaceGenerationId = getParentWorkspace().getGenerationId();
-        } else {
-            switch (dataType()) {
-                case INT:
-                    pointer = new IntPointer(length);
-                    indexer = IntIndexer.create((IntPointer) pointer);
-                    break;
-                case DOUBLE:
-                    pointer = new DoublePointer(length);
-                    indexer = DoubleIndexer.create((DoublePointer) pointer);
-                    break;
-                case FLOAT:
-                    pointer = new FloatPointer(length);
-                    indexer = FloatIndexer.create((FloatPointer) pointer);
-                    break;
-                case LONG:
-                    pointer = new LongPointer(length);
-                    indexer = LongIndexer.create((LongPointer) pointer);
-                    break;
-            }
-        }
-
-        Pointer.memcpy(pointer, oldPointer, this.length() * getElementSize());
-        this.underlyingLength = length;
-        this.length = length;
-        return this;
-    }
+    public abstract DataBuffer reallocate(long length);
 
     /**
      * @return the capacity of the buffer

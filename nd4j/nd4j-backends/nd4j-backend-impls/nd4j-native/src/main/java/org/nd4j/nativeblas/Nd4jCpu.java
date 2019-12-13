@@ -3050,6 +3050,7 @@ public native void dbTickHostWrite(OpaqueDataBuffer dataBuffer);
 public native void dbTickDeviceRead(OpaqueDataBuffer dataBuffer);
 public native void dbTickDeviceWrite(OpaqueDataBuffer dataBuffer);
 public native void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
+public native void dbExpand(OpaqueDataBuffer dataBuffer, @Cast("Nd4jLong") long elements);
 
 
 public native int binaryLevel();
