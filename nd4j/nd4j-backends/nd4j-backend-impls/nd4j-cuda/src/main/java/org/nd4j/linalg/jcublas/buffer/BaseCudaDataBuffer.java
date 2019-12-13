@@ -252,7 +252,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 NativeOpsHolder.getInstance().getDeviceNativeOps().dbAllocatePrimaryBuffer(ptrDataBuffer);
             } else {
                 val ptr = parentWorkspace.alloc(this.length * this.elementSize, MemoryKind.HOST, this.dataType(), false);
-                NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, ptr, this.length * this.elementSize);
+                NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, ptr, this.length);
             }
             this.allocationPoint.setAllocationStatus(location);
             this.allocationPoint.tickDeviceWrite();

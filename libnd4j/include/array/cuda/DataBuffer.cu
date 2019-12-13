@@ -75,7 +75,9 @@ void DataBuffer::syncToPrimary(const LaunchContext* context, const bool forceSyn
     if (res != 0)
         throw cuda_exception::build("DataBuffer::syncToPrimary failed to to some previous kernel failre", res);
 
-    cudaMemcpy(_primaryBuffer, _specialBuffer, getLenInBytes(), cudaMemcpyDeviceToHost);
+    res = cudaMemcpy(_primaryBuffer, _specialBuffer, getLenInBytes(), cudaMemcpyDeviceToHost);
+    if (res != 0)
+        throw cuda_exception::build("DataBuffer::syncToPrimary cudaMemcpy failed", res);
 
     readPrimary();
 }

@@ -35,6 +35,7 @@ import org.nd4j.linalg.api.ndarray.BaseNDArrayProxy;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ndarray.JvmShapeInfo;
 import org.nd4j.linalg.api.ops.performance.PerformanceTracker;
+import org.nd4j.linalg.api.ops.util.PrintVariable;
 import org.nd4j.linalg.api.shape.LongShapeDescriptor;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
 import org.nd4j.linalg.factory.Nd4j;
@@ -640,32 +641,16 @@ public class JCublasNDArray extends BaseNDArray {
 
         Nd4j.getMemoryManager().setCurrentWorkspace(target);
 
-//        log.info("Leveraging...");
-
         INDArray copy = null;
         if (!this.isView()) {
-        //if (1 < 0) {
             Nd4j.getExecutioner().commit();
 
-            DataBuffer buffer = Nd4j.createBuffer(this.length(), false);
+            val buffer = Nd4j.createBuffer(this.length(), false);
 
-            AllocationPoint pointDst = null; //AtomicAllocator.getInstance().getAllocationPoint(buffer);
-            AllocationPoint pointSrc = null; //AtomicAllocator.getInstance().getAllocationPoint(this.data);
-            if (1 > 0)
-                throw new UnsupportedOperationException("Pew-pew");
+            val pointDst = AtomicAllocator.getInstance().getAllocationPoint(buffer);
+            val pointSrc = AtomicAllocator.getInstance().getAllocationPoint(this.data);
 
-            CudaContext context = AtomicAllocator.getInstance().getFlowController().prepareAction(pointDst, pointSrc);
-/*
-            if (NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(pointDst.getDevicePointer(), 0, 1, 0, context.getOldStream()) == 0)
-                throw new ND4JIllegalStateException("memsetAsync 1 failed");
-
-            context.syncOldStream();
-
-            if (NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(pointSrc.getDevicePointer(), 0, 1, 0, context.getOldStream()) == 0)
-                throw new ND4JIllegalStateException("memsetAsync 2 failed");
-
-            context.syncOldStream();
-*/
+            val context = AtomicAllocator.getInstance().getFlowController().prepareAction(pointDst, pointSrc);
 
             MemcpyDirection direction = MemcpyDirection.DEVICE_TO_DEVICE;
             val perfD = PerformanceTracker.getInstance().helperStartTransaction();
@@ -682,12 +667,11 @@ public class JCublasNDArray extends BaseNDArray {
 
             context.syncOldStream();
 
-            PerformanceTracker.getInstance().helperRegisterTransaction(pointDst.getDeviceId(), perfD, pointSrc.getNumberOfBytes(), MemcpyDirection.HOST_TO_DEVICE);
+            PerformanceTracker.getInstance().helperRegisterTransaction(pointDst.getDeviceId(), perfD, pointSrc.getNumberOfBytes(), direction);
 
             copy = Nd4j.createArrayFromShapeBuffer(buffer, this.shapeInfoDataBuffer());
 
             // tag buffer as valid on device side
-            pointDst.tickHostRead();
             pointDst.tickDeviceWrite();
 
             AtomicAllocator.getInstance().getFlowController().registerAction(context, pointDst, pointSrc);

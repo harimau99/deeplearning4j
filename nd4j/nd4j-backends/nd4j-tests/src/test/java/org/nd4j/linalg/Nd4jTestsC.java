@@ -7120,6 +7120,16 @@ public class Nd4jTestsC extends BaseNd4jTest {
     }
 
     @Test
+    public void testScalarEquality_1() {
+        val x = Nd4j.scalar(1.0f);
+        val e = Nd4j.scalar(3.0f);
+
+        x.addi(2.0f);
+
+        assertEquals(e, x);
+    }
+
+    @Test
     public void testStack(){
         INDArray in = Nd4j.linspace(1,12,12, DataType.DOUBLE).reshape(3,4);
         INDArray in2 = in.add(100);

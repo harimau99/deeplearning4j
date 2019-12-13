@@ -3585,6 +3585,7 @@ public abstract class BaseNDArray implements INDArray, Iterable {
             case DOUBLE:
             case FLOAT:
             case HALF:
+            case BFLOAT16:
                 return getDouble(i);
             case LONG:
             case INT:
@@ -3592,6 +3593,9 @@ public abstract class BaseNDArray implements INDArray, Iterable {
             case UBYTE:
             case BYTE:
             case BOOL:
+            case UINT64:
+            case UINT32:
+            case UINT16:
                 return getLong(i);
             case UTF8:
             case COMPRESSED:
@@ -4350,15 +4354,12 @@ public abstract class BaseNDArray implements INDArray, Iterable {
 
         //epsilon equals
         if (isScalar() && n.isScalar()) {
-            if (data.dataType() == DataType.FLOAT) {
-                val val = getDouble(0);
-                val val2 =  n.getDouble(0);
+            if (isZ()) {
+                val val = getLong(0);
+                val val2 =  n.getLong(0);
 
-                if (Double.isNaN(val) != Double.isNaN(val2))
-                    return false;
-
-                return Math.abs(val - val2) < eps;
-            } else {
+                return val == val2;
+            } else if (isR()) {
                 val val = getDouble(0);
                 val val2 = n.getDouble(0);
 
@@ -4366,6 +4367,11 @@ public abstract class BaseNDArray implements INDArray, Iterable {
                     return false;
 
                 return Math.abs(val - val2) < eps;
+            } else if (isB()) {
+                val val = getInt(0);
+                val val2 =  n.getInt(0);
+
+                return val == val2;
             }
 
         } else if (isVector() && n.isVector()) {

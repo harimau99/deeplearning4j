@@ -368,8 +368,15 @@ public class AtomicAllocator implements Allocator {
         // we don't want non-committed ops left behind
         Nd4j.getExecutioner().commit();
 
+        val oPtr = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(((BaseCudaDataBuffer) buffer).getOpaqueDataBuffer());
+
         // we actually need synchronization only in device-dependant environment. no-op otherwise. managed by native code
         NativeOpsHolder.getInstance().getDeviceNativeOps().dbSyncToPrimary(((BaseCudaDataBuffer) buffer).getOpaqueDataBuffer());
+
+        val cPtr = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(((BaseCudaDataBuffer) buffer).getOpaqueDataBuffer());
+
+        assert oPtr.address() == cPtr.address();
+        assert buffer.address() == oPtr.address();
     }
 
 
