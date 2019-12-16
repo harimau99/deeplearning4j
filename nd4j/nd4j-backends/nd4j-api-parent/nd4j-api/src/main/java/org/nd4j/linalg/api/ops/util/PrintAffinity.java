@@ -22,45 +22,22 @@ import org.nd4j.linalg.api.ops.DynamicCustomOp;
 import org.nd4j.linalg.factory.Nd4j;
 
 /**
- * This is a wrapper for PrintVariable op that just prints out Variable to the stdout
+ * This is a wrapper for PrintAffinity op that just prints out affinity & locality status of INDArray
  *
  * @author raver119@gmail.com
  */
-public class PrintVariable extends DynamicCustomOp {
+public class PrintAffinity extends DynamicCustomOp {
 
-    public PrintVariable() {
+    public PrintAffinity() {
         //
     }
 
-    public PrintVariable(INDArray array, boolean printSpecial) {
+    public PrintAffinity(INDArray array) {
         inputArguments.add(array);
-        bArguments.add(printSpecial);
-    }
-
-    public PrintVariable(INDArray array) {
-        this(array, false);
-    }
-
-    public PrintVariable(INDArray array, String message, boolean printSpecial) {
-        this(array, Nd4j.create(message), printSpecial);
-    }
-
-    public PrintVariable(INDArray array, String message) {
-        this(array, Nd4j.create(message), false);
-    }
-
-    public PrintVariable(INDArray array, INDArray message, boolean printSpecial) {
-        this(array, printSpecial);
-        Preconditions.checkArgument(message.isS(), "Message argument should have String data type, but got [" + message.dataType() +"] instead");
-        inputArguments.add(message);
-    }
-
-    public PrintVariable(INDArray array, INDArray message) {
-        this(array, message, false);
     }
 
     @Override
     public String opName() {
-        return "print_variable";
+        return "print_affinity";
     }
 }
