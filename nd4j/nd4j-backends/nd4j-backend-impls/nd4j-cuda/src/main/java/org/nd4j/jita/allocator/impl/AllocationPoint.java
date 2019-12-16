@@ -19,6 +19,7 @@ package org.nd4j.jita.allocator.impl;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.val;
 import org.bytedeco.javacpp.Pointer;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.allocator.garbage.GarbageBufferReference;
@@ -280,10 +281,8 @@ public class AllocationPoint {
      * @return true, if data is actual, false otherwise
      */
     public synchronized boolean isActualOnHostSide() {
-        boolean result = accessHostWrite >= accessDeviceWrite
-                        || accessHostRead >= accessDeviceWrite;
-
-        return result;
+        val s = NativeOpsHolder.getInstance().getDeviceNativeOps().dbLocality(ptrDataBuffer);
+        return s <= 0;
     }
 
     /**
@@ -292,9 +291,8 @@ public class AllocationPoint {
      * @return
      */
     public synchronized boolean isActualOnDeviceSide() {
-        boolean result = accessDeviceWrite >= accessHostWrite
-                        || accessDeviceRead >= accessHostWrite;
-        return result;
+        val s = NativeOpsHolder.getInstance().getDeviceNativeOps().dbLocality(ptrDataBuffer);
+        return s >= 0;
     }
 
     /**

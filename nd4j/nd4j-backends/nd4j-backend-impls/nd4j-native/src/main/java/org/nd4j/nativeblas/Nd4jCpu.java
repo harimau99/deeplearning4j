@@ -3045,6 +3045,7 @@ public native void dbSetPrimaryBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPo
 public native void dbSetSpecialBuffer(OpaqueDataBuffer dataBuffer, @Cast("Nd4jPointer") Pointer specialBuffer, @Cast("Nd4jLong") long numBytes);
 public native void dbSyncToSpecial(OpaqueDataBuffer dataBuffer);
 public native void dbSyncToPrimary(OpaqueDataBuffer dataBuffer);
+public native int dbLocality(OpaqueDataBuffer dataBuffer);
 public native void dbTickHostRead(OpaqueDataBuffer dataBuffer);
 public native void dbTickHostWrite(OpaqueDataBuffer dataBuffer);
 public native void dbTickDeviceRead(OpaqueDataBuffer dataBuffer);

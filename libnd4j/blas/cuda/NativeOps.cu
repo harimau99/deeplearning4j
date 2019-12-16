@@ -3802,3 +3802,15 @@ void dbTickDeviceWrite(OpaqueDataBuffer *dataBuffer) {
 void dbExpand(OpaqueDataBuffer *dataBuffer, Nd4jLong elements) {
     dataBuffer->expand(elements);
 }
+
+int dbLocality(OpaqueDataBuffer *dataBuffer) {
+    auto p = dataBuffer->dataBuffer()->isPrimaryActual();
+    auto d = dataBuffer->dataBuffer()->isSpecialActual();
+
+    if (p && d)
+        return 0;
+    else if (p)
+        return -1;
+    else
+        return 1;
+}

@@ -96,7 +96,6 @@ namespace nd4j {
                 v->getDataBuffer()->migrate();
 
             v->getDataBuffer()->syncToSpecial();
-            v->getDataBuffer()->readSpecial();
         }
 
         // we don't tick write list, only ensure the same device affinity
@@ -106,8 +105,6 @@ namespace nd4j {
 
             if (v->getDataBuffer()->deviceId() != currentDeviceId)
                 v->getDataBuffer()->migrate();
-
-            v->getDataBuffer()->readSpecial();
         }
     }
 
@@ -115,8 +112,6 @@ namespace nd4j {
         for (const auto &v:writeList) {
             if (v == nullptr)
                 continue;
-
-            v->getDataBuffer()->writePrimary();
         }
     }
 
@@ -126,7 +121,6 @@ namespace nd4j {
                 continue;
 
             v->getDataBuffer()->syncToPrimary(LaunchContext::defaultContext());
-            v->getDataBuffer()->readPrimary();
         }
     }
 

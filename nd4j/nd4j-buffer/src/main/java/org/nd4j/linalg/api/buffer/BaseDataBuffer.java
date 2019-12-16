@@ -1084,10 +1084,6 @@ public abstract class BaseDataBuffer implements DataBuffer {
             default:
                 throw new IllegalStateException("Unsupported type: " + dataType());
         }
-
-        if (i == length) {
-            length++;
-        }
     }
 
     @Override
@@ -1133,10 +1129,6 @@ public abstract class BaseDataBuffer implements DataBuffer {
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported data type: " + dataType());
-        }
-
-        if (i == length) {
-            length++;
         }
     }
 
@@ -1184,10 +1176,6 @@ public abstract class BaseDataBuffer implements DataBuffer {
             default:
                 throw new UnsupportedOperationException("Unsupported data type: " + dataType());
         }
-
-        if (i == length) {
-            length++;
-        }
     }
 
     @Override
@@ -1234,10 +1222,6 @@ public abstract class BaseDataBuffer implements DataBuffer {
             default:
                 throw new UnsupportedOperationException("Unsupported data type: " + dataType());
         }
-
-        if (i == length) {
-            length++;
-        }
     }
 
     @Override
@@ -1283,10 +1267,6 @@ public abstract class BaseDataBuffer implements DataBuffer {
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported data type: " + dataType());
-        }
-
-        if (i == length) {
-            length++;
         }
     }
 

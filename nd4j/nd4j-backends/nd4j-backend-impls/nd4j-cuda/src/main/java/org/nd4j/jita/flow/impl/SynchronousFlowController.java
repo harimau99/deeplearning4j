@@ -70,52 +70,12 @@ public class SynchronousFlowController implements FlowController {
      */
     @Override
     public void synchronizeToHost(AllocationPoint point) {
-
-        if (!point.isActualOnHostSide()) {
-            val context = allocator.getDeviceContext();
-
-            if (!point.isConstant())
-                waitTillFinished(point);
-
-            // if this piece of memory is device-dependant, we'll also issue copyback once
-            if (point.getAllocationStatus() == AllocationStatus.DEVICE && !point.isActualOnHostSide()) {
-                long perfD = PerformanceTracker.getInstance().helperStartTransaction();
-                val bytes = point.getNumberOfBytes();
-
-                if (nativeOps.memcpyAsync(point.getHostPointer(), point.getDevicePointer(), bytes, CudaConstants.cudaMemcpyDeviceToHost, context.getSpecialStream()) == 0)
-                    throw new IllegalStateException("synchronizeToHost memcpyAsync failed: " + bytes);
-
-                commitTransfer(context.getSpecialStream());
-
-                PerformanceTracker.getInstance().helperRegisterTransaction(point.getDeviceId(), perfD, point.getNumberOfBytes(), MemcpyDirection.DEVICE_TO_HOST);
-            }
-
-            // updating host read timer
-            point.tickHostRead();
-        }
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSyncToPrimary(point.getPtrDataBuffer());
     }
 
     @Override
     public void synchronizeToDevice(@NonNull AllocationPoint point) {
-        if (point.isConstant())
-            return;
-
-        if (!point.isActualOnDeviceSide()) {
-            if (point.getAllocationStatus() == AllocationStatus.DEVICE) {
-                val context = allocator.getDeviceContext();
-
-                long perfD = PerformanceTracker.getInstance().helperStartTransaction();
-
-                if (nativeOps.memcpyAsync(point.getDevicePointer(), point.getHostPointer(), point.getNumberOfBytes(),
-                        CudaConstants.cudaMemcpyHostToDevice, context.getSpecialStream()) == 0)
-                    throw new IllegalStateException("MemcpyAsync failed: " + point.getNumberOfBytes());
-
-                commitTransfer(context.getSpecialStream());
-                point.tickDeviceRead();
-
-                PerformanceTracker.getInstance().helperRegisterTransaction(point.getDeviceId(), perfD, point.getNumberOfBytes(), MemcpyDirection.HOST_TO_DEVICE);
-            }
-        }
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSyncToSpecial(point.getPtrDataBuffer());
     }
 
     @Override

@@ -85,13 +85,19 @@ void DataBuffer::syncToPrimary(const LaunchContext* context, const bool forceSyn
 
 ////////////////////////////////////////////////////////////////////////
 void DataBuffer::syncToSpecial(const bool forceSync) {
-
-    if(isSpecialActual() && !forceSync)
+    // in this case there's nothing to do here
+    if (_primaryBuffer == nullptr)
         return;
+
+    if(isSpecialActual() && !forceSync) {
+        return;
+    }
 
     allocateSpecial();
 
-    cudaMemcpy(_specialBuffer, _primaryBuffer, getLenInBytes(), cudaMemcpyHostToDevice);
+    auto res = cudaMemcpy(_specialBuffer, _primaryBuffer, getLenInBytes(), cudaMemcpyHostToDevice);
+    if (res != 0)
+        throw cuda_exception::build("DataBuffer::syncToSpecial cudaMemcpy failed", res);
 
     readSpecial();
 }
@@ -235,7 +241,7 @@ void DataBuffer::migrate() {
 }
 
 ////////////////////////////////////////////////////////////////////////
-void DataBuffer::writePrimary() const    { _writePrimary = ++_counter; }
+void DataBuffer::writePrimary() const    {_writePrimary = ++_counter; }
 void DataBuffer::writeSpecial() const    { _writeSpecial = ++_counter; }
 void DataBuffer::readPrimary()  const    { _readPrimary  = ++_counter; }
 void DataBuffer::readSpecial()  const    { _readSpecial  = ++_counter; }
