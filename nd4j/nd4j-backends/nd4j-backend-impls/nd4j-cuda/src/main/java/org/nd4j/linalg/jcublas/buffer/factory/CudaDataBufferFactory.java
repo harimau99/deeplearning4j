@@ -344,6 +344,8 @@ public class CudaDataBufferFactory implements DataBufferFactory {
                 return new CudaHalfDataBuffer(length, initialize);
             case BOOL:
                 return new CudaBoolDataBuffer(length, initialize);
+            case UTF8:
+                return new CudaUtf8Buffer(length, true);
             default:
                 throw new UnsupportedOperationException("Unknown data type: [" + dataType + "]");
         }

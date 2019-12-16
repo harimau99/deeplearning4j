@@ -279,16 +279,10 @@ public class AtomicAllocator implements Allocator {
      */
     @Override
     public Pointer getPointer(@NonNull DataBuffer buffer, CudaContext context) {
-        if (buffer instanceof CudaUtf8Buffer)
-            throw new UnsupportedOperationException("Pew-pew");
-
         return memoryHandler.getDevicePointer(buffer, context);
     }
 
     public Pointer getPointer(DataBuffer buffer) {
-        if (buffer instanceof CudaUtf8Buffer)
-            throw new UnsupportedOperationException("Pew-pew");
-
         return memoryHandler.getDevicePointer(buffer, getDeviceContext());
     }
 

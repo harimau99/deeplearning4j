@@ -62,11 +62,13 @@ public class CudaUtf8Buffer extends BaseCudaDataBuffer {
     }
 
     public CudaUtf8Buffer(long length, boolean initialize) {
-        super(length, 1, initialize);
+        super((length + 1) * 8, 1, initialize);
+        numWords = length;
     }
 
     public CudaUtf8Buffer(long length, boolean initialize, MemoryWorkspace workspace) {
-        super(length, 1, initialize, workspace);
+        super((length + 1) * 8, 1, initialize, workspace);
+        numWords = length;
     }
 
     public CudaUtf8Buffer(int[] ints, boolean copy, MemoryWorkspace workspace) {
@@ -75,6 +77,8 @@ public class CudaUtf8Buffer extends BaseCudaDataBuffer {
 
     public CudaUtf8Buffer(byte[] data, long numWords) {
         super(data.length, 1, false);
+
+        lazyAllocateHostPointer();
 
         val bp = (BytePointer) pointer;
         bp.put(data);

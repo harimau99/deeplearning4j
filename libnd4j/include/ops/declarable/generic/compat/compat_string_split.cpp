@@ -88,6 +88,7 @@ namespace nd4j {
             values->dataBuffer()->allocatePrimary();
             values->dataBuffer()->expand(blen);
             memcpy(values->buffer(), tmp.buffer(), blen);
+            values->tickWriteHost();
 
             // special case, for future use
             indices->syncToDevice();
