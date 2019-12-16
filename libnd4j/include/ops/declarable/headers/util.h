@@ -25,8 +25,18 @@
 
 namespace nd4j {
     namespace ops {
+        /**
+         * This operation prints out NDArray content, either on host or device.
+         */
     #if NOT_EXCLUDED(OP_print_variable)
         DECLARE_CUSTOM_OP(print_variable, 1, 1, true, 0, 0);
+    #endif
+
+        /**
+         * This operation prints out affinity & locality status of given NDArray
+         */
+    #if NOT_EXCLUDED(OP_print_affinity)
+        DECLARE_CUSTOM_OP(print_affinity, 1, 1, true, 0, 0);
     #endif
     }
 }

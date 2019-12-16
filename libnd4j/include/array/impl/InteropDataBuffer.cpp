@@ -106,6 +106,8 @@ namespace nd4j {
 
             if (v->getDataBuffer()->deviceId() != currentDeviceId)
                 v->getDataBuffer()->migrate();
+
+            v->getDataBuffer()->readSpecial();
         }
     }
 

@@ -17,58 +17,33 @@
 //
 //  @author raver119@gmail.com
 //
+
 #include <op_boilerplate.h>
-#if NOT_EXCLUDED(OP_print_variable)
+#if NOT_EXCLUDED(OP_print_affinity)
 
 #include <ops/declarable/CustomOperations.h>
 #include <ops/declarable/helpers/print_variable.h>
 
 namespace nd4j {
     namespace ops {
-        CUSTOM_OP_IMPL(print_variable, 1, 1, true, 0, 0) {
+        CUSTOM_OP_IMPL(print_affinity, 1, 1, true, 0, 0) {
             // TODO: make this op compatible with ArrayList etc
             auto input = INPUT_VARIABLE(0);
             auto output = OUTPUT_VARIABLE(0);
-            std::string str;
 
-            if (block.width() == 2) {
-                auto message = INPUT_VARIABLE(1);
-                REQUIRE_TRUE(message->isS(), 0, "print_variable: message variable must be a String");
-
-                str = message->e<std::string>(0);
-            }
-
-            bool printSpecial = false;
-            if (block.numB() > 0)
-                printSpecial = B_ARG(0);
-
-            if (printSpecial && !nd4j::Environment::getInstance()->isCPU()) {
-                // only specific backends support special printout. for cpu-based backends it's the same as regular print
-
-                if (block.width() == 2)
-                    helpers::print_special(*block.launchContext(), *input, str);
-                else
-                    helpers::print_special(*block.launchContext(), *input);
-            } else {
-                // optionally add message to the print out
-                if (block.width() == 2) {
-                    input->printIndexedBuffer(str.c_str());
-                } else {
-                    input->printIndexedBuffer();
-                }
-            }
+            nd4j_printf("<%i>: actuality: [%s/%s]; affinity: [%i]\n", block.nodeId(), input->isActualOnHostSide() ? "true" : "false", input->isActualOnDeviceSide() ? "true" : "false", input->dataBuffer()->deviceId());
 
             return Status::OK();
         }
 
-        DECLARE_TYPES(print_variable) {
+        DECLARE_TYPES(print_affinity) {
             getOpDescriptor()
                     ->setAllowedInputTypes(0, nd4j::DataType::ANY)
                     ->setAllowedInputTypes(1, {ALL_STRINGS})
                     ->setAllowedOutputTypes(0, nd4j::DataType::INT32);
         }
 
-        DECLARE_SHAPE_FN(print_variable) {
+        DECLARE_SHAPE_FN(print_affinity) {
             return SHAPELIST(ConstantShapeHelper::getInstance()->scalarShapeInfo(DataType::INT32));
         }
     }
