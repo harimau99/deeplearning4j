@@ -469,6 +469,11 @@ public class Nd4jCpu extends org.nd4j.nativeblas.Nd4jCpuHelper {
 
         public native void setPrimaryBuffer(Pointer buffer, @Cast("size_t") long length);
         public native void setSpecialBuffer(Pointer buffer, @Cast("size_t") long length);
+
+        /**
+         * This method deletes buffers, if we're owners
+         */
+        public native @Name("close") void _close();
 }
 ///// IMLEMENTATION OF INLINE METHODS /////
 
@@ -3050,6 +3055,7 @@ public native void dbTickHostRead(OpaqueDataBuffer dataBuffer);
 public native void dbTickHostWrite(OpaqueDataBuffer dataBuffer);
 public native void dbTickDeviceRead(OpaqueDataBuffer dataBuffer);
 public native void dbTickDeviceWrite(OpaqueDataBuffer dataBuffer);
+public native void dbClose(OpaqueDataBuffer dataBuffer);
 public native void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
 public native void dbExpand(OpaqueDataBuffer dataBuffer, @Cast("Nd4jLong") long elements);
 

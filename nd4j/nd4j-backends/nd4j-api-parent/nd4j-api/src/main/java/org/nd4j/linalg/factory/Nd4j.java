@@ -2159,6 +2159,7 @@ public class Nd4j {
     private static String writeStringForArray(INDArray write) {
         if(write.isView() || !Shape.hasDefaultStridesForShape(write))
             write = write.dup();
+
         String format = "0.000000000000000000E0";
 
         return "{\n" +
