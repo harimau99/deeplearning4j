@@ -1169,7 +1169,43 @@ Nd4jLong getDeviceTotalMemory(int device) {
 }
 
 int memcpySync(Nd4jPointer dst, Nd4jPointer src, Nd4jLong size, int flags, Nd4jPointer reserved) {
-	return memcpyAsync(dst, src, size, flags, reserved);
+    cudaMemcpyKind 	kind;
+
+    switch (flags) {
+        case 0: {
+            kind = cudaMemcpyHostToHost;
+        }
+            break;
+        case 1: {
+            kind = cudaMemcpyHostToDevice;
+        }
+            break;
+        case 2: {
+            kind = cudaMemcpyDeviceToHost;
+        }
+            break;
+        case 3: {
+            kind = cudaMemcpyDeviceToDevice;
+        }
+            break;
+        default: {
+            nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(1);
+            nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage("UNDEFNED MEMCPY");
+            return 0;
+        }
+    }
+
+    auto dZ = cudaMemcpy(reinterpret_cast<void *>(dst), const_cast<const void *>(reinterpret_cast<void *>(src)), static_cast<size_t>(size), kind);
+    if (dZ != 0) {
+        printf("Failed on [%p] -> [%p], size: [%i], direction: [%i], dZ: [%i]\n", src, dst, size, flags, static_cast<int>(dZ));
+        fflush(stdout);
+        fflush(stderr);
+        nd4j::LaunchContext::defaultContext()->errorReference()->setErrorCode(dZ);
+        nd4j::LaunchContext::defaultContext()->errorReference()->setErrorMessage("cudaMemcpy failed");
+        return 0;
+    }
+
+    return 1;
 }
 
 int memcpyAsync(Nd4jPointer dst, Nd4jPointer src, Nd4jLong size, int flags, Nd4jPointer reserved) {
