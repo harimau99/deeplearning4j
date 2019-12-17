@@ -32,6 +32,7 @@ import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.jita.flow.FlowController;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.concurrency.AffinityManager;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.executioner.OpExecutioner;
 import org.nd4j.linalg.api.ops.performance.PerformanceTracker;
@@ -161,6 +162,7 @@ public class SynchronousFlowController implements FlowController {
 
             val pointData = allocator.getAllocationPoint(operand);
             val pointShape = allocator.getAllocationPoint(operand.shapeInfoDataBuffer());
+            Nd4j.getAffinityManager().ensureLocation(operand, AffinityManager.Location.DEVICE);
 
             if (pointData.getDeviceId() != cId && pointData.getDeviceId() >= 0 && (!CudaEnvironment.getInstance().getConfiguration().isCrossDeviceAccessAllowed() || !NativeOpsHolder.getInstance().getDeviceNativeOps().isP2PAvailable())) {
                 DataBuffer buffer = operand.data().originalDataBuffer() == null ? operand.data()
