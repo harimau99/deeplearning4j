@@ -291,4 +291,8 @@ namespace nd4j {
     int DataBuffer::deviceId() const {
         return _deviceId.load();
     }
+
+    void DataBuffer::close() {
+        this->deleteBuffers();
+    }
 }

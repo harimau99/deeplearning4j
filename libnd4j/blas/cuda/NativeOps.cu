@@ -3803,6 +3803,10 @@ void dbExpand(OpaqueDataBuffer *dataBuffer, Nd4jLong elements) {
     dataBuffer->expand(elements);
 }
 
+void dbClose(OpaqueDataBuffer *dataBuffer) {
+    dataBuffer->getDataBuffer()->close();
+}
+
 int dbLocality(OpaqueDataBuffer *dataBuffer) {
     auto p = dataBuffer->dataBuffer()->isPrimaryActual();
     auto d = dataBuffer->dataBuffer()->isSpecialActual();

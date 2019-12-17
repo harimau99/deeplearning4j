@@ -126,6 +126,11 @@ class ND4J_EXPORT DataBuffer {
 
         void setPrimaryBuffer(void *buffer, size_t length);
         void setSpecialBuffer(void *buffer, size_t length);
+
+        /**
+         * This method deletes buffers, if we're owners
+         */
+        void close();
 };
 ///// IMLEMENTATION OF INLINE METHODS /////
 

@@ -21,6 +21,7 @@ import lombok.NonNull;
 import lombok.val;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.indexer.*;
+import org.nd4j.base.Preconditions;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.allocator.enums.CudaConstants;
 import org.nd4j.jita.allocator.impl.AllocationPoint;
@@ -483,6 +484,12 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
             case UBYTE:
                 this.pointer = new CudaPointer(hostPointer, originalBuffer.length()).asBytePointer();
                 indexer = UByteIndexer.create((BytePointer) pointer);
+                break;
+            case UTF8:
+                Preconditions.checkArgument(offset == 0, "String array can't be a view");
+
+                this.pointer = new CudaPointer(hostPointer, originalBuffer.length()).asBytePointer();
+                indexer = ByteIndexer.create((BytePointer) pointer);
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -1556,51 +1563,110 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
     @Override
     public DataBuffer reallocate(long length) {
+        val oldHostPointer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer);
 
-        // we want to be sure this array isn't used anywhere RIGHT AT THIS MOMENT
-        Nd4j.getExecutioner().commit();
+        if (isAttached()) {
+            val capacity = length * getElementSize();
+            val nPtr = getParentWorkspace().alloc(capacity, dataType(), false);
+            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, nPtr, length);
 
+            switch (dataType()) {
+                case BOOL:
+                    pointer = nPtr.asBoolPointer();
+                    indexer = BooleanIndexer.create((BooleanPointer) pointer);
+                    break;
+                case UTF8:
+                case BYTE:
+                case UBYTE:
+                    pointer = nPtr.asBytePointer();
+                    indexer = ByteIndexer.create((BytePointer) pointer);
+                    break;
+                case UINT16:
+                case SHORT:
+                    pointer = nPtr.asShortPointer();
+                    indexer = ShortIndexer.create((ShortPointer) pointer);
+                    break;
+                case UINT32:
+                case INT:
+                    pointer = nPtr.asIntPointer();
+                    indexer = IntIndexer.create((IntPointer) pointer);
+                    break;
+                case DOUBLE:
+                    pointer = nPtr.asDoublePointer();
+                    indexer = DoubleIndexer.create((DoublePointer) pointer);
+                    break;
+                case FLOAT:
+                    pointer = nPtr.asFloatPointer();
+                    indexer = FloatIndexer.create((FloatPointer) pointer);
+                    break;
+                case HALF:
+                    pointer = nPtr.asShortPointer();
+                    indexer = HalfIndexer.create((ShortPointer) pointer);
+                    break;
+                case BFLOAT16:
+                    pointer = nPtr.asShortPointer();
+                    indexer = Bfloat16Indexer.create((ShortPointer) pointer);
+                    break;
+                case UINT64:
+                case LONG:
+                    pointer = nPtr.asLongPointer();
+                    indexer = LongIndexer.create((LongPointer) pointer);
+                    break;
+            }
 
-        AllocationPoint old = allocationPoint;
-        allocationPoint = AtomicAllocator.getInstance().allocateMemory(this, new AllocationShape(length, elementSize, dataType()), false);
+            Pointer.memcpy(pointer, oldHostPointer, this.length() * getElementSize());
+            workspaceGenerationId = getParentWorkspace().getGenerationId();
+        } else {
+            NativeOpsHolder.getInstance().getDeviceNativeOps().dbExpand(this.ptrDataBuffer, length);
+            val nPtr = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer), length);
 
-        Nd4j.getDeallocatorService().pickObject(this);
+            switch (dataType()) {
+                case BOOL:
+                    pointer = nPtr.asBoolPointer();
+                    indexer = BooleanIndexer.create((BooleanPointer) pointer);
+                    break;
+                case UTF8:
+                case BYTE:
+                case UBYTE:
+                    pointer = nPtr.asBytePointer();
+                    indexer = ByteIndexer.create((BytePointer) pointer);
+                    break;
+                case UINT16:
+                case SHORT:
+                    pointer = nPtr.asShortPointer();
+                    indexer = ShortIndexer.create((ShortPointer) pointer);
+                    break;
+                case UINT32:
+                case INT:
+                    pointer = nPtr.asIntPointer();
+                    indexer = IntIndexer.create((IntPointer) pointer);
+                    break;
+                case DOUBLE:
+                    pointer = nPtr.asDoublePointer();
+                    indexer = DoubleIndexer.create((DoublePointer) pointer);
+                    break;
+                case FLOAT:
+                    pointer = nPtr.asFloatPointer();
+                    indexer = FloatIndexer.create((FloatPointer) pointer);
+                    break;
+                case HALF:
+                    pointer = nPtr.asShortPointer();
+                    indexer = HalfIndexer.create((ShortPointer) pointer);
+                    break;
+                case BFLOAT16:
+                    pointer = nPtr.asShortPointer();
+                    indexer = Bfloat16Indexer.create((ShortPointer) pointer);
+                    break;
+                case UINT64:
+                case LONG:
+                    pointer = nPtr.asLongPointer();
+                    indexer = LongIndexer.create((LongPointer) pointer);
+                    break;
+            }
+        }
 
-        val oldLength = this.length;
+        this.underlyingLength = length;
         this.length = length;
-
-        // if original buffer had host pointer allocated, we'll reallocate host buffer as well
-        if (old.getHostPointer() != null) {
-            lazyAllocateHostPointer();
-        }
-
-        val context = AtomicAllocator.getInstance().getDeviceContext();
-        NativeOpsHolder.getInstance().getDeviceNativeOps().memsetAsync(allocationPoint.getDevicePointer(), 0, length * elementSize, 0, context.getSpecialStream());
-
-        MemcpyDirection direction = MemcpyDirection.DEVICE_TO_DEVICE;
-        val perfD = PerformanceTracker.getInstance().helperStartTransaction();
-
-        if (old.isActualOnDeviceSide()) {
-            NativeOpsHolder.getInstance().getDeviceNativeOps().memcpyAsync(allocationPoint.getDevicePointer(), old.getDevicePointer(), oldLength * elementSize, CudaConstants.cudaMemcpyDeviceToDevice, context.getSpecialStream());
-        } else if (old.isActualOnHostSide()) {
-            NativeOpsHolder.getInstance().getDeviceNativeOps().memcpyAsync(allocationPoint.getDevicePointer(), old.getHostPointer(), oldLength * elementSize, CudaConstants.cudaMemcpyHostToDevice, context.getSpecialStream());
-            direction = MemcpyDirection.HOST_TO_DEVICE;
-        }
-
-        context.getSpecialStream().synchronize();
-
-        PerformanceTracker.getInstance().helperRegisterTransaction(allocationPoint.getDeviceId(), perfD, allocationPoint.getNumberOfBytes(), direction);
-
-        allocationPoint.tickDeviceWrite();
-
-        // we need to update length with new value now
-        //this.length = length;
-        if(isAttached()){
-            // do nothing here, that's workspaces
-        } else{
-            AtomicAllocator.getInstance().freeMemory(old);
-        }
-
         return this;
     }
 

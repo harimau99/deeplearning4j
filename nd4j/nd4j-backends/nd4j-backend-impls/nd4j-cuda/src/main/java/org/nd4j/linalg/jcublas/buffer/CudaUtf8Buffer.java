@@ -24,6 +24,7 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.LongPointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.indexer.Indexer;
+import org.nd4j.base.Preconditions;
 import org.nd4j.jita.allocator.impl.AtomicAllocator;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
@@ -124,6 +125,8 @@ public class CudaUtf8Buffer extends BaseCudaDataBuffer {
     public CudaUtf8Buffer(DataBuffer underlyingBuffer, long length, long offset) {
         super(underlyingBuffer, length, offset);
         this.numWords = length;
+
+        Preconditions.checkArgument(((CudaUtf8Buffer) underlyingBuffer).numWords == numWords, "String array can't be a view");
     }
 
     public CudaUtf8Buffer(@NonNull Collection<String> strings) {

@@ -1647,6 +1647,7 @@ ND4J_EXPORT void dbTickHostRead(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void dbTickHostWrite(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void dbTickDeviceRead(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void dbTickDeviceWrite(OpaqueDataBuffer *dataBuffer);
+ND4J_EXPORT void dbClose(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void deleteDataBuffer(OpaqueDataBuffer *dataBuffer);
 ND4J_EXPORT void dbExpand(OpaqueDataBuffer *dataBuffer, Nd4jLong elements);
 
