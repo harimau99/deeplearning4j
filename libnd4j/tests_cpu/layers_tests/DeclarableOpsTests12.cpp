@@ -2677,3 +2677,81 @@ TEST_F(DeclarableOpsTests12, LU_Test_3_3) {
     ASSERT_TRUE(expP.equalsTo(p));
     delete res;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, QR_Test_1) {
+
+    auto in = NDArrayFactory::create<double>('c', {5,3}, {
+        12.,  -51.,    4.,
+        6.,   167.,  -68.,
+       -4.,    24.,  -41.,
+       -1.,     1.,    0.,
+        2.,     0.,    3.
+    });
+    auto expQ = NDArrayFactory::create<double>('c', {5, 5}, {
+              0.8464148,   0.3912908,  -0.3431241,  0.06613743, -0.09146205,
+            -0.42320737,  -0.9040873,  0.02927014,  0.01737854, -0.04861044,
+             0.28213826, -0.17042054, -0.93285596, -0.02194202,  0.14371186,
+             0.07053456, -0.01404065,  0.00109937,  0.99740064,  0.00429488,
+            -0.14106913,  0.0166551,  0.10577161,  0.00585613,  0.98417485
+    });
+
+    auto expR = NDArrayFactory::create<double>('c', {3,5}, {
+       -14.177447, -20.666622,       13.401566,
+               0., -175.04254,       70.080315,
+               0.,         0.,       35.201546,
+               0.,         0.,              0.,
+               0.,         0.,              0. });
+    nd4j::ops::qr op;
+    auto res = op.execute({&in}, {}, {}, {true});
+
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto q = res->at(0);
+    auto r = res->at(1);
+    ASSERT_TRUE(q->isSameShape(expQ));
+    ASSERT_TRUE(r->isSameShape(expR));
+    q->printIndexedBuffer("Orthogonal 5x5");
+    r->printIndexedBuffer("Upper triangular 5x3");
+
+    ASSERT_TRUE(expQ.equalsTo(q));
+    ASSERT_TRUE(expR.equalsTo(r));
+    delete res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, QR_Test_2) {
+
+    auto in = NDArrayFactory::create<double>('c', {5,3}, {
+            12.,  -51.,    4.,
+            6.,   167.,  -68.,
+            -4.,    24.,  -41.,
+            -1.,     1.,    0.,
+            2.,     0.,    3.
+    });
+    auto expQ = NDArrayFactory::create<double>('c', {5, 3}, {
+            0.8464148,   0.3912908,    -0.3431241,
+            -0.42320737,  -0.9040873,  0.02927014,
+            0.28213826, -0.17042054,  -0.93285596,
+            0.07053456, -0.01404065,   0.00109937,
+            -0.14106913,  0.0166551,   0.10577161
+    });
+
+    auto expR = NDArrayFactory::create<double>('c', {3,3}, {
+            -14.177447,         -20.666622,       13.401566,
+                    0.,         -175.04254,       70.080315,
+                    0.,                 0.,       35.201546 });
+    nd4j::ops::qr op;
+    auto res = op.execute({&in}, {}, {}, {false});
+
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto q = res->at(0);
+    auto r = res->at(1);
+    ASSERT_TRUE(q->isSameShape(expQ));
+    ASSERT_TRUE(r->isSameShape(expR));
+    q->printIndexedBuffer("Orthogonal 5x5");
+    r->printIndexedBuffer("Upper triangular 5x3");
+
+    ASSERT_TRUE(expQ.equalsTo(q));
+    ASSERT_TRUE(expR.equalsTo(r));
+    delete res;
+}
