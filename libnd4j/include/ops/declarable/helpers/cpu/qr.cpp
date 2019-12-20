@@ -18,6 +18,7 @@
 //  @author George A. Shulinok <sgazeos@gmail.com>
 //
 #include <ops/declarable/helpers/qr.h>
+#include <helpers/MmulHelper.h>
 
 namespace nd4j {
 namespace ops {
@@ -43,6 +44,8 @@ namespace helpers {
         NDArray z = *matrix;
         for (auto k = 0; k < N && k < M - 1; k++) { // loop for columns, but not further then row number
             NDArray e('c', {M}, DataTypeUtils::fromT<T>()); // two internal buffers and scalar for squared norm
+            q[k] = Q->ulike();
+            q[k].nullify();
             z = matrixMinor<T>(z, k); // minor computing for current column with given matrix z (initally is a input matrix)
 
             auto currentColumn = z({0, 0, k, k+1}); // retrieve k column from z to x buffer
@@ -54,16 +57,34 @@ namespace helpers {
             auto normE = currentColumn.reduceAlongDims(reduce::SquaredNorm, {0});
             e /= normE;
             q[k].setIdentity();
-            q[k] -= e * e.transpose(); // k-ed matrix of range input q[k] = I - e * eT
-            z = q[k] * z;
+            auto qQ = q[k].ulike();
+            //MmulHelper::mmul(&e, &e, &qQ, 0, 1); //q[k].ulike();
+            for (auto i = 0; i < M; i++) {
+                for (auto j = 0; j < M; j++) {
+                    qQ.template t<T>(i,j) = e.t<T>(i) * e.t<T>(j);
+                }
+            }
+            qQ.printIndexedBuffer("qQ");
+            //MmulHelper::matmul(&e, &e, &qQ, false, true); // k-ed matrix of range input q[k] = I - e * eT
+            q[k] -= qQ;
+            q[k].printIndexedBuffer("And Qk");
+//            z = q[k] * z;
+            z.printIndexedBuffer("a_Step1");
+            MmulHelper::matmul(&q[k], &z, &z, false, false);
+            q[k].printIndexedBuffer("q1");
+            z.printIndexedBuffer("Step1");
         }
         *Q = q[0]; //
-        *R = q[0] * *matrix;
+        MmulHelper::matmul(&q[0], &z, R, false, false);
+        //*R = q[0] * *matrix;
         for (int i = 1; i < N && i < M - 1; i++) {
-            z = q[i] * *Q;
+//            z = q[i] * *Q;
+            z = Q->ulike();
+            MmulHelper::matmul(&q[i], Q, &z, false, false);
             *Q = z;
         }
-        *R = *Q * *matrix;
+//        *R = *Q * *matrix;
+        MmulHelper::matmul(Q, matrix, R, false, false);
         Q->transposei();// transpose of matrix Q - now it in non-refined square state (MxM)
     }
 

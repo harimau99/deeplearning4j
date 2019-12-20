@@ -2696,7 +2696,7 @@ TEST_F(DeclarableOpsTests12, QR_Test_1) {
             -0.14106913,  0.0166551,  0.10577161,  0.00585613,  0.98417485
     });
 
-    auto expR = NDArrayFactory::create<double>('c', {3,5}, {
+    auto expR = NDArrayFactory::create<double>('c', {5,3}, {
        -14.177447, -20.666622,       13.401566,
                0., -175.04254,       70.080315,
                0.,         0.,       35.201546,
@@ -2708,10 +2708,12 @@ TEST_F(DeclarableOpsTests12, QR_Test_1) {
     ASSERT_EQ(res->status(), ND4J_STATUS_OK);
     auto q = res->at(0);
     auto r = res->at(1);
-    ASSERT_TRUE(q->isSameShape(expQ));
-    ASSERT_TRUE(r->isSameShape(expR));
+
     q->printIndexedBuffer("Orthogonal 5x5");
     r->printIndexedBuffer("Upper triangular 5x3");
+
+    ASSERT_TRUE(q->isSameShape(expQ));
+    ASSERT_TRUE(r->isSameShape(expR));
 
     ASSERT_TRUE(expQ.equalsTo(q));
     ASSERT_TRUE(expR.equalsTo(r));
