@@ -174,8 +174,8 @@ namespace nd4j {
          *    0 - float (or complex float) tensor with shape {.,..,...,M,N} - batch of float matricies
          *
          * Output: 
-         *    0 - float tensor with shape {.,..,...,MxM} - batch of ortogonal matricies {Q}
-         *    1 - float tensor with shape {.,..,...,NxN} - batch of upper triangular matricies {R}
+         *    0 - float tensor with shape {.,..,...,MxN} - batch of ortogonal matricies {Qs}
+         *    1 - float tensor with shape {.,..,...,NxN} - batch of upper triangular matricies {Rs}
          */
         #if NOT_EXCLUDED(OP_qr)
         DECLARE_CUSTOM_OP(qr, 1, 2, false, 0, 0);
