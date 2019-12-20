@@ -24,7 +24,7 @@ namespace ops {
 namespace helpers {
 
     template <typename T>
-    void qr_(NDArray* input, NDArray* outputQ, NDArray* outputR) {
+    void qr_(NDArray* input, NDArray* outputQ, NDArray* outputR, bool const fullMatricies) {
         Nd4jLong M = input->sizeAt(-2);
         Nd4jLong N = input->sizeAt(-1);
         Nd4jLong lastDim = input->rankOf() - 1;
@@ -39,8 +39,8 @@ namespace helpers {
 
     }
 
-    void qr(nd4j::LaunchContext* context, NDArray* input, NDArray* outputQ, NDArray* outputR) {
-        BUILD_SINGLE_SELECTOR(input->dataType(), qr_, (input, outputQ, outputR), FLOAT_TYPES);
+    void qr(nd4j::LaunchContext* context, NDArray* input, NDArray* outputQ, NDArray* outputR, bool const fullMatricies) {
+        BUILD_SINGLE_SELECTOR(input->dataType(), qr_, (input, outputQ, outputR, fullMatricies), FLOAT_TYPES);
     }
 
 }

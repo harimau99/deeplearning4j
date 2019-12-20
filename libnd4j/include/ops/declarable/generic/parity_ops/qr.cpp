@@ -29,12 +29,14 @@ namespace nd4j {
             auto input = INPUT_VARIABLE(0);
             auto outputQ = OUTPUT_VARIABLE(0);
             auto outputR = OUTPUT_VARIABLE(1);
-
+            auto fullMatricies = false;
+            if (block.getBArguments()->size())
+                fullMatricies = B_ARG(0);
             REQUIRE_TRUE(input->rankOf() >=2, 0, "qr: The rank of input array should not less than 2, but %i is given", input->rankOf());
             REQUIRE_TRUE(outputQ->sizeAt(-1) == input->sizeAt(-2), 0, "qr: The last dimmensions should be equal with result Q, but %i and %i are given", outputQ->sizeAt(-1), input->sizeAt(-2));
             REQUIRE_TRUE(outputR->sizeAt(-1) == input->sizeAt(-1), 0, "qr: The last dimmensions should be equal with result R, but %i and %i are given", outputR->sizeAt(-1), input->sizeAt(-1));
 
-            helpers::qr(block.launchContext(), input, outputQ, outputR);\
+            helpers::qr(block.launchContext(), input, outputQ, outputR, fullMatricies);
             return Status::OK();
         }
 
@@ -44,14 +46,35 @@ namespace nd4j {
             Nd4jLong* shapeQ;
             Nd4jLong* shapeR;
             int targetRank = shape::rank(inShape); // last two dimensions will be reduced to scalar
+
+            auto fullMatricies = false;
+            if (block.getBArguments()->size())
+                fullMatricies = B_ARG(0);
+
             auto shape = ShapeUtils::shapeAsVector(inShape);
-            auto rank = shape.size();
-            shape[rank - 1] = shape::sizeAt(inShape, -1);
-            shape[rank - 2] = shape[rank - 1];
-            shapeQ = ConstantShapeHelper::getInstance()->createShapeInfo(ArrayOptions::dataType(inShape), shape::order(inShape), targetRank, shape::shapeOf(inShape));
-            shapeR = ConstantShapeHelper::getInstance()->createShapeInfo(ArrayOptions::dataType(inShape), shape::order(inShape), shape);
+
+            if (!fullMatricies) { // outputs are: Q is MxN and R is NxN
+                shape[targetRank - 1] = shape::sizeAt(inShape, -1);
+                shape[targetRank - 2] = shape[targetRank - 1];
+                shapeQ = ConstantShapeHelper::getInstance()->createShapeInfo(ArrayOptions::dataType(inShape),
+                                                                             shape::order(inShape), targetRank,
+                                                                             shape::shapeOf(inShape));
+                shapeR = ConstantShapeHelper::getInstance()->createShapeInfo(ArrayOptions::dataType(inShape),
+                                                                             shape::order(inShape), shape);
+
+            }
+            else {// otherwise outputs are Q is MxM and R is MxN with zero filled rows
+                shape[targetRank - 1] = shape::sizeAt(inShape, -2);
+                shape[targetRank - 2] = shape[targetRank - 1];
+                shapeR = ConstantShapeHelper::getInstance()->createShapeInfo(ArrayOptions::dataType(inShape),
+                                                                             shape::order(inShape), targetRank,
+                                                                             shape::shapeOf(inShape));
+                shapeQ = ConstantShapeHelper::getInstance()->createShapeInfo(ArrayOptions::dataType(inShape),
+                                                                             shape::order(inShape), shape);
+            }
 
             return SHAPELIST(shapeQ, shapeR);
+
         }
 
         DECLARE_TYPES(qr) {
