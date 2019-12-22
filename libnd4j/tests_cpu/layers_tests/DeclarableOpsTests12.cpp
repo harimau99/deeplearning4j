@@ -670,7 +670,7 @@ TEST_F(DeclarableOpsTests12, relu_1) {
     Nd4jStatus status = op.execute({&input}, {&z}, {0}, {}, {});
 
     ASSERT_EQ(ND4J_STATUS_OK, status);
-    ASSERT_TRUE(expected.isSameShapeStrict(&z));
+    ASSERT_TRUE(expected.isSameShapeStrict(z));
     ASSERT_TRUE(expected.equalsTo(z));
 }
 
@@ -826,7 +826,7 @@ TEST_F(DeclarableOpsTests12, pullRows_1) {
 TEST_F(DeclarableOpsTests12, pullRows_2) {
 
     NDArray arr('f', {5, 2}, {0,1,2,3,4,5,6,7,8,9});
-    NDArray* y = arr.dup('c');
+    NDArray* y = new NDArray(arr.dup('c'));
     NDArray x = (*y)({0,0, 0,1}, true);     // view, points on first column of y, shape is {5,1}
 
     NDArray z('c', {4, 1}, nd4j::DataType::DOUBLE);
@@ -861,7 +861,7 @@ TEST_F(DeclarableOpsTests12, pullRows_2) {
 //////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests12, softmax_9) {
     NDArray  arrC('c', {5,2}, {-0.1, 0.2, -0.3, 0.4, -0.5, 0.6, -0.7, 0.8, -0.9, 1}, nd4j::DataType::FLOAT32);
-    NDArray* arrF = arrC.dup('f');
+    NDArray* arrF = new NDArray(arrC.dup('f'));
 
     NDArray  outCC('c', {5,2}, nd4j::DataType::FLOAT32);
     NDArray  outCF('f', {5,2}, nd4j::DataType::FLOAT32);
@@ -1398,7 +1398,7 @@ TEST_F(DeclarableOpsTests12, pad_tests1) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1425,7 +1425,7 @@ TEST_F(DeclarableOpsTests12, pad_tests2) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1452,7 +1452,7 @@ TEST_F(DeclarableOpsTests12, pad_tests3) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1465,10 +1465,10 @@ TEST_F(DeclarableOpsTests12, pad_tests4) {
 
     float inBuff[]  = {1.f,2.f,3.f,4.f,5.f,6.f,7.f,8.f,9.f,10.f,11.f,12.f,13.f,14.f,15.f,16.f,17.f,18.f};
     int padBuff[] = {1,1,2,2,2,2};
-    float expBuff[] = {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 
-                        0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 2.f, 3.f, 0.f, 0.f, 0.f, 0.f, 4.f, 5.f, 6.f, 0.f, 0.f, 0.f, 0.f, 
-                        7.f, 8.f, 9.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 10.f, 11.f, 12.f, 0.f, 
-                        0.f, 0.f, 0.f, 13.f, 14.f, 15.f, 0.f, 0.f, 0.f, 0.f, 16.f, 17.f, 18.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 
+    float expBuff[] = {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f,
+                        0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 2.f, 3.f, 0.f, 0.f, 0.f, 0.f, 4.f, 5.f, 6.f, 0.f, 0.f, 0.f, 0.f,
+                        7.f, 8.f, 9.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 10.f, 11.f, 12.f, 0.f,
+                        0.f, 0.f, 0.f, 13.f, 14.f, 15.f, 0.f, 0.f, 0.f, 0.f, 16.f, 17.f, 18.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f,
                         0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
 
     auto input    = NDArrayFactory::create<float>(inBuff,  'c', {2,3,3});
@@ -1483,7 +1483,7 @@ TEST_F(DeclarableOpsTests12, pad_tests4) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     // for(int i = 0; i < expected.lengthOf(); ++i) {
@@ -1517,7 +1517,7 @@ TEST_F(DeclarableOpsTests12, pad_tests5) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1544,7 +1544,7 @@ TEST_F(DeclarableOpsTests12, pad_tests6) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1570,7 +1570,7 @@ TEST_F(DeclarableOpsTests12, pad_tests7)
     auto *result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1596,7 +1596,7 @@ TEST_F(DeclarableOpsTests12, pad_tests8)
     auto *result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1622,7 +1622,7 @@ TEST_F(DeclarableOpsTests12, pad_tests9)
     auto *result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1644,7 +1644,7 @@ TEST_F(DeclarableOpsTests12, pad_tests10) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1666,7 +1666,7 @@ TEST_F(DeclarableOpsTests12, pad_tests11) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1695,7 +1695,7 @@ TEST_F(DeclarableOpsTests12, pad_tests12) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1717,7 +1717,7 @@ TEST_F(DeclarableOpsTests12, pad_tests13) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1738,7 +1738,7 @@ TEST_F(DeclarableOpsTests12, pad_tests14) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1759,7 +1759,7 @@ TEST_F(DeclarableOpsTests12, pad_tests15) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1780,7 +1780,7 @@ TEST_F(DeclarableOpsTests12, pad_tests16) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1801,7 +1801,7 @@ TEST_F(DeclarableOpsTests12, pad_tests17) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1822,7 +1822,7 @@ TEST_F(DeclarableOpsTests12, pad_tests18) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1843,7 +1843,7 @@ TEST_F(DeclarableOpsTests12, pad_tests19) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1864,7 +1864,7 @@ TEST_F(DeclarableOpsTests12, pad_tests20) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1887,7 +1887,7 @@ TEST_F(DeclarableOpsTests12, pad_tests21) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1910,7 +1910,7 @@ TEST_F(DeclarableOpsTests12, pad_tests22) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1934,7 +1934,7 @@ TEST_F(DeclarableOpsTests12, pad_tests23) {
     // result->printShapeInfo("r");
     // expected.printShapeInfo("e");
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1956,7 +1956,7 @@ TEST_F(DeclarableOpsTests12, pad_tests24) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -1978,7 +1978,7 @@ TEST_F(DeclarableOpsTests12, pad_tests25) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2000,7 +2000,7 @@ TEST_F(DeclarableOpsTests12, pad_tests26) {
 
     auto result = results->at(0);
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2020,7 +2020,7 @@ TEST_F(DeclarableOpsTests12, pad_tests27) {
     // z.printIndexedBuffer();
 
     ASSERT_EQ(ND4J_STATUS_OK, status);
-    ASSERT_TRUE(exp.isSameShapeStrict(&z));
+    ASSERT_TRUE(exp.isSameShapeStrict(z));
     ASSERT_TRUE(exp.equalsTo(z));
 }
 
@@ -2146,7 +2146,7 @@ TEST_F(DeclarableOpsTests12, pad_tests34) {
     Nd4jStatus status = op.execute({&input, &paddings}, {&z}, {10}, {0}, {});      // constant
 
     ASSERT_EQ(ND4J_STATUS_OK, status);
-    ASSERT_TRUE(expected.isSameShapeStrict(&z));
+    ASSERT_TRUE(expected.isSameShapeStrict(z));
     ASSERT_TRUE(expected.equalsTo(z));
 }
 
@@ -2170,7 +2170,7 @@ TEST_F(DeclarableOpsTests12, Pad_1) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2197,7 +2197,7 @@ TEST_F(DeclarableOpsTests12, Pad_2) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2224,7 +2224,7 @@ TEST_F(DeclarableOpsTests12, Pad_3) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2251,7 +2251,7 @@ TEST_F(DeclarableOpsTests12, Pad_4) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2278,7 +2278,7 @@ TEST_F(DeclarableOpsTests12, Pad_5) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2305,7 +2305,7 @@ TEST_F(DeclarableOpsTests12, Pad_6) {
     auto result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2331,7 +2331,7 @@ TEST_F(DeclarableOpsTests12, Pad_7)
     auto *result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2357,7 +2357,7 @@ TEST_F(DeclarableOpsTests12, Pad_8)
     auto *result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2383,7 +2383,7 @@ TEST_F(DeclarableOpsTests12, Pad_9)
     auto *result = results->at(0);
     // result->printIndexedBuffer();
 
-    ASSERT_TRUE(expected.isSameShapeStrict(result));
+    ASSERT_TRUE(expected.isSameShapeStrict(*result));
     ASSERT_TRUE(expected.equalsTo(result));
 
     delete results;
@@ -2425,5 +2425,258 @@ TEST_F(DeclarableOpsTests12, Pad_SGO_Test_1) {
     // res->at(0)->printIndexedBuffer("PAD_SGO");
     // exp.printIndexedBuffer("PAD_EXP");
     ASSERT_TRUE(exp.equalsTo(res->at(0)));
+    delete res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, LU_Test_1) {
+
+    auto in = NDArrayFactory::create<double>('c', {3,3}, {1., 2., 3., 0., 2., 3., 0., 0., 7.});
+    auto exp = NDArrayFactory::create<double>('c', {3,3}, {1., 2., 3., 0., 2., 3., 0., 0., 7});
+    auto pExp = NDArrayFactory::create<int>('c', {3}, {0, 1, 2});
+    nd4j::ops::lu op;
+
+    auto res = op.execute({&in}, {}, {});
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto z = res->at(0);
+    auto p = res->at(1);
+//    z->printIndexedBuffer("Triangulars");
+//    p->printIndexedBuffer("Permutaions");
+
+    ASSERT_TRUE(exp.equalsTo(z));
+    ASSERT_TRUE(pExp.equalsTo(p));
+
+    delete res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, LU_Test_2) {
+    auto in = NDArrayFactory::create<double>('c', {3,3}, {1, 0, 0, 2, 3, 0, 4, 5, 6});
+
+    auto expLU = NDArrayFactory::create<double>('c', {3,3}, {4.,  5.,  6., 0.25, -1.25, -1.5, 0.5, -0.4, -3.6});
+    auto expP = NDArrayFactory::create<int>({2, 0, 1});
+    nd4j::ops::lu op;
+
+    auto res = op.execute({&in}, {}, {});
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto z = res->at(0);
+    auto p = res->at(1);
+//    z->printIndexedBuffer("Triangulars2");
+//    p->printIndexedBuffer("Permutaions2");
+    ASSERT_TRUE(expLU.equalsTo(z));
+    ASSERT_TRUE(expP.equalsTo(p));
+    delete res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, LU_Test_3) {
+    auto in = NDArrayFactory::create<double>('c', {3,3}, {1,2,3,4,7,9, 11, 12, 13});
+
+    auto expLU = NDArrayFactory::create<double>('c', {3,3}, {
+               11.,        12.,         13.,
+        0.36363637,  2.6363635,    4.272727,
+        0.09090909,  0.3448276,  0.34482753});
+
+    auto expP = NDArrayFactory::create<int>({2, 1, 0});
+    nd4j::ops::lu op;
+
+    auto res = op.execute({&in}, {}, {});
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto z = res->at(0);
+    auto p = res->at(1);
+//    z->printIndexedBuffer("Triangulars3");
+//    p->printIndexedBuffer("Permutaions3");
+    ASSERT_TRUE(expLU.equalsTo(z));
+    ASSERT_TRUE(expP.equalsTo(p));
+    delete res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, LU_Test_4) {
+
+    auto in = NDArrayFactory::create<double>('c', {10,10}, {
+            1.,   2.,   3.,   4.,   5.,   6.,   7.,  8.,   1.,  15.,
+            5.,   1.,  13.,   4.,  15.,   1.,  17.,  9.,  11.,  25.,
+            1.,   9.,   1.,   4.,   5.,   2.,  13.,  10,  21.,  15.,
+            3.,   9.,   4.,   1.,   5.,   3.,   7.,   1,   1.,   5.,
+            2.,   3.,   2.,   5.,   4.,   4.,   7.,   3,   3.,   4.,
+            0.,   1.,   3.,   3.,   5.,   1.,   3.,   1,  31.,  15.,
+            2.,   1.,   4.,   3.,   1.,   5.,   1.,   2,  31.,  35.,
+            3.,   4.,   3.,   3.,   4.,   4.,   4.,  1.,   3.,   1.,
+            1.,   1.,   1.,   1.,   5.,   6.,   5.,  4.,   3.,   2.,
+            1.,   1.,   1.,   1.,   1.,   1.,   1.,  1.,   1.,   1.});
+
+    auto expLU = NDArrayFactory::create<double>('c', {10,10}, {
+            5.0,      1.0,      13.0,       4.0,      15.0,       1.0,      17.0,       9.0,       11.0,       25.0,
+            0.2,      8.8,      -1.6,       3.2,       2.0,       1.8,       9.6,       8.2,       18.8,       10.0,
+            0.6, 0.386364, -4.181818, -0.636364, -5.772727,  2.704545, -9.909091, -7.568182, -10.863636, -17.863636,
+            0.6, 0.954545,  0.543478, -4.108696, -2.771739, -0.788043, -6.978261, -8.114130, -17.641304,  -9.836957,
+            0.4, 0.068182,  0.260870, -0.328042, -4.539683,  3.513228, -6.158730, -2.846561,  22.365079,  25.751323,
+            0.2, 0.090909,  0.347826, -0.031746, -0.823427,  7.563520, -1.118881,  1.485431,  20.725524,  23.196387,
+            0.0, 0.113636, -0.760870, -0.523810,  0.236014,  0.213036, -7.593805, -9.585099,   1.663379, -15.900300,
+            0.4, 0.295455,  0.652174, -0.698413,  0.167832,  0.021727, -0.001360, -3.321530, -16.392106, - 9.022119,
+            0.2, 0.204545, -0.173913, -0.592593,  0.232517,  0.610602,  0.277466, -0.244631, -39.715757, -18.928178,
+            0.2, 0.090909,  0.347826, -0.031746,  0.057692, -0.070344, -0.030154, -0.243578,   0.087256,   0.112695
+    });
+
+    auto expP = NDArrayFactory::create<int>({1, 2, 7, 3, 6, 8, 5, 4, 0, 9});
+    nd4j::ops::lu op;
+
+    auto res = op.execute({&in}, {}, {});
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto z = res->at(0);
+    auto p = res->at(1);
+//    z->printBuffer("Triangulars4");
+//    expLU.printBuffer("TriangulExp4");
+//    p->printBuffer("Permutaions4");
+
+    ASSERT_TRUE(expLU.equalsTo(z));
+    ASSERT_TRUE(expP.equalsTo(p));
+    delete res;
+}
+
+TEST_F(DeclarableOpsTests12, LU_Test_5) {
+
+    auto in = NDArrayFactory::create<double>('c', {2, 10,10}, {
+            1.,   2.,   3.,   4.,   5.,   6.,   7.,  8.,   1.,  15.,
+            5.,   1.,  13.,   4.,  15.,   1.,  17.,  9.,  11.,  25.,
+            1.,   9.,   1.,   4.,   5.,   2.,  13.,  10,  21.,  15.,
+            3.,   9.,   4.,   1.,   5.,   3.,   7.,   1,   1.,   5.,
+            2.,   3.,   2.,   5.,   4.,   4.,   7.,   3,   3.,   4.,
+            0.,   1.,   3.,   3.,   5.,   1.,   3.,   1,  31.,  15.,
+            2.,   1.,   4.,   3.,   1.,   5.,   1.,   2,  31.,  35.,
+            3.,   4.,   3.,   3.,   4.,   4.,   4.,  1.,   3.,   1.,
+            1.,   1.,   1.,   1.,   5.,   6.,   5.,  4.,   3.,   2.,
+            1.,   1.,   1.,   1.,   1.,   1.,   1.,  1.,   1.,   1.,
+
+            1.,   2.,   3.,   4.,   5.,   6.,   7.,  8.,   1.,  15.,
+            5.,   1.,  13.,   4.,  15.,   1.,  17.,  9.,  11.,  25.,
+            1.,   9.,   1.,   4.,   5.,   2.,  13.,  10,  21.,  15.,
+            3.,   9.,   4.,   1.,   5.,   3.,   7.,   1,   1.,   5.,
+            2.,   3.,   2.,   5.,   4.,   4.,   7.,   3,   3.,   4.,
+            0.,   1.,   3.,   3.,   5.,   1.,   3.,   1,  31.,  15.,
+            2.,   1.,   4.,   3.,   1.,   5.,   1.,   2,  31.,  35.,
+            3.,   4.,   3.,   3.,   4.,   4.,   4.,  1.,   3.,   1.,
+            1.,   1.,   1.,   1.,   5.,   6.,   5.,  4.,   3.,   2.,
+            1.,   1.,   1.,   1.,   1.,   1.,   1.,  1.,   1.,   1.
+    });
+
+    auto expLU = NDArrayFactory::create<double>('c', {2, 10,10}, {
+            5.0,      1.0,      13.0,       4.0,      15.0,       1.0,      17.0,       9.0,       11.0,       25.0,
+            0.2,      8.8,      -1.6,       3.2,       2.0,       1.8,       9.6,       8.2,       18.8,       10.0,
+            0.6, 0.386364, -4.181818, -0.636364, -5.772727,  2.704545, -9.909091, -7.568182, -10.863636, -17.863636,
+            0.6, 0.954545,  0.543478, -4.108696, -2.771739, -0.788043, -6.978261, -8.114130, -17.641304,  -9.836957,
+            0.4, 0.068182,  0.260870, -0.328042, -4.539683,  3.513228, -6.158730, -2.846561,  22.365079,  25.751323,
+            0.2, 0.090909,  0.347826, -0.031746, -0.823427,  7.563520, -1.118881,  1.485431,  20.725524,  23.196387,
+            0.0, 0.113636, -0.760870, -0.523810,  0.236014,  0.213036, -7.593805, -9.585099,   1.663379, -15.900300,
+            0.4, 0.295455,  0.652174, -0.698413,  0.167832,  0.021727, -0.001360, -3.321530, -16.392106, - 9.022119,
+            0.2, 0.204545, -0.173913, -0.592593,  0.232517,  0.610602,  0.277466, -0.244631, -39.715757, -18.928178,
+            0.2, 0.090909,  0.347826, -0.031746,  0.057692, -0.070344, -0.030154, -0.243578,   0.087256,   0.112695,
+
+            5.0,      1.0,      13.0,       4.0,      15.0,       1.0,      17.0,       9.0,       11.0,       25.0,
+            0.2,      8.8,      -1.6,       3.2,       2.0,       1.8,       9.6,       8.2,       18.8,       10.0,
+            0.6, 0.386364, -4.181818, -0.636364, -5.772727,  2.704545, -9.909091, -7.568182, -10.863636, -17.863636,
+            0.6, 0.954545,  0.543478, -4.108696, -2.771739, -0.788043, -6.978261, -8.114130, -17.641304,  -9.836957,
+            0.4, 0.068182,  0.260870, -0.328042, -4.539683,  3.513228, -6.158730, -2.846561,  22.365079,  25.751323,
+            0.2, 0.090909,  0.347826, -0.031746, -0.823427,  7.563520, -1.118881,  1.485431,  20.725524,  23.196387,
+            0.0, 0.113636, -0.760870, -0.523810,  0.236014,  0.213036, -7.593805, -9.585099,   1.663379, -15.900300,
+            0.4, 0.295455,  0.652174, -0.698413,  0.167832,  0.021727, -0.001360, -3.321530, -16.392106, - 9.022119,
+            0.2, 0.204545, -0.173913, -0.592593,  0.232517,  0.610602,  0.277466, -0.244631, -39.715757, -18.928178,
+            0.2, 0.090909,  0.347826, -0.031746,  0.057692, -0.070344, -0.030154, -0.243578,   0.087256,   0.112695
+
+    });
+
+    auto expP = NDArrayFactory::create<int>('c', {2, 10}, {
+            1, 2, 7, 3, 6, 8, 5, 4, 0, 9,
+            1, 2, 7, 3, 6, 8, 5, 4, 0, 9
+    });
+    nd4j::ops::lu op;
+
+    auto res = op.execute({&in}, {}, {});
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto z = res->at(0);
+    auto p = res->at(1);
+//    z->printBuffer("Triangulars5");
+//    expLU.printBuffer("TriangulExp5");
+//    p->printBuffer("Permutaions5");
+
+    ASSERT_TRUE(expLU.equalsTo(z));
+    ASSERT_TRUE(expP.equalsTo(p));
+    delete res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, LU_Test_1_2) {
+
+    auto in = NDArrayFactory::create<double>('c', {2, 3,3}, {1., 2., 3., 0., 2., 3., 0., 0., 7.,1., 2., 3., 0., 2., 3., 0., 0., 7.});
+    auto exp = NDArrayFactory::create<double>('c', {2, 3,3}, {1., 2., 3., 0., 2., 3., 0., 0., 7, 1., 2., 3., 0., 2., 3., 0., 0., 7.});
+
+    nd4j::ops::lu op;
+
+    auto res = op.execute({&in}, {}, {});
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto z = res->at(0);
+    auto p = res->at(1);
+//    z->printIndexedBuffer("Triangulars (2,3,3)");
+//    p->printIndexedBuffer("Permutaions (2,3,3)");
+    ASSERT_TRUE(exp.equalsTo(res->at(0)));
+    delete res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, LU_Test_3_2) {
+
+    auto in = NDArrayFactory::create<double>('c', {2, 3,3}, {1,2,3,4,7,9, 11, 12, 13,1,2,3,4,7,9, 11, 12, 13});
+
+    auto expLU = NDArrayFactory::create<double>('c', {2, 3,3}, {
+            11.,        12.,         13.,
+            0.36363637,  2.6363635,    4.272727,
+            0.09090909,  0.3448276,  0.34482753,
+
+            11.,        12.,         13.,
+            0.36363637,  2.6363635,    4.272727,
+            0.09090909,  0.3448276,  0.34482753
+    });
+
+    auto expP = NDArrayFactory::create<int>('c', {2,3}, {2, 1, 0, 2, 1, 0});
+    nd4j::ops::lu op;
+
+    auto res = op.execute({&in}, {}, {});
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto z = res->at(0);
+    auto p = res->at(1);
+//    z->printIndexedBuffer("Triangulars3_2");
+//    p->printIndexedBuffer("Permutaions3_2");
+
+    ASSERT_TRUE(expLU.equalsTo(z));
+    ASSERT_TRUE(expP.equalsTo(p));
+    delete res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(DeclarableOpsTests12, LU_Test_3_3) {
+
+    auto in = NDArrayFactory::create<double>('c', {2, 3,3}, {1,2,3,4,7,9, 11, 12, 13,13,2,3,4,7,9, 11, 12, 1});
+    auto expLU = NDArrayFactory::create<double>('c', {2, 3,3}, {
+            11.,        12.,         13.,
+            0.36363637,  2.6363635,    4.272727,
+            0.09090909,  0.3448276,  0.34482753,
+
+                    13.,        2.,         3.,
+             0.84615386, 10.307693, -1.5384617,
+             0.30769232,  0.619403,   9.029851});
+
+    auto expP = NDArrayFactory::create<int>('c', {2,3}, {2, 1, 0, 0, 2, 1});
+    nd4j::ops::lu op;
+
+    auto res = op.execute({&in}, {}, {});
+    ASSERT_EQ(res->status(), ND4J_STATUS_OK);
+    auto z = res->at(0);
+    auto p = res->at(1);
+//    z->printIndexedBuffer("Triangulars3_3");
+//    p->printIndexedBuffer("Permutaions3_3");
+
+    ASSERT_TRUE(expLU.equalsTo(z));
+    ASSERT_TRUE(expP.equalsTo(p));
     delete res;
 }

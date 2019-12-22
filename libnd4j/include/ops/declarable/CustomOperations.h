@@ -44,7 +44,7 @@
 #include <ops/declarable/headers/compat.h>
 #include <ops/declarable/headers/util.h>
 #include <ops/declarable/headers/BarnesHutTsne.h>
-#include <ops/declarable/headers/color_models.h>
+#include <ops/declarable/headers/images.h>
 #include <dll.h>
 #include <helpers/shape.h>
 #include <helpers/TAD.h>
