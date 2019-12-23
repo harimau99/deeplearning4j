@@ -724,6 +724,29 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
         }
     }
 
+    @Test
+    public void testActivationLayers() throws Exception {
+        String[] names = new String[]{
+                "ELU_0_model.h5",
+                "LeakyReLU_0_model.h5",
+                "ReLU_0_model.h5",
+                "ReLU_1_model.h5",
+                "ReLU_2_model.h5",
+                "ReLU_3_model.h5",
+                "Softmax_0_model.h5",
+                "ThresholdReLU_0_model.h5",
+        };
+
+        for(String name : names ){
+            System.out.println("Starting test: " + name);
+            String modelPath = "modelimport/keras/examples/activations/" + name;
+            String inputsOutputPath = "modelimport/keras/examples/activations/" + (name.substring(0,name.length()-"model.h5".length()) + "inputs_and_outputs.h5");
+
+            importEndModelTest(modelPath, inputsOutputPath, true, true,
+                    true, true, false, null, null);
+        }
+    }
+
     private ComputationGraph importFunctionalModelH5Test(String modelPath) throws Exception {
         return importFunctionalModelH5Test(modelPath, null, false);
     }
