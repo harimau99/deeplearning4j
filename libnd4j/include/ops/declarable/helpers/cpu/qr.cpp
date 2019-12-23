@@ -36,6 +36,18 @@ namespace helpers {
         return m;
     }
 
+/* m = I - v v^T */
+    template <typename T>
+    NDArray vmul(NDArray const& v, int n)
+    {
+        NDArray res('c', {n,n}, v.dataType()); // x = matrix_new(n, n);
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                res.t<T>(i, j) = -2 *  v.t<T>(i) * v.t<T>(j) + (i == j?T(1):T(0));
+
+        return res;
+    }
+
     template <typename T>
     void qrSingle(NDArray* matrix, NDArray* Q, NDArray* R, bool const fullMatricies) {
         Nd4jLong M = matrix->sizeAt(-2);
@@ -47,32 +59,25 @@ namespace helpers {
             q[k] = Q->ulike();
             q[k].nullify();
             z = matrixMinor<T>(z, k); // minor computing for current column with given matrix z (initally is a input matrix)
-
+            z.printIndexedBuffer("Z!!!");
             auto currentColumn = z({0, 0, k, k+1}); // retrieve k column from z to x buffer
-            auto norm = currentColumn.reduceAlongDims(reduce::SquaredNorm, {0});
+            auto norm = currentColumn.reduceAlongDims(reduce::Norm2, {0});
+            nd4j_printf("%f\n", norm.t<T>(0));
             if (matrix->t<T>(k,k) > T(0.f)) // negate on positive matrix diagonal element
                 norm.t<T>(0) = -norm.t<T>(0);
             e.t<T>(k) = T(1.f); // e - is filled by 0 vector except diagonal element (filled by 1)
             e = currentColumn + norm * e; // e[i] = x[i] + a * e[i] for each i from 0 to n - 1
-            auto normE = currentColumn.reduceAlongDims(reduce::SquaredNorm, {0});
+            auto normE = currentColumn.reduceAlongDims(reduce::Norm2, {0});
             e /= normE;
-            q[k].setIdentity();
-            auto qQ = q[k].ulike();
-            //MmulHelper::mmul(&e, &e, &qQ, 0, 1); //q[k].ulike();
-            for (auto i = 0; i < M; i++) {
-                for (auto j = 0; j < M; j++) {
-                    qQ.template t<T>(i,j) = e.t<T>(i) * e.t<T>(j);
-                }
-            }
-            qQ.printIndexedBuffer("qQ");
-            //MmulHelper::matmul(&e, &e, &qQ, false, true); // k-ed matrix of range input q[k] = I - e * eT
-            q[k] -= qQ;
+            q[k] = vmul<T>(e, M);
             q[k].printIndexedBuffer("And Qk");
 //            z = q[k] * z;
             z.printIndexedBuffer("a_Step1");
-            MmulHelper::matmul(&q[k], &z, &z, false, false);
+            auto qQ = z.ulike();
+            MmulHelper::matmul(&q[k], &z, &qQ, false, false);
             q[k].printIndexedBuffer("q1");
-            z.printIndexedBuffer("Step1");
+            qQ.printIndexedBuffer("Step1");
+            z = qQ;
         }
         *Q = q[0]; //
         MmulHelper::matmul(&q[0], &z, R, false, false);
