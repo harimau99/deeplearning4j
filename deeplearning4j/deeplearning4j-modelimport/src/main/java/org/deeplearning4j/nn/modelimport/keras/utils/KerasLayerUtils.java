@@ -315,6 +315,8 @@ public class KerasLayerUtils {
             layer = new KerasReLU(layerConfig, enforceTrainingConfig);
         } else if(layerClassName.equals(conf.getLAYER_CLASS_NAME_ELU())){
             layer = new KerasELU(layerConfig, enforceTrainingConfig);
+        } else if(layerClassName.equals(conf.getLAYER_CLASS_NAME_SOFTMAX())){
+            layer = new KerasSoftmax(layerConfig, enforceTrainingConfig);
         }
         if (layer == null){
             Class<? extends KerasLayer> customConfig = customLayers.get(layerClassName);
