@@ -121,7 +121,7 @@ public class LongBuffer extends BaseCpuDataBuffer {
 
         // we still want this buffer to have native representation
         ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, DataType.INT64.toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, this.pointer, numberOfElements * 8);
+        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, this.pointer, numberOfElements);
 
         Nd4j.getDeallocatorService().pickObject(this);
     }

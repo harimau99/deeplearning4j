@@ -36,6 +36,9 @@ public class CpuDeallocator implements Deallocator {
 
     @Override
     public void deallocate() {
+        if (opaqueDataBuffer == null)
+            throw new RuntimeException("opaqueDataBuffer is null");
+
         NativeOpsHolder.getInstance().getDeviceNativeOps().deleteDataBuffer(opaqueDataBuffer);
     }
 }

@@ -53,7 +53,7 @@ public abstract class BaseNd4jTest {
     public TestName testName = new TestName();
 
     @Rule
-    public Timeout timeout = Timeout.seconds(30);
+    public Timeout timeout = Timeout.seconds(3000000L);
 
     protected long startTime;
     protected int threadCountBefore;

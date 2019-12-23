@@ -122,10 +122,10 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             setIndexer(UByteIndexer.create((BytePointer) pointer));
         } else if (dataType() == DataType.UTF8) {
             // FIXME: probably wrong
-            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, DataType.INT64.toInt(), false);
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asLongPointer();
+            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, INT8.toInt(), false);
+            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBytePointer();
 
-            setIndexer(LongIndexer.create((LongPointer) pointer));
+            setIndexer(ByteIndexer.create((BytePointer) pointer));
         }
 
         Nd4j.getDeallocatorService().pickObject(this);
