@@ -66,9 +66,12 @@ namespace helpers {
             if (matrix->t<T>(k,k) > T(0.f)) // negate on positive matrix diagonal element
                 norm.t<T>(0) = -norm.t<T>(0);
             e.t<T>(k) = T(1.f); // e - is filled by 0 vector except diagonal element (filled by 1)
+            e.printIndexedBuffer("E0");
             e = currentColumn + norm * e; // e[i] = x[i] + a * e[i] for each i from 0 to n - 1
-            auto normE = currentColumn.reduceAlongDims(reduce::Norm2, {0});
+            e.printIndexedBuffer("E+");
+            auto normE = e.reduceAlongDims(reduce::Norm2, {0});
             e /= normE;
+            e.printIndexedBuffer("E!!!");
             q[k] = vmul<T>(e, M);
             q[k].printIndexedBuffer("And Qk");
 //            z = q[k] * z;
