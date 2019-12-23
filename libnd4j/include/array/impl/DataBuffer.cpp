@@ -270,9 +270,8 @@ namespace nd4j {
     }
 
     void DataBuffer::setPrimaryBuffer(void *buffer, size_t length) {
-        // TODO: release original primary buffer if it's not null? or not?
         if (_primaryBuffer != nullptr && _isOwnerPrimary) {
-            // delete?
+            deletePrimary();
         }
         _primaryBuffer = buffer;
         _isOwnerPrimary = false;
