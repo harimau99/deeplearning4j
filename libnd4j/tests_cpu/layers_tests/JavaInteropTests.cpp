@@ -1303,6 +1303,37 @@ TEST_F(JavaInteropTests, test_expandable_array_op_1) {
     ASSERT_EQ(exp1, z1);
 }
 
+TEST_F(JavaInteropTests, test_workspace_backed_arrays_1) {
+    if (!Environment::getInstance()->isCPU())
+        return;
+
+    auto x = NDArrayFactory::create<double>('c', {4, 3, 4, 4});
+    auto y = NDArrayFactory::create<double>('c', {4, 3, 3, 3});
+    auto z = NDArrayFactory::create<double>('c', {4, 3, 4, 4});
+
+    double buffer[2048];
+
+    InteropDataBuffer ix(0, DataType::DOUBLE, false);
+    InteropDataBuffer iy(0, DataType::DOUBLE, false);
+    InteropDataBuffer iz(0, DataType::DOUBLE, false);
+
+    // we're imitating workspace-managed array here
+    ix.setPrimary(buffer + 64, x.lengthOf());
+    iy.setPrimary(buffer + 64 + x.lengthOf(), y.lengthOf());
+    iz.setPrimary(buffer + 64 + x.lengthOf() + y.lengthOf(), z.lengthOf());
+
+    Context ctx(1);
+    ctx.setInputArray(0, &ix, x.shapeInfo(), x.specialShapeInfo());
+    ctx.setInputArray(1, &iy, y.shapeInfo(), y.specialShapeInfo());
+    ctx.setOutputArray(0, &iz, z.shapeInfo(), z.specialShapeInfo());
+
+    ctx.setIArguments({2, 2, 1, 1, 0, 0, 1, 1, 0, 0, 0});
+
+    nd4j::ops::maxpool2d_bp op;
+    auto status = op.execute(&ctx);
+    ASSERT_EQ(Status::OK(), status);
+}
+
 /*
 TEST_F(JavaInteropTests, Test_Results_Conversion_1) {
     auto pl = nd4j::graph::readFlatBuffers("./resources/gru_dynamic_mnist.fb");
