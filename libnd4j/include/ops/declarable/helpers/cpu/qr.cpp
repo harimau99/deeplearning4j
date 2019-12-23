@@ -59,31 +59,21 @@ namespace helpers {
             q[k] = Q->ulike();
             q[k].nullify();
             z = matrixMinor<T>(z, k); // minor computing for current column with given matrix z (initally is a input matrix)
-            z.printIndexedBuffer("Z!!!");
             auto currentColumn = z({0, 0, k, k+1}); // retrieve k column from z to x buffer
             auto norm = currentColumn.reduceAlongDims(reduce::Norm2, {0});
-            nd4j_printf("%f\n", norm.t<T>(0));
             if (matrix->t<T>(k,k) > T(0.f)) // negate on positive matrix diagonal element
                 norm.t<T>(0) = -norm.t<T>(0);
             e.t<T>(k) = T(1.f); // e - is filled by 0 vector except diagonal element (filled by 1)
-            e.printIndexedBuffer("E0");
             e = currentColumn + norm * e; // e[i] = x[i] + a * e[i] for each i from 0 to n - 1
-            e.printIndexedBuffer("E+");
             auto normE = e.reduceAlongDims(reduce::Norm2, {0});
             e /= normE;
-            e.printIndexedBuffer("E!!!");
             q[k] = vmul<T>(e, M);
-            q[k].printIndexedBuffer("And Qk");
-//            z = q[k] * z;
-            z.printIndexedBuffer("a_Step1");
             auto qQ = z.ulike();
             MmulHelper::matmul(&q[k], &z, &qQ, false, false);
-            q[k].printIndexedBuffer("q1");
-            qQ.printIndexedBuffer("Step1");
             z = qQ;
         }
-        *Q = q[0]; //
-        MmulHelper::matmul(&q[0], &z, R, false, false);
+        Q->assign(q[0]); //
+        MmulHelper::matmul(Q, matrix, R, false, false);
         //*R = q[0] * *matrix;
         for (int i = 1; i < N && i < M - 1; i++) {
 //            z = q[i] * *Q;
@@ -93,7 +83,9 @@ namespace helpers {
         }
 //        *R = *Q * *matrix;
         MmulHelper::matmul(Q, matrix, R, false, false);
-        Q->transposei();// transpose of matrix Q - now it in non-refined square state (MxM)
+        *R *= -1.f;
+        //R->transposei();
+       // Q->transposei();// transpose of matrix Q - now it in non-refined square state (MxM)
     }
 
     template <typename T>
