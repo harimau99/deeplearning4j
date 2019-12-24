@@ -435,7 +435,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ((BaseCudaDataBuffer) underlyingBuffer).lazyAllocateHostPointer();
 
         // we're creating view of the native DataBuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCudaDataBuffer) underlyingBuffer).ptrDataBuffer, offset * underlyingBuffer.getElementSize());
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCudaDataBuffer) underlyingBuffer).ptrDataBuffer, length * underlyingBuffer.getElementSize(), offset * underlyingBuffer.getElementSize());
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length);
         val hostPointer = allocationPoint.getHostPointer();
 

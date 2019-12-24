@@ -149,7 +149,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         super(underlyingBuffer, length, offset);
 
         // for vew we need "externally managed" pointer and deallocator registration
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCpuDataBuffer) underlyingBuffer).ptrDataBuffer, offset * underlyingBuffer.getElementSize());
+        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCpuDataBuffer) underlyingBuffer).ptrDataBuffer, length * underlyingBuffer.getElementSize(), offset * underlyingBuffer.getElementSize());
         //NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, new PagedPointer(this.addressPointer()), length);
         Nd4j.getDeallocatorService().pickObject(this);
 

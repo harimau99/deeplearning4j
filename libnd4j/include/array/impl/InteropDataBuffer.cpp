@@ -24,11 +24,15 @@
 #include <helpers/logger.h>
 
 namespace nd4j {
-    InteropDataBuffer::InteropDataBuffer(InteropDataBuffer &dataBuffer, Nd4jLong offset) {
+    InteropDataBuffer::InteropDataBuffer(InteropDataBuffer &dataBuffer, uint64_t length, uint64_t offset) {
         _dataBuffer = dataBuffer.getDataBuffer();
 
         // offset is always absolute to the original buffer
         _offset = offset;
+
+        if (_offset + length >= _dataBuffer->getLenInBytes()) {
+            throw std::runtime_error("offset + length is higher than original length");
+        }
     }
 
     InteropDataBuffer::InteropDataBuffer(std::shared_ptr<DataBuffer> databuffer) {

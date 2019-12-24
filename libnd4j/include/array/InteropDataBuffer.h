@@ -35,7 +35,7 @@ namespace nd4j {
         std::shared_ptr<DataBuffer> _dataBuffer;
         uint64_t _offset = 0;
     public:
-        InteropDataBuffer(InteropDataBuffer &dataBuffer, Nd4jLong offset);
+        InteropDataBuffer(InteropDataBuffer &dataBuffer, uint64_t length, uint64_t offset);
         InteropDataBuffer(std::shared_ptr<DataBuffer> databuffer);
         InteropDataBuffer(size_t elements, nd4j::DataType dtype, bool allocateBoth);
         ~InteropDataBuffer() = default;

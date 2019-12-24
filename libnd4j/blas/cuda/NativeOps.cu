@@ -3807,8 +3807,8 @@ void dbExpandBuffer(OpaqueDataBuffer *dataBuffer, Nd4jLong elements) {
     dataBuffer->dataBuffer()->expand(elements * DataTypeUtils::sizeOf(dataBuffer->dataBuffer()->getDataType()));
 }
 
-OpaqueDataBuffer* dbCreateView(OpaqueDataBuffer *dataBuffer, Nd4jLong offset) {
-    return new InteropDataBuffer(*dataBuffer, offset);
+OpaqueDataBuffer* dbCreateView(OpaqueDataBuffer *dataBuffer, Nd4jLong length, Nd4jLong offset) {
+    return new InteropDataBuffer(*dataBuffer, length, offset);
 }
 
 void dbSyncToSpecial(OpaqueDataBuffer *dataBuffer) {
