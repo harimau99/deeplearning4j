@@ -1,5 +1,5 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
+/* ******************************************************************************
+ * Copyright (c) 2019 Konduit K.K.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -21,9 +21,14 @@ import org.deeplearning4j.exception.DL4JInvalidInputException;
 import org.deeplearning4j.nn.conf.CacheMode;
 import org.deeplearning4j.nn.conf.ConvolutionMode;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.Convolution3D;
+import org.deeplearning4j.nn.conf.layers.Deconvolution3D;
 import org.deeplearning4j.nn.gradient.DefaultGradient;
 import org.deeplearning4j.nn.gradient.Gradient;
+import org.deeplearning4j.nn.layers.BaseLayer;
 import org.deeplearning4j.nn.params.DeconvolutionParamInitializer;
+import org.deeplearning4j.nn.workspace.ArrayType;
+import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
 import org.deeplearning4j.util.ConvolutionUtils;
 import org.nd4j.linalg.activations.IActivation;
 import org.nd4j.linalg.api.buffer.DataType;
@@ -33,16 +38,15 @@ import org.nd4j.linalg.api.ops.DynamicCustomOp;
 import org.nd4j.linalg.api.shape.Shape;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.primitives.Pair;
-import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
-import org.deeplearning4j.nn.workspace.ArrayType;
+import org.nd4j.linalg.util.ArrayUtil;
 
 import java.util.Arrays;
 
 /**
- * 2D deconvolution layer implementation.
+ * 3D deconvolution layer implementation.
  *
  * Deconvolutions are also known as transpose convolutions or fractionally strided convolutions.
- * In essence, deconvolutions swap forward and backward pass with regular 2D convolutions.
+ * In essence, deconvolutions swap forward and backward pass with regular 3D convolutions.
  *
  * See the paper by Matt Zeiler for details:
  * <a href="http://www.matthewzeiler.com/wp-content/uploads/2017/07/cvpr2010.pdf">http://www.matthewzeiler.com/wp-content/uploads/2017/07/cvpr2010.pdf</a>
@@ -51,87 +55,77 @@ import java.util.Arrays;
  * <a href="https://arxiv.org/abs/1603.07285v1">https://arxiv.org/abs/1603.07285v1</a>
  *
  *
- * @author Max Pumperla
+ * @author Alex Black
  */
-public class Deconvolution2DLayer extends ConvolutionLayer {
+public class Deconvolution3DLayer extends BaseLayer<Deconvolution3D> {
 
-    public Deconvolution2DLayer(NeuralNetConfiguration conf, DataType dataType) {
+    public Deconvolution3DLayer(NeuralNetConfiguration conf, DataType dataType) {
         super(conf, dataType);
-    }
-
-
-    @Override
-    void initializeHelper() {
-        // no op
     }
 
     @Override
     public Pair<Gradient, INDArray> backpropGradient(INDArray epsilon, LayerWorkspaceMgr workspaceMgr) {
         assertInputSet(true);
-        if (input.rank() != 4) {
+        if (input.rank() != 5) {
             throw new DL4JInvalidInputException("Got rank " + input.rank()
-                    + " array as input to Deconvolution2DLayer with shape " + Arrays.toString(input.shape())
-                    + ". Expected rank 4 array with shape [minibatchSize, channels, inputHeight, inputWidth]. "
-                    + layerId());
+                    + " array as input to Deconvolution3DLayer with shape " + Arrays.toString(input.shape())
+                    + ". Expected rank 5 array with shape [minibatchSize, channels, inputHeight, inputWidth, inputDepth] or" +
+                    " [minibatchSize, inputHeight, inputWidth, inputDepth, channels]. " + layerId());
         }
 
         INDArray weights = getParamWithNoise(DeconvolutionParamInitializer.WEIGHT_KEY, true, workspaceMgr);
 
-        long miniBatch = input.size(0);
-        long inH = input.size(2);
-        long inW = input.size(3);
-
-        long inDepth = weights.size(0);
-
-        long kH = weights.size(2);
-        long kW = weights.size(3);
+        Convolution3D.DataFormat df = layerConf().getDataFormat();
+        ConvolutionMode cm = layerConf().getConvolutionMode();
+        long mb = input.size(0);
+        long ch, inH, inW, inD;
+        if(df == Convolution3D.DataFormat.NCDHW){
+            ch = input.size(1);
+            inH = input.size(2);
+            inW = input.size(3);
+            inD = input.size(4);
+        } else {
+            inH = input.size(1);
+            inW = input.size(2);
+            inD = input.size(3);
+            ch = input.size(4);
+        }
 
         int[] dilation = layerConf().getDilation();
         int[] kernel = layerConf().getKernelSize();
         int[] strides = layerConf().getStride();
-        int[] pad;
-        int[] outSize;
-        if (convolutionMode == ConvolutionMode.Same) {
-            outSize = ConvolutionUtils.getDeconvolutionOutputSize(input, kernel, strides, null, convolutionMode, dilation);
-            pad = ConvolutionUtils.getSameModeTopLeftPadding(outSize, new int[] {(int)inH, (int)inW}, kernel, strides, dilation);
-        } else {
-            pad = layerConf().getPadding();
-            outSize = ConvolutionUtils.getDeconvolutionOutputSize(input, kernel, strides, pad, convolutionMode, dilation);
-        }
+        int[] pad = layerConf().getPadding();
+        long[] outSize = ConvolutionUtils.getDeconvolution3DOutputSize(input, kernel, strides, pad, dilation, cm, df);
 
         INDArray biasGradView = gradientViews.get(DeconvolutionParamInitializer.BIAS_KEY);
         INDArray weightGradView = gradientViews.get(DeconvolutionParamInitializer.WEIGHT_KEY);
 
-        INDArray outEps = workspaceMgr.create(ArrayType.ACTIVATION_GRAD, weights.dataType(), new long[]{miniBatch, inDepth, inH, inW}, 'c');
+        INDArray outEps = workspaceMgr.create(ArrayType.ACTIVATION_GRAD, weights.dataType(), input.shape(), 'c');
 
-        Integer sameMode = (convolutionMode == ConvolutionMode.Same) ? 1 : 0;
+        Integer sameMode = (layerConf().getConvolutionMode() == ConvolutionMode.Same) ? 1 : 0;
 
         int[] args = new int[] {
-                (int)kH, (int)kW, strides[0], strides[1],
-                pad[0], pad[1], dilation[0], dilation[1], sameMode
+                kernel[0], kernel[1], kernel[2], strides[0], strides[1], strides[2],
+                pad[0], pad[1], pad[2], dilation[0], dilation[1], dilation[2], sameMode,
+                df == Convolution3D.DataFormat.NCDHW ? 0 : 1
         };
 
         INDArray delta;
         IActivation afn = layerConf().getActivationFn();
-        Pair<INDArray, INDArray> p = preOutput4d(true, true, workspaceMgr);
-        delta = afn.backprop(p.getFirst(), epsilon).getFirst();
-
-        //DL4J Deconv weights: [inputDepth, outputDepth, kH, kW]
-        //libnd4j weights: [kH, kW, oC, iC]
-        weights = weights.permute(2, 3, 1, 0);
-        INDArray weightGradViewOp = weightGradView.permute(2, 3, 1, 0);
+        INDArray preOutput = preOutput(true, workspaceMgr);
+        delta = afn.backprop(preOutput, epsilon).getFirst();
 
         INDArray[] opInputs;
         INDArray[] opOutputs;
         if(layerConf().hasBias()){
             INDArray bias = getParamWithNoise(DeconvolutionParamInitializer.BIAS_KEY, true, workspaceMgr);
             opInputs = new INDArray[]{input, weights, bias, delta};
-            opOutputs = new INDArray[]{outEps, weightGradViewOp, biasGradView};
+            opOutputs = new INDArray[]{outEps, weightGradView, biasGradView};
         } else {
             opInputs = new INDArray[]{input, weights, delta};
-            opOutputs = new INDArray[]{outEps, weightGradViewOp};
+            opOutputs = new INDArray[]{outEps, weightGradView};
         }
-        CustomOp op = DynamicCustomOp.builder("deconv2d_bp")
+        CustomOp op = DynamicCustomOp.builder("deconv3d_bp")
                 .addInputs(opInputs)
                 .addIntegerArguments(args)
                 .addOutputs(opOutputs)
@@ -150,8 +144,7 @@ public class Deconvolution2DLayer extends ConvolutionLayer {
         return new Pair<>(retGradient, outEps);
     }
 
-    @Override
-    protected Pair<INDArray, INDArray> preOutput(boolean training , boolean forBackprop, LayerWorkspaceMgr workspaceMgr) {
+    protected INDArray preOutput(boolean training , LayerWorkspaceMgr workspaceMgr) {
 
         INDArray bias = getParamWithNoise(DeconvolutionParamInitializer.BIAS_KEY, training, workspaceMgr);
         INDArray weights = getParamWithNoise(DeconvolutionParamInitializer.WEIGHT_KEY, training, workspaceMgr);
@@ -174,17 +167,20 @@ public class Deconvolution2DLayer extends ConvolutionLayer {
         long inDepth = weights.size(0);
         long outDepth = weights.size(1);
 
+        Convolution3D.DataFormat df = layerConf().getDataFormat();
+        boolean ncdhw = layerConf().getDataFormat() == Convolution3D.DataFormat.NCDHW;
+        int chDim = ncdhw ? 1 : 4;
         if (input.size(1) != inDepth && input.size(3) == inDepth) {
             //TODO AB 2019/10/25 this is an ugly "pseudo-NHWC support" hack that needs to be removed ASAD
             //https://github.com/eclipse/deeplearning4j/issues/8315
             input = input.permute(0, 3, 1, 2);
-        } else if (input.size(1) != inDepth ) {
+        } else if (input.size(chDim) != inDepth ) {
             String layerName = conf.getLayer().getLayerName();
             if (layerName == null)
                 layerName = "(not named)";
-            throw new DL4JInvalidInputException("Cannot do forward pass in Deconvolution2D layer (layer name = " + layerName
+            throw new DL4JInvalidInputException("Cannot do forward pass in Deconvolution3D layer (layer name = " + layerName
                     + ", layer index = " + index + "): input array channels does not match CNN layer configuration"
-                    + " (data input channels = " + input.size(1) + ", [minibatch,inputDepth,height,width]="
+                    + " (data input channels = " + input.size(chDim) + ", " + (ncdhw ? "[minibatch,channels,height,width,depth]=" : "[minibatch,height,width,depth,channels]=")
                     + Arrays.toString(input.shape()) + "; expected" + " input channels = " + inDepth + ") "
                     + layerId());
         }
@@ -196,14 +192,12 @@ public class Deconvolution2DLayer extends ConvolutionLayer {
         int[] strides = layerConf().getStride();
 
         int[] pad;
-        int[] outSize;
-        if (convolutionMode == ConvolutionMode.Same) {
-            outSize = ConvolutionUtils.getDeconvolutionOutputSize(input, kernel, strides, null, convolutionMode, dilation); //Also performs validation
-            pad = ConvolutionUtils.getSameModeTopLeftPadding(outSize, new int[] {(int) input.size(2), (int) input.size(3)}, kernel,
-                    strides, dilation );
+        ConvolutionMode cm = layerConf().getConvolutionMode();
+        long[] outSize = ConvolutionUtils.getDeconvolution3DOutputSize(input, kernel, strides, null, dilation, cm, layerConf().getDataFormat()); //Also performs validation
+        if (cm == ConvolutionMode.Same) {
+            pad = ConvolutionUtils.getSameModeTopLeftPadding(ArrayUtil.toInts(outSize), new int[] {(int) input.size(2), (int) input.size(3)}, kernel, strides, dilation );
         } else {
             pad = layerConf().getPadding();
-            outSize = ConvolutionUtils.getDeconvolutionOutputSize(input, kernel, strides, pad, convolutionMode, dilation); //Also performs validation
         }
 
         long outH = outSize[0];
@@ -213,16 +207,13 @@ public class Deconvolution2DLayer extends ConvolutionLayer {
         val miniBatch = input.size(0);
         INDArray output = workspaceMgr.create(ArrayType.ACTIVATIONS, input.dataType(), new long[]{miniBatch, outDepth, outH, outW}, 'c');
 
-        int sameMode = (convolutionMode == ConvolutionMode.Same) ? 1 : 0;
+        int sameMode = (cm == ConvolutionMode.Same) ? 1 : 0;
 
         int[] args = new int[] {
-                kH, kW, strides[0], strides[1],
-                pad[0], pad[1], dilation[0], dilation[1], sameMode, 0   //Last arg: 0 for nchw
+                kernel[0], kernel[1], kernel[2], strides[0], strides[1], strides[2],
+                pad[0], pad[1], pad[2], dilation[0], dilation[1], dilation[2], sameMode,
+                df == Convolution3D.DataFormat.NCDHW ? 0 : 1
         };
-
-        //DL4J Deconv weights: [inputDepth, outputDepth, kH, kW]
-        //libnd4j weights: [kH, kW, oC, iC]
-        weights = weights.permute(2, 3, 1, 0);
 
         INDArray[] opInputs;
         if (layerConf().hasBias()) {
@@ -230,7 +221,7 @@ public class Deconvolution2DLayer extends ConvolutionLayer {
         } else {
             opInputs = new INDArray[]{input, weights};
         }
-        CustomOp op = DynamicCustomOp.builder("deconv2d")
+        CustomOp op = DynamicCustomOp.builder("deconv3d")
                 .addInputs(opInputs)
                 .addIntegerArguments(args)
                 .addOutputs(output)
@@ -238,7 +229,7 @@ public class Deconvolution2DLayer extends ConvolutionLayer {
                 .build();
         Nd4j.getExecutioner().exec(op);
 
-        return new Pair<>(output, null);
+        return output;
     }
 
     @Override
@@ -250,18 +241,16 @@ public class Deconvolution2DLayer extends ConvolutionLayer {
 
         applyDropOutIfNecessary(training, workspaceMgr);
 
-        INDArray z = preOutput(training, false, workspaceMgr).getFirst();
+        INDArray z = preOutput(training, workspaceMgr);
 
         IActivation afn = layerConf().getActivationFn();
 
-        if (helper != null && Shape.strideDescendingCAscendingF(z)) {
-            INDArray ret = helper.activate(z, layerConf().getActivationFn(), training);
-            if (ret != null) {
-                return ret;
-            }
-        }
-
         INDArray activation = afn.getActivation(z, training);
         return activation;
+    }
+
+    @Override
+    public boolean isPretrainLayer() {
+        return false;
     }
 }
