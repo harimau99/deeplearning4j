@@ -23,10 +23,12 @@ import lombok.ToString;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.ParamInitializer;
 import org.deeplearning4j.nn.conf.ConvolutionMode;
+import org.deeplearning4j.nn.conf.InputPreProcessor;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.layers.convolution.Deconvolution2DLayer;
 import org.deeplearning4j.nn.layers.convolution.Deconvolution3DLayer;
+import org.deeplearning4j.nn.params.Deconvolution3DParamInitializer;
 import org.deeplearning4j.nn.params.DeconvolutionParamInitializer;
 import org.deeplearning4j.optimize.api.TrainingListener;
 import org.deeplearning4j.util.ValidationUtils;
@@ -105,38 +107,47 @@ public class Deconvolution3D extends ConvolutionLayer {
 
     @Override
     public ParamInitializer initializer() {
-        return DeconvolutionParamInitializer.getInstance();
+        return Deconvolution3DParamInitializer.getInstance();
+    }
+
+    @Override
+    public InputPreProcessor getPreProcessorForInputType(InputType inputType) {
+        if (inputType == null) {
+            throw new IllegalStateException("Invalid input for Deconvolution3D layer (layer name=\"" + getLayerName() + "\"): input is null");
+        }
+
+        return InputTypeUtil.getPreProcessorForInputTypeCnn3DLayers(inputType, getLayerName());
+    }
+
+    @Override
+    public void setNIn(InputType inputType, boolean override) {
+        if (inputType == null || inputType.getType() != InputType.Type.CNN3D) {
+            throw new IllegalStateException("Invalid input for Deconvolution 3D layer (layer name=\"" + getLayerName() + "\"): Expected CNN3D input, got " + inputType);
+        }
+
+        if (nIn <= 0 || override) {
+            InputType.InputTypeConvolutional3D c = (InputType.InputTypeConvolutional3D) inputType;
+            this.nIn = c.getChannels();
+        }
     }
 
     @Override
     public InputType getOutputType(int layerIndex, InputType inputType) {
-        if (inputType == null || inputType.getType() != InputType.Type.CNN) {
-            throw new IllegalStateException("Invalid input for Convolution layer (layer name=\"" + getLayerName()
+        if (inputType == null || inputType.getType() != InputType.Type.CNN3D) {
+            throw new IllegalStateException("Invalid input for Deconvolution layer (layer name=\"" + getLayerName()
                             + "\"): Expected CNN input, got " + inputType);
         }
 
-        return InputTypeUtil.getOutputTypeDeconvLayer(inputType, kernelSize, stride, padding, dilation, convolutionMode,
-                        nOut, layerIndex, getLayerName(), Deconvolution2DLayer.class);
+        return InputTypeUtil.getOutputTypeDeconv3dLayer(inputType, kernelSize, stride, padding, dilation, convolutionMode,
+                        dataFormat, nOut, layerIndex, getLayerName(), Deconvolution3DLayer.class);
     }
 
     public static class Builder extends BaseConvBuilder<Builder> {
 
         private Convolution3D.DataFormat dataFormat = Convolution3D.DataFormat.NCDHW; // in libnd4j: 1 - NCDHW, 0 - NDHWC
 
-        public Builder(int[] kernelSize, int[] stride, int[] padding) {
-            super(kernelSize, stride, padding);
-        }
-
-        public Builder(int[] kernelSize, int[] stride) {
-            super(kernelSize, stride);
-        }
-
-        public Builder(int... kernelSize) {
-            super(kernelSize);
-        }
-
         public Builder() {
-            super();
+            super(new int[] {2, 2, 2}, new int[] {1, 1, 1}, new int[] {0, 0, 0}, new int[] {1, 1, 1}, 3);
         }
 
         @Override
@@ -192,6 +203,11 @@ public class Deconvolution3D extends ConvolutionLayer {
         @Override
         public void setDilation(int... dilation) {
             this.dilation = ValidationUtils.validate3NonNegative(dilation, "dilation");
+        }
+
+        public Builder dataFormat(Convolution3D.DataFormat dataFormat){
+            this.dataFormat = dataFormat;
+            return this;
         }
 
         @Override

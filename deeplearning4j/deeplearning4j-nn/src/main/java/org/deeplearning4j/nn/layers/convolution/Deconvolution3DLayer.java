@@ -77,25 +77,11 @@ public class Deconvolution3DLayer extends BaseLayer<Deconvolution3D> {
 
         Convolution3D.DataFormat df = layerConf().getDataFormat();
         ConvolutionMode cm = layerConf().getConvolutionMode();
-        long mb = input.size(0);
-        long ch, inH, inW, inD;
-        if(df == Convolution3D.DataFormat.NCDHW){
-            ch = input.size(1);
-            inH = input.size(2);
-            inW = input.size(3);
-            inD = input.size(4);
-        } else {
-            inH = input.size(1);
-            inW = input.size(2);
-            inD = input.size(3);
-            ch = input.size(4);
-        }
 
         int[] dilation = layerConf().getDilation();
         int[] kernel = layerConf().getKernelSize();
         int[] strides = layerConf().getStride();
         int[] pad = layerConf().getPadding();
-        long[] outSize = ConvolutionUtils.getDeconvolution3DOutputSize(input, kernel, strides, pad, dilation, cm, df);
 
         INDArray biasGradView = gradientViews.get(DeconvolutionParamInitializer.BIAS_KEY);
         INDArray weightGradView = gradientViews.get(DeconvolutionParamInitializer.WEIGHT_KEY);
@@ -149,43 +135,27 @@ public class Deconvolution3DLayer extends BaseLayer<Deconvolution3D> {
         INDArray bias = getParamWithNoise(DeconvolutionParamInitializer.BIAS_KEY, training, workspaceMgr);
         INDArray weights = getParamWithNoise(DeconvolutionParamInitializer.WEIGHT_KEY, training, workspaceMgr);
 
-        //Input validation: expect rank 4 matrix
-        if (input.rank() != 4) {
-            String layerName = conf.getLayer().getLayerName();
-            if (layerName == null)
-                layerName = "(not named)";
+        //Input validation: expect rank 5 matrix
+        if (input.rank() != 5) {
             throw new DL4JInvalidInputException("Got rank " + input.rank()
-                    + " array as input to Deconvolution2D (layer name = " + layerName + ", layer index = "
-                    + index + ") with shape " + Arrays.toString(input.shape()) + ". "
-                    + "Expected rank 4 array with shape [minibatchSize, layerInputDepth, inputHeight, inputWidth]."
-                    + (input.rank() == 2
-                    ? " (Wrong input type (see InputType.convolutionalFlat()) or wrong data type?)"
-                    : "")
-                    + " " + layerId());
+                    + " array as input to Deconvolution3DLayer with shape " + Arrays.toString(input.shape())
+                    + ". Expected rank 5 array with shape [minibatchSize, channels, inputHeight, inputWidth, inputDepth] or" +
+                    " [minibatchSize, inputHeight, inputWidth, inputDepth, channels]. " + layerId());
         }
-
-        long inDepth = weights.size(0);
-        long outDepth = weights.size(1);
 
         Convolution3D.DataFormat df = layerConf().getDataFormat();
         boolean ncdhw = layerConf().getDataFormat() == Convolution3D.DataFormat.NCDHW;
         int chDim = ncdhw ? 1 : 4;
-        if (input.size(1) != inDepth && input.size(3) == inDepth) {
-            //TODO AB 2019/10/25 this is an ugly "pseudo-NHWC support" hack that needs to be removed ASAD
-            //https://github.com/eclipse/deeplearning4j/issues/8315
-            input = input.permute(0, 3, 1, 2);
-        } else if (input.size(chDim) != inDepth ) {
+        if (input.size(chDim) != layerConf().getNIn() ) {
             String layerName = conf.getLayer().getLayerName();
             if (layerName == null)
                 layerName = "(not named)";
             throw new DL4JInvalidInputException("Cannot do forward pass in Deconvolution3D layer (layer name = " + layerName
                     + ", layer index = " + index + "): input array channels does not match CNN layer configuration"
                     + " (data input channels = " + input.size(chDim) + ", " + (ncdhw ? "[minibatch,channels,height,width,depth]=" : "[minibatch,height,width,depth,channels]=")
-                    + Arrays.toString(input.shape()) + "; expected" + " input channels = " + inDepth + ") "
+                    + Arrays.toString(input.shape()) + "; expected" + " input channels = " + layerConf().getNIn() + ") "
                     + layerId());
         }
-        int kH = (int) weights.size(2);
-        int kW = (int) weights.size(3);
 
         int[] dilation = layerConf().getDilation();
         int[] kernel = layerConf().getKernelSize();
@@ -193,19 +163,24 @@ public class Deconvolution3DLayer extends BaseLayer<Deconvolution3D> {
 
         int[] pad;
         ConvolutionMode cm = layerConf().getConvolutionMode();
-        long[] outSize = ConvolutionUtils.getDeconvolution3DOutputSize(input, kernel, strides, null, dilation, cm, layerConf().getDataFormat()); //Also performs validation
+        long[] outSize;
+        int[] inSize = df == Convolution3D.DataFormat.NCDHW ? new int[]{(int)input.size(2), (int)input.size(3), (int)input.size(4)} : new int[]{(int)input.size(1), (int)input.size(2), (int)input.size(3)};
         if (cm == ConvolutionMode.Same) {
-            pad = ConvolutionUtils.getSameModeTopLeftPadding(ArrayUtil.toInts(outSize), new int[] {(int) input.size(2), (int) input.size(3)}, kernel, strides, dilation );
+            outSize = ConvolutionUtils.getDeconvolution3DOutputSize(input, kernel, strides, null, dilation, cm, layerConf().getDataFormat()); //Also performs validation
+            pad = ConvolutionUtils.getSameModeTopLeftPadding(ArrayUtil.toInts(outSize), inSize, kernel, strides, dilation );
         } else {
             pad = layerConf().getPadding();
+            outSize = ConvolutionUtils.getDeconvolution3DOutputSize(input, kernel, strides, pad, dilation, cm, layerConf().getDataFormat()); //Also performs validation
         }
 
         long outH = outSize[0];
         long outW = outSize[1];
+        long outD = outSize[2];
 
 
         val miniBatch = input.size(0);
-        INDArray output = workspaceMgr.create(ArrayType.ACTIVATIONS, input.dataType(), new long[]{miniBatch, outDepth, outH, outW}, 'c');
+        long[] outShape = df == Convolution3D.DataFormat.NCDHW ? new long[]{miniBatch, layerConf().getNOut(), outH, outW, outD} : new long[]{miniBatch, outH, outW, outD, layerConf().getNOut()};
+        INDArray output = workspaceMgr.create(ArrayType.ACTIVATIONS, input.dataType(), outShape, 'c');
 
         int sameMode = (cm == ConvolutionMode.Same) ? 1 : 0;
 
