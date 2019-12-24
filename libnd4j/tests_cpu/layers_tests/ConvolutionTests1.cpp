@@ -1510,11 +1510,11 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_2) {
     int paddingMode = 0;             // 1-SAME, 0-VALID;
     int dataFormat  = 1;             // 1-NHWC, 0-NCHW
 
-    auto input    = NDArrayFactory::create<double>('c', {bS, iH, iW, iC});
-    auto weights  = NDArrayFactory::create<double>('c', {kH, kW, iC, mC});
+    auto input    = NDArrayFactory::create<float>('c', {bS, iH, iW, iC});
+    auto weights  = NDArrayFactory::create<float>('c', {kH, kW, iC, mC});
 
 
-    auto expOutput = NDArrayFactory::create<double>('c', {bS, oH, oW, oC},{13.2f,  14.4f,  15.6f,  16.8f,  13.2f,  14.4f,  15.6f,  16.8f,  13.2f,  14.4f,  15.6f,  16.8f,  13.2f,  14.4f,  15.6f,  16.8f,
+    auto expOutput = NDArrayFactory::create<float>('c', {bS, oH, oW, oC},{13.2f,  14.4f,  15.6f,  16.8f,  13.2f,  14.4f,  15.6f,  16.8f,  13.2f,  14.4f,  15.6f,  16.8f,  13.2f,  14.4f,  15.6f,  16.8f,
                                                      13.2f,  14.4f,  15.6f,  16.8f, 13.2f,  14.4f,  15.6f,  16.8f,  13.2f,  14.4f,  15.6f,  16.8f, 13.2f,  14.4f,  15.6f,  16.8f});
     input = 2.;
     weights.linspace(0.1, 0.1);
@@ -1541,12 +1541,11 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_3) {
     int paddingMode = 0;             // 1-SAME, 0-VALID;
     int dataFormat  = 0;             // 1-NHWC, 0-NCHW
 
-    auto input    = NDArrayFactory::create<double>('c', {bS, iC, iH, iW});
-    auto weights  = NDArrayFactory::create<double>('c', {mC, iC, kH, kW});
-    auto biases   = NDArrayFactory::create<double>('c', {iC*mC}, {1,2,3,4});
+    auto input    = NDArrayFactory::create<float>('c', {bS, iC, iH, iW});
+    auto weights  = NDArrayFactory::create<float>('c', {mC, iC, kH, kW});
+    auto biases   = NDArrayFactory::create<float>('c', {iC*mC}, {1,2,3,4});
 
-
-    auto expOutput = NDArrayFactory::create<double>('c', {bS, oC, oH, oW},{5.2, 5.2, 5.2, 5.2,20.6,20.6,20.6,20.6,14.4,14.4,14.4,14.4,29.8,29.8,29.8,29.8, 5.2, 5.2, 5.2, 5.2,20.6,20.6,20.6,20.6,14.4,14.4,14.4,14.4,29.8,29.8,29.8,29.8});
+    auto expOutput = NDArrayFactory::create<float>('c', {bS, oC, oH, oW},{5.2, 5.2, 5.2, 5.2,20.6,20.6,20.6,20.6,14.4,14.4,14.4,14.4,29.8,29.8,29.8,29.8, 5.2, 5.2, 5.2, 5.2,20.6,20.6,20.6,20.6,14.4,14.4,14.4,14.4,29.8,29.8,29.8,29.8});
     input = 2.;
     weights.linspace(0.1, 0.1);
     weights.permutei({2,3,1,0});
@@ -1554,8 +1553,6 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_3) {
     nd4j::ops::depthwise_conv2d op;
     auto results = op.execute({&input, &weights, &biases}, {}, {kH,kW,  sH,sW,  pH,pW,  dH,dW, paddingMode, dataFormat});
     auto* output = results->at(0);
-
-    // output->printIndexedBuffer();
 
     ASSERT_EQ(Status::OK(), results->status());
 
@@ -1602,11 +1599,11 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_5) {
     int paddingMode = 1;             // 1-SAME, 0-VALID;
     int dataFormat  = 1;             // 1-NHWC, 0-NCHW
 
-    auto input   = NDArrayFactory::create<double>('c', {bS, iH, iW, iC});
-    auto weights = NDArrayFactory::create<double>('c', {kH, kW, iC, mC});
+    auto input   = NDArrayFactory::create<float>('c', {bS, iH, iW, iC});
+    auto weights = NDArrayFactory::create<float>('c', {kH, kW, iC, mC});
 
 
-    auto expOutput = NDArrayFactory::create<double>('c', {bS, oH, oW, oC}, {20., 24.,28., 32.,16., 18.,44., 48.,52., 56.,28., 30.,28., 30.,32., 34.,17., 18.});
+    auto expOutput = NDArrayFactory::create<float>('c', {bS, oH, oW, oC}, {20., 24.,28., 32.,16., 18.,44., 48.,52., 56.,28., 30.,28., 30.,32., 34.,17., 18.});
     input.linspace(1.);
     weights = 1.;
 
@@ -1632,10 +1629,10 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_6) {
     int paddingMode = 1;             // 1-SAME, 0-VALID;
     int dataFormat  = 1;             // 1-NHWC, 0-NCHW
 
-    NDArray input('c', {bS, iH, iW, iC}, nd4j::DataType::DOUBLE);
-    NDArray weights('c', {kH, kW, iC, mC}, nd4j::DataType::DOUBLE);
+    NDArray input('c', {bS, iH, iW, iC}, nd4j::DataType::FLOAT32);
+    NDArray weights('c', {kH, kW, iC, mC}, nd4j::DataType::FLOAT32);
 
-    NDArray expOutput('c', {bS, oH, oW, oC}, {20., 24.,28., 32.,16., 18.,44., 48.,52., 56.,28., 30.,28., 30.,32., 34.,17., 18.});
+    NDArray expOutput('c', {bS, oH, oW, oC}, {20., 24.,28., 32.,16., 18.,44., 48.,52., 56.,28., 30.,28., 30.,32., 34.,17., 18.}, nd4j::DataType::FLOAT32);
     input.linspace(1.);
     weights = 1.;
 
@@ -1663,15 +1660,15 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_7) {
 
     NDArray input('c', {bS, iC, iH, iW}, {0.6793503761291504, 0.35508695244789124, 0.842789351940155, 0.20031332969665527, 0.7014986872673035, 0.3106933832168579,
                                         0.44793984293937683, 0.9380097389221191, 0.3266739547252655, 0.15187257528305054, 0.3833175301551819, 0.7821229696273804,
-                                        0.19880719482898712, 0.7985635995864868, 0.16326339542865753, 0.14696824550628662, 0.2608966827392578, 0.13505761325359344});
-    NDArray weights('c', {kH, kW, iC, mC}, {0.1308445781469345, 0.6442840099334717, 0.5698848366737366, 0.19896849989891052});
-    NDArray biases('c', {1,iC*mC}, {0.6123566627502441, 0.37637925148010254, 0.17464971542358398, 0.4270855486392975});
+                                        0.19880719482898712, 0.7985635995864868, 0.16326339542865753, 0.14696824550628662, 0.2608966827392578, 0.13505761325359344}, nd4j::DataType::FLOAT32);
+    NDArray weights('c', {kH, kW, iC, mC}, {0.1308445781469345, 0.6442840099334717, 0.5698848366737366, 0.19896849989891052}, nd4j::DataType::FLOAT32);
+    NDArray biases('c', {1,iC*mC}, {0.6123566627502441, 0.37637925148010254, 0.17464971542358398, 0.4270855486392975}, nd4j::DataType::FLOAT32);
 
     NDArray expOutput('c', {bS, oC, oH, oW}, {0.7012459761288241, 0.6588178652487691, 0.722631079971582, 0.6385665758716108, 0.7041439625563628, 0.6530092074102978,
         0.670967162534851, 0.735090151337225, 0.6551001785478623, 0.8140738359624038, 0.6051560970782859, 0.9193749546773375, 0.5054379267801892, 0.8283436386757472,
         0.5765540302788565, 0.6649797296980537, 0.9807239274294943, 0.586850056971322, 0.261199593183985, 0.3930965634902499, 0.6203697362284615, 0.28794692117826504,
         0.6297390019475202, 0.26769104886224415, 0.25840469001015975, 0.3233307788551656, 0.25161700129415276, 0.4573034071191504, 0.5033536625992294, 0.5827033826425385,
-        0.4666419179635315, 0.585974550122895, 0.4595698215161401, 0.45632759998045813, 0.4789957702325296, 0.4539577593482922});
+        0.4666419179635315, 0.585974550122895, 0.4595698215161401, 0.45632759998045813, 0.4789957702325296, 0.4539577593482922}, nd4j::DataType::FLOAT32);
 
 
     nd4j::ops::depthwise_conv2d op;
@@ -1695,15 +1692,15 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_bp_test1) {
     int paddingMode = 1;             // 1-SAME, 0-VALID;
     int dataFormat  = 1;             // 1-NHWC, 0-NCHW
 
-    auto input    = NDArrayFactory::create<double>('c', {bS, iH, iW, iC});
-    auto weights  = NDArrayFactory::create<double>('c', {kH, kW, iC, mC});
-    auto bias     = NDArrayFactory::create<double>('c', {oC}, {1,2,3,4});
-    auto gradO    = NDArrayFactory::create<double>('c', {bS, oH, oW, oC});
+    auto input    = NDArrayFactory::create<float>('c', {bS, iH, iW, iC});
+    auto weights  = NDArrayFactory::create<float>('c', {kH, kW, iC, mC});
+    auto bias     = NDArrayFactory::create<float>('c', {oC}, {1,2,3,4});
+    auto gradO    = NDArrayFactory::create<float>('c', {bS, oH, oW, oC});
 
-    auto expGradI = NDArrayFactory::create<double>('c', {bS, iH, iW, iC},{0.07 ,  0.19 , 0.348,  0.652, 0.588,  0.956, 0.387,  0.687, 1.326,  2.022, 1.878,  2.67 , 1.071,  1.515, 2.982,  3.966, 3.534,  4.614, 1.606,  1.982, 3.932,  4.748, 4.428,  5.308,
+    auto expGradI = NDArrayFactory::create<float>('c', {bS, iH, iW, iC},{0.07 ,  0.19 , 0.348,  0.652, 0.588,  0.956, 0.387,  0.687, 1.326,  2.022, 1.878,  2.67 , 1.071,  1.515, 2.982,  3.966, 3.534,  4.614, 1.606,  1.982, 3.932,  4.748, 4.428,  5.308,
                                                     1.126,  1.63 , 3.228,  4.3  , 3.468,  4.604, 3.123,  3.999, 7.95 ,  9.798, 8.502, 10.446, 3.807,  4.827, 9.606, 11.742,10.158, 12.39 , 4.198,  4.958, 9.884, 11.468,10.38 , 12.028});
 
-    auto expGradW = NDArrayFactory::create<double>('c', {kH, kW, iC, mC},{19.08, 19.44,19.8 , 20.16,12.24, 12.48,12.72, 12.96,22.56, 23.04,23.52, 24. ,14.4 , 14.72,15.04, 15.36,14.76, 15.12,15.48, 15.84, 9.36,  9.6 , 9.84, 10.08});
+    auto expGradW = NDArrayFactory::create<float>('c', {kH, kW, iC, mC},{19.08, 19.44,19.8 , 20.16,12.24, 12.48,12.72, 12.96,22.56, 23.04,23.52, 24. ,14.4 , 14.72,15.04, 15.36,14.76, 15.12,15.48, 15.84, 9.36,  9.6 , 9.84, 10.08});
 
     input = 2.;
     weights.linspace(0.1, 0.1);
@@ -1734,14 +1731,14 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_bp_test2) {
     int paddingMode = 0;             // 1-SAME, 0-VALID;
     int dataFormat  = 1;             // 1-NHWC, 0-NCHW
 
-    auto input    = NDArrayFactory::create<double>('c', {bS, iH, iW, iC});
-    auto weights  = NDArrayFactory::create<double>('c', {kH, kW, iC, mC});
-    auto bias     = NDArrayFactory::create<double>('c', {oC}, {1,2,3,4});
-    auto gradO    = NDArrayFactory::create<double>('c', {bS, oH, oW, oC});
+    auto input    = NDArrayFactory::create<float>('c', {bS, iH, iW, iC});
+    auto weights  = NDArrayFactory::create<float>('c', {kH, kW, iC, mC});
+    auto bias     = NDArrayFactory::create<float>('c', {oC}, {1,2,3,4});
+    auto gradO    = NDArrayFactory::create<float>('c', {bS, oH, oW, oC});
 
-    auto expGradI = NDArrayFactory::create<double>('c', {bS, iH, iW, iC},{0.005, 0.025,0.034, 0.106,0.061, 0.113,0.058, 0.162,0.292, 0.564,0.298, 0.466,0.234, 0.402,0.772, 1.172,0.602, 0.834,0.333, 0.449,0.882, 1.146,0.581, 0.729,
+    auto expGradI = NDArrayFactory::create<float>('c', {bS, iH, iW, iC},{0.005, 0.025,0.034, 0.106,0.061, 0.113,0.058, 0.162,0.292, 0.564,0.298, 0.466,0.234, 0.402,0.772, 1.172,0.602, 0.834,0.333, 0.449,0.882, 1.146,0.581, 0.729,
                                                     0.053, 0.137,0.258, 0.458,0.237, 0.353,0.41 , 0.642,1.252, 1.78 ,0.906, 1.202,1.098, 1.394,2.756, 3.412,1.722, 2.082,0.893, 1.073,2.13 , 2.522,1.269, 1.481});
-    auto expGradW = NDArrayFactory::create<double>('c', {kH, kW, iC, mC},{2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88});
+    auto expGradW = NDArrayFactory::create<float>('c', {kH, kW, iC, mC},{2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88,2.4 , 2.56,2.72, 2.88});
 
     input = 2.;
     weights.linspace(0.1, 0.1);
@@ -1761,6 +1758,23 @@ TEST_F(ConvolutionTests1, depthwise_conv2d_bp_test2) {
     ASSERT_TRUE(expGradW.equalsTo(gradW));
 
     delete results;
+}
+
+//////////////////////////////////////////////////////////////////////
+TEST_F(ConvolutionTests1, depthwise_conv2d_bp_test3) {
+
+    auto in = NDArrayFactory::create<float>('c', {4, 8, 64, 64});
+    auto w = NDArrayFactory::create<float>('c', {2, 2, 8, 2});
+    auto b = NDArrayFactory::create<float>('c', {1, 16});
+    auto grad = NDArrayFactory::create<float>('c', {4, 16, 64, 64});
+
+    auto gradI = in.like();
+    auto gradW = w.like();
+    auto gradB = b.like();
+
+    nd4j:ops::depthwise_conv2d_bp op;
+    auto status = op.execute({&in, &w, &b, &grad}, {&gradI, &gradW, &gradB}, {}, {2, 2, 1, 1, 0, 0, 1, 1, 1, 0}, {});
+    ASSERT_EQ(Status::OK(), status);
 }
 
 //////////////////////////////////////////////////////////////////////

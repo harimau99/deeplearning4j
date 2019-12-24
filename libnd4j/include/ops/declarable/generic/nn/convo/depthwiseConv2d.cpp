@@ -15,7 +15,7 @@
  ******************************************************************************/
 
 //
-// created by Yurii Shyrma on 08.03.2018
+// @author Yurii Shyrma (iuriish@yahoo.com)
 //
 
 #include <op_boilerplate.h>
@@ -30,11 +30,11 @@ namespace nd4j {
 namespace ops  {
 
 CUSTOM_OP_IMPL(depthwise_conv2d, 2, 1, false, 0, 9) {
-    
+
     auto input   = INPUT_VARIABLE(0);                                    // [bS, iH, iW, iC] (NHWC) or [bS, iC, iH, iW] (NCHW)
     auto weights = INPUT_VARIABLE(1);                                    // [kH, kW, iC, mC] always
     auto bias    = block.width() > 2 ? INPUT_VARIABLE(2) : nullptr;      // [oC] = iC*mC
-    
+
     auto output  = OUTPUT_VARIABLE(0);                                   // [bS, oH, oW, iC*mC] (NHWC) or [bS, iC*mC, oH, oW] (NCHW)
 
     REQUIRE_TRUE(input->rankOf()   == 4, 0, "CUSTOM DEPTHWISECONV2D OP: rank of input array must be equal to 4, but got %i instead !", input->rankOf());
@@ -63,7 +63,7 @@ CUSTOM_OP_IMPL(depthwise_conv2d, 2, 1, false, 0, 9) {
         REQUIRE_TRUE(bias->rankOf() <= 2 && oC == bias->lengthOf(), 0, "CUSTOM DEPTHWISECONV2D OP: wrong shape of array with biases, expected rank, length: <=2, %i, but got %i, %i instead !", oC, bias->rankOf(), bias->lengthOf());
 
     ConvolutionUtils::depthwiseConv2d(block, input, weights, bias, output, kH,kW,sH,sW,pH,pW,dH,dW,isSameMode,isNCHW);
-    
+
     return Status::OK();
 }
 
@@ -97,25 +97,25 @@ DECLARE_SHAPE_FN(depthwise_conv2d) {
     if(!isNCHW) {
         indIOioC = 3; indIiH = 1;
     }
-    else {        
+    else {
         indIOioC = 1; indIiH = 2;
-    }    
+    }
 
     const int bS = inputShapeInfo[1];                            // batch size
     const int iH = inputShapeInfo[indIiH+1];                     // input height
     const int iW = inputShapeInfo[indIiH+2];                     // input width
-    const int iC = inputShapeInfo[indIOioC+1];                   // input channels        
+    const int iC = inputShapeInfo[indIOioC+1];                   // input channels
     const int mC = weightsShapeInfo[indWmC+1];                   // channels multiplier(oC = iC*mC)
     const int oC = iC*mC;                                        // output channels
 
     std::string expectedWeightsShape = ShapeUtils::shapeAsString({kH, kW, iC, mC});
     REQUIRE_TRUE(expectedWeightsShape == ShapeUtils::shapeAsString(weightsShapeInfo), 0, "DEPTHWISECONV2D OP: wrong shape of weights array, expected is %s, but got %s instead !", expectedWeightsShape.c_str(), ShapeUtils::shapeAsString(weightsShapeInfo).c_str());
-    if (biasShapeInfo) 
-        REQUIRE_TRUE(biasShapeInfo[0] <= 2 && oC == shape::length(biasShapeInfo), 0, "DEPTHWISECONV2D OP: wrong shape of array with biases, expected rank, length: <=2, %i, but got %i, %i instead !", oC, biasShapeInfo[0], shape::length(biasShapeInfo));    
+    if (biasShapeInfo)
+        REQUIRE_TRUE(biasShapeInfo[0] <= 2 && oC == shape::length(biasShapeInfo), 0, "DEPTHWISECONV2D OP: wrong shape of array with biases, expected rank, length: <=2, %i, but got %i, %i instead !", oC, biasShapeInfo[0], shape::length(biasShapeInfo));
 
     int oH, oW;                                         // output height, width
     ConvolutionUtils::calcOutSizePool2D(oH, oW, kH, kW, sH, sW, pH, pW, dH, dW, iH, iW, isSameMode);
-    
+
     Nd4jLong* outputShapeInfo = nullptr;
     ALLOCATE(outputShapeInfo, block.getWorkspace(), shape::shapeInfoLength(inputShapeInfo), Nd4jLong);
 
@@ -131,7 +131,7 @@ DECLARE_SHAPE_FN(depthwise_conv2d) {
         outputShapeInfo[3] = oW;
         outputShapeInfo[4] = oC;
     }
-    
+
     ShapeUtils::updateStridesAndType(outputShapeInfo, weightsShapeInfo, shape::order(inputShapeInfo));
 
     return SHAPELIST(CONSTANT(outputShapeInfo));
@@ -143,14 +143,14 @@ DECLARE_SHAPE_FN(depthwise_conv2d) {
                 ->setAllowedOutputTypes({ALL_FLOATS});
     }
 
-////////////////////////////////////////////////////////////////////////// 
+//////////////////////////////////////////////////////////////////////////
 CUSTOM_OP_IMPL(depthwise_conv2d_bp, 3, 2, false, 0, 9) {
-    
+
     auto input   = INPUT_VARIABLE(0);                                                // [bS, iH, iW, iC] (NDHWC) or [bS, iC, iH, iW] (NCDHW)
     auto weights = INPUT_VARIABLE(1);                                                // [kH, kW, iC, mC] always
     auto bias    = block.width() > 3 ? INPUT_VARIABLE(2) : nullptr;                  // [oC] = [iC*mC]
     auto gradO   = block.width() > 3 ? INPUT_VARIABLE(3) : INPUT_VARIABLE(2);        // [bS, oH, oW, oC] (NDHWC) or [bS, oC, oH, oW] (NCDHW), epsilon_next
-    
+
     auto gradI = OUTPUT_VARIABLE(0);                                                 // [bS, iH, iW, iC] (NDHWC) or [bS, iC, iH, iW] (NCDHW), epsilon
     auto gradW = OUTPUT_VARIABLE(1);                                                 // [kH, kW, iC, mC] always
     auto gradB = block.width() > 3 ? OUTPUT_VARIABLE(2) : nullptr;                   // [oC]
@@ -173,7 +173,7 @@ CUSTOM_OP_IMPL(depthwise_conv2d_bp, 3, 2, false, 0, 9) {
     int bS, iC, iH, iW, mC, oC, oH, oW;                     // batch size, input channels, input height/width, channels multiplier(oC = iC*mC), output channels, output height/width
     int indIOioC, indIiH, indWmC, indWiC, indWkH, indOoH;   // corresponding indexes
     ConvolutionUtils::getSizesAndIndexesConv2d(isNCHW, *input, *gradO, bS, iC, iH, iW, oC, oH, oW, indIOioC, indIiH, indWiC, indWmC, indWkH, indOoH);
-    mC = weights->sizeAt(indWmC);                           // channels multiplier    
+    mC = weights->sizeAt(indWmC);                           // channels multiplier
 
     int trueoH, trueoW;          // correct output height, width
     ConvolutionUtils::calcOutSizePool2D(trueoH, trueoW, kH, kW, sH, sW, pH, pW, dH, dW, iH, iW, isSameMode);
@@ -183,21 +183,20 @@ CUSTOM_OP_IMPL(depthwise_conv2d_bp, 3, 2, false, 0, 9) {
     REQUIRE_TRUE(expectedGradOShape == ShapeUtils::shapeAsString(gradO), 0,  "CUSTOM DEPTHWISECONV2D_BP OP: wrong shape of output gradients (next epsilon) array, expected is %s, but got %s instead !", expectedGradOShape.c_str(), ShapeUtils::shapeAsString(gradO).c_str());
     REQUIRE_TRUE(expectedWeightsShape == ShapeUtils::shapeAsString(weights), 0, "CUSTOM DEPTHWISECONV2D_BP OP: wrong shape of weights array, expected is %s, but got %s instead !", expectedWeightsShape.c_str(), ShapeUtils::shapeAsString(weights).c_str());
     if(bias)
-        REQUIRE_TRUE(bias->rankOf() <= 2 && oC == bias->lengthOf(), 0, "CUSTOM DEPTHWISECONV2D_BP OP: wrong shape of array with biases, expected rank, length: <=2, %i, but got %i, %i instead !", oC, bias->rankOf(), bias->lengthOf());        
+        REQUIRE_TRUE(bias->rankOf() <= 2 && oC == bias->lengthOf(), 0, "CUSTOM DEPTHWISECONV2D_BP OP: wrong shape of array with biases, expected rank, length: <=2, %i, but got %i, %i instead !", oC, bias->rankOf(), bias->lengthOf());
 
     ConvolutionUtils::depthwiseConv2dBP(block, input, weights, bias, gradO, gradI, gradW, gradB, kH,kW, sH,sW, pH,pW, dH,dW, isSameMode, isNCHW);
 
     return Status::OK();
 }
 
-
-
+//////////////////////////////////////////////////////////////////////
 DECLARE_SHAPE_FN(depthwise_conv2d_bp) {
 
     Nd4jLong* inputShapeInfo   = inputShape->at(0);
     Nd4jLong* weightsShapeInfo = inputShape->at(1);
-    Nd4jLong* biasShapeInfo    = block.width() > 3 ? inputShape->at(2) : nullptr;  
-    Nd4jLong* gradOShapeInfo   = block.width() > 3 ? inputShape->at(3) : inputShape->at(2);  
+    Nd4jLong* biasShapeInfo    = block.width() > 3 ? inputShape->at(2) : nullptr;
+    Nd4jLong* gradOShapeInfo   = block.width() > 3 ? inputShape->at(3) : inputShape->at(2);
 
     const int rank = 4;
     REQUIRE_TRUE(inputShapeInfo[0]   == rank, 0, "CUSTOM DEPTHWISECONV2D_BP OP: rank of input array must be equal to %i, but got %i instead !", rank, inputShapeInfo[0]);
@@ -219,14 +218,14 @@ DECLARE_SHAPE_FN(depthwise_conv2d_bp) {
     if(!isNCHW) {
         indIOioC = 3; indIiH = 1;
     }
-    else {        
+    else {
         indIOioC = 1; indIiH = 2;
-    }    
+    }
 
     const int bS = inputShapeInfo[1];                            // batch size
     const int iH = inputShapeInfo[indIiH+1];                     // input height
     const int iW = inputShapeInfo[indIiH+2];                     // input width
-    const int iC = inputShapeInfo[indIOioC+1];                   // input channels        
+    const int iC = inputShapeInfo[indIOioC+1];                   // input channels
     const int mC = weightsShapeInfo[indWmC+1];                   // channels multiplier(oC = iC*mC)
     const int oC = iC*mC;                                        // output channels
 
@@ -238,7 +237,7 @@ DECLARE_SHAPE_FN(depthwise_conv2d_bp) {
     REQUIRE_TRUE(expectedGradOShape == ShapeUtils::shapeAsString(gradOShapeInfo), 0,  "CUSTOM DEPTHWISECONV2D_BP OP: wrong shape of output gradients (next epsilon) array, expected is %s, but got %s instead !", expectedGradOShape.c_str(), ShapeUtils::shapeAsString(gradOShapeInfo).c_str());
     REQUIRE_TRUE(expectedWeightsShape == ShapeUtils::shapeAsString(weightsShapeInfo), 0, "CUSTOM DEPTHWISECONV2D_BP OP: wrong shape of weights array, expected is %s, but got %s instead !", expectedWeightsShape.c_str(), ShapeUtils::shapeAsString(weightsShapeInfo).c_str());
     if(biasShapeInfo)
-        REQUIRE_TRUE(biasShapeInfo[0] <= 2 && oC == shape::length(biasShapeInfo), 0, "CUSTOM DEPTHWISECONV2D_BP OP: wrong shape of array with biases, expected rank, length: <=2, %i, but got %i, %i instead !", oC, biasShapeInfo[0], shape::length(biasShapeInfo));        
+        REQUIRE_TRUE(biasShapeInfo[0] <= 2 && oC == shape::length(biasShapeInfo), 0, "CUSTOM DEPTHWISECONV2D_BP OP: wrong shape of array with biases, expected rank, length: <=2, %i, but got %i, %i instead !", oC, biasShapeInfo[0], shape::length(biasShapeInfo));
 
     auto gradIshapeInfo = ShapeBuilders::copyShapeInfoAndType(inputShapeInfo,   gradOShapeInfo, false, block.getWorkspace());
     auto gradWshapeInfo = ShapeBuilders::copyShapeInfoAndType(weightsShapeInfo, gradOShapeInfo, false, block.getWorkspace());
@@ -246,7 +245,7 @@ DECLARE_SHAPE_FN(depthwise_conv2d_bp) {
     if(biasShapeInfo) {
         Nd4jLong* gradBshapeInfo = ShapeBuilders::copyShapeInfoAndType(biasShapeInfo, gradOShapeInfo, false, block.getWorkspace());
         return SHAPELIST(CONSTANT(gradIshapeInfo), CONSTANT(gradWshapeInfo), CONSTANT(gradBshapeInfo));
-    }     
+    }
 
     return SHAPELIST(CONSTANT(gradIshapeInfo), CONSTANT(gradWshapeInfo));
 }
