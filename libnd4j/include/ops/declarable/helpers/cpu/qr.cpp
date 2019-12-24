@@ -52,14 +52,14 @@ namespace helpers {
     void qrSingle(NDArray* matrix, NDArray* Q, NDArray* R, bool const fullMatricies) {
         Nd4jLong M = matrix->sizeAt(-2);
         Nd4jLong N = matrix->sizeAt(-1);
+        auto resQ = Q->ulike();
+        auto resR = R->ulike();
         NDArray q[M];
         NDArray z = *matrix;
         for (auto k = 0; k < N && k < M - 1; k++) { // loop for columns, but not further then row number
             NDArray e('c', {M}, DataTypeUtils::fromT<T>()); // two internal buffers and scalar for squared norm
-            q[k] = Q->ulike();
-            q[k].nullify();
             z = matrixMinor<T>(z, k); // minor computing for current column with given matrix z (initally is a input matrix)
-            auto currentColumn = z({0, 0, k, k+1}); // retrieve k column from z to x buffer
+            auto currentColumn = z({0, 0, k, k + 1}); // retrieve k column from z to x buffer
             auto norm = currentColumn.reduceAlongDims(reduce::Norm2, {0});
             if (matrix->t<T>(k,k) > T(0.f)) // negate on positive matrix diagonal element
                 norm.t<T>(0) = -norm.t<T>(0);
@@ -72,20 +72,18 @@ namespace helpers {
             MmulHelper::matmul(&q[k], &z, &qQ, false, false);
             z = qQ;
         }
-        Q->assign(q[0]); //
-        MmulHelper::matmul(Q, matrix, R, false, false);
-        //*R = q[0] * *matrix;
+        resQ.assign(q[0]); //
+//        MmulHelper::matmul(&q[0], matrix, &resR, false, false);
         for (int i = 1; i < N && i < M - 1; i++) {
-//            z = q[i] * *Q;
-            z = Q->ulike();
-            MmulHelper::matmul(&q[i], Q, &z, false, false);
-            *Q = z;
+            auto tempResQ = resQ;
+            MmulHelper::matmul(&q[i], &resQ, &tempResQ, false, false);
+            resQ = tempResQ;
         }
-//        *R = *Q * *matrix;
-        MmulHelper::matmul(Q, matrix, R, false, false);
-        *R *= -1.f;
-        //R->transposei();
-       // Q->transposei();// transpose of matrix Q - now it in non-refined square state (MxM)
+        MmulHelper::matmul(&resQ, matrix, &resR, false, false);
+       // resR *= -1.f;
+        resQ.transposei();
+        Q->assign(resQ);
+        R->assign(resR);
     }
 
     template <typename T>
