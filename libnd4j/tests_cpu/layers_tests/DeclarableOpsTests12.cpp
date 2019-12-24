@@ -2708,16 +2708,23 @@ TEST_F(DeclarableOpsTests12, QR_Test_1) {
     ASSERT_EQ(res->status(), ND4J_STATUS_OK);
     auto q = res->at(0);
     auto r = res->at(1);
+//    q->printBuffer("Orthogonal 5x5");
+//    expQ.printBuffer("Orthogonal Exp");
+//    r->printBuffer("Upper triangular 5x3");
+//    expR.printBuffer("Upper triangular Exp");
+//    q->printShapeInfo("Q shape");
+//    r->printShapeInfo("R shape");
+    nd4j::ops::matmul opMul;
+    auto res2 = opMul.execute({q, r}, {}, {}); //MmulHelper::matmul(q, r, &in, false, false);
+    auto exp = res2->at(0);//->printIndexedBuffer("Result as result");
+    ASSERT_TRUE(exp->isSameShape(in));
+//    ASSERT_TRUE(q->isSameShape(expQ));
 
-    q->printIndexedBuffer("Orthogonal 5x5");
-    r->printIndexedBuffer("Upper triangular 5x3");
-
-    ASSERT_TRUE(q->isSameShape(expQ));
-    ASSERT_TRUE(r->isSameShape(expR));
-
-    ASSERT_TRUE(expQ.equalsTo(q));
-    ASSERT_TRUE(expR.equalsTo(r));
+    //ASSERT_TRUE(expQ.equalsTo(q));
+    ASSERT_TRUE(exp->equalsTo(in));
+    delete res2;
     delete res;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
