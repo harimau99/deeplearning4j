@@ -130,9 +130,9 @@ public class InputTypeUtil {
         return InputType.convolutional3D(dataFormat, dOut, hOut, wOut, outputDepth);
     }
 
-    public static InputType getOutputTypeCnn3DLayers(InputType inputType, int[] kernelSize, int[] stride, int[] padding,
-                    int[] dilation, ConvolutionMode convolutionMode, long outputChannels, long layerIdx,
-                    String layerName, Class<?> layerClass) {
+    public static InputType getOutputTypeCnn3DLayers(InputType inputType, Convolution3D.DataFormat dataFormat, int[] kernelSize, int[] stride, int[] padding,
+                                                     int[] dilation, ConvolutionMode convolutionMode, long outputChannels, long layerIdx,
+                                                     String layerName, Class<?> layerClass) {
         if (convolutionMode == null) {
             String name = layerName == null ? "(not named)" : layerName;
             throw new DL4JInvalidConfigException("Invalid configuration: convolution mode is null for layer (idx="
@@ -257,7 +257,7 @@ public class InputTypeUtil {
             int outH = (int) Math.ceil(inHeight / ((double) sH));
             int outW = (int) Math.ceil(inWidth / ((double) sW));
 
-            return InputType.convolutional3D(outD, outH, outW, outputChannels);
+            return InputType.convolutional3D(dataFormat, outD, outH, outW, outputChannels);
         }
 
         long dOut = (inDepth - kD + 2 * padD) / sD + 1;
