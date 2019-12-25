@@ -211,7 +211,8 @@ if(CUDA_BLAS)
 
         if (HAVE_CUDNN)
             message("cuDNN included")
-
+            set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DHAVE_CUDNN")
+            set(CMAKE_CUDA_FLAGS " ${CMAKE_CUDA_FLAGS} -DHAVE_CUDNN")
             file(GLOB_RECURSE CUSTOMOPS_CUDNN_SOURCES false ../include/ops/declarable/platform/cudnn/*.cu)
         endif()
 

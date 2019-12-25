@@ -166,6 +166,10 @@ LaunchContext::LaunchContext() {
         return contextBuffers.isInitialized();
     }
 
+    void* LaunchContext::getCuDnnHandle() {
+        return CublasHelper::getInstance()->cudnn();
+    }
+
     sd::ErrorReference* LaunchContext::errorReference() {
         return contextBuffers.errorReference();
     }

@@ -81,6 +81,7 @@ class ND4J_EXPORT LaunchContext {
 		int* getAllocationPointer() const;
 		void* getCublasHandle() const;
 		void* getCusolverHandle() const;
+		void* getCuDnnHandle() const;
 		cudaStream_t* getCudaStream() const;
 		cudaStream_t* getCudaSpecialStream() const;
 
