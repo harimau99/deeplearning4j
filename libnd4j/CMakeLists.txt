@@ -161,6 +161,13 @@ if(NOT CUDA_BLAS)
     endif()
 endif()
 
+
+if (${HELPERS_cudnn})
+    set(HAVE_CUDNN true)
+    # FIXME: we don't want static cudnn in release
+    set(CUDNNN "-lcudnn_static")
+endif()
+
 # Download and unpack flatbuffers at configure time
 configure_file(CMakeLists.txt.in flatbuffers-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .

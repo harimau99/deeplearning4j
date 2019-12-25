@@ -209,16 +209,26 @@ if(CUDA_BLAS)
         file(GLOB_RECURSE LOOPS_SOURCES false ../include/loops/impl/*.cpp ../include/loops/*.h)
         file(GLOB_RECURSE LOOPS_SOURCES_CUDA false ../include/loops/*.cu)
 
+        if (HAVE_CUDNN)
+            message("cuDNN included")
+
+            file(GLOB_RECURSE CUSTOMOPS_CUDNN_SOURCES false ../include/ops/declarable/platform/cudnn/*.cu)
+        endif()
+
 		add_library(nd4jobj OBJECT cuda/NativeOps.cu cuda/NativeOpExecutioner.cu cuda/BlasVersionHelper.cu Environment.cpp ${LOOPS_SOURCES_CUDA}
                 ${CUSTOMOPS_HELPERS_SOURCES} ${HELPERS_SOURCES} ${EXEC_SOURCES}
                 ../include/cnpy/cnpy.cpp ../include/nd4jmemset.h ../include/nd4jmalloc.h
                 cpu/GraphExecutioner.cpp cuda/NDArray.cu cpu/NDArrayFactory.cpp
                 Environment.h ${LOOPS_SOURCES} ${ARRAY_SOURCES} ${TYPES_SOURCES}
-                ${MEMORY_SOURCES} ${GRAPH_SOURCES} ${CUSTOMOPS_SOURCES} ${INDEXING_SOURCES} ${EXCEPTIONS_SOURCES} ${OPS_SOURCES} ${PERF_SOURCES})
+                ${MEMORY_SOURCES} ${GRAPH_SOURCES} ${CUSTOMOPS_SOURCES} ${INDEXING_SOURCES} ${EXCEPTIONS_SOURCES} ${OPS_SOURCES} ${PERF_SOURCES} ${CUSTOMOPS_CUDNN_SOURCES})
 
         add_library(${LIBND4J_NAME} SHARED $<TARGET_OBJECTS:nd4jobj>)
 
-        message("MSVC runtime for library: ${MSVC_RT_LIB}")
+
+
+        if (WIN32)
+            message("MSVC runtime for library: ${MSVC_RT_LIB}")
+        endif()
 
         # static library is built only if we're going to build tests, skip otherwise
         if (BUILD_TESTS)
@@ -236,7 +246,7 @@ if(CUDA_BLAS)
             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /bigobj /std:c++14")
         endif()
 
-		target_link_libraries(${LIBND4J_NAME} ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_cusolver_LIBRARY})
+		target_link_libraries(${LIBND4J_NAME} ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDNN})
 	    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/cuda)
 
 		install(TARGETS ${LIBND4J_NAME} DESTINATION .)
