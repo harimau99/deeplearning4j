@@ -30,7 +30,7 @@ namespace nd4j {
         // offset is always absolute to the original buffer
         _offset = offset;
 
-        if (_offset + length >= _dataBuffer->getLenInBytes()) {
+        if (_offset + length > _dataBuffer->getLenInBytes()) {
             throw std::runtime_error("offset + length is higher than original length");
         }
     }

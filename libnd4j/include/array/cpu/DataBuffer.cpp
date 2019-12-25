@@ -32,10 +32,13 @@ namespace nd4j {
             // copy data from existing buffer
             std::memcpy(newBuffer, _primaryBuffer, _lenInBytes);
 
-            RELEASE(reinterpret_cast<int8_t *>(_primaryBuffer), _workspace);
+            if (_isOwnerPrimary) {
+                RELEASE(reinterpret_cast<int8_t *>(_primaryBuffer), _workspace);
+            }
 
             _primaryBuffer = newBuffer;
             _lenInBytes = size;
+            _isOwnerPrimary = true;
         }
     }
 

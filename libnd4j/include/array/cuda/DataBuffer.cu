@@ -38,19 +38,25 @@ namespace nd4j {
                 ALLOCATE(newBuffer, _workspace, size, int8_t);
                 std::memcpy(newBuffer, _primaryBuffer, _lenInBytes);
 
-                auto ipb = reinterpret_cast<int8_t *>(_primaryBuffer);
-                RELEASE(ipb, _workspace);
+                if (_isOwnerPrimary) {
+                    auto ipb = reinterpret_cast<int8_t *>(_primaryBuffer);
+                    RELEASE(ipb, _workspace);
+                }
+
                 _primaryBuffer = newBuffer;
+                _isOwnerPrimary = true;
             }
 
             cudaMemcpy(newSpecialBuffer, _specialBuffer, _lenInBytes, cudaMemcpyDeviceToDevice);
 
-            auto isb = reinterpret_cast<int8_t *>(_specialBuffer);
-
-            RELEASE_SPECIAL(isb, _workspace);
+            if (_isOwnerSpecial) {
+                auto isb = reinterpret_cast<int8_t *>(_specialBuffer);
+                RELEASE_SPECIAL(isb, _workspace);
+            }
 
             _specialBuffer = newSpecialBuffer;
             _lenInBytes = size;
+            _isOwnerSpecial = true;
         }
     }
 
