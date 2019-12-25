@@ -164,8 +164,29 @@ endif()
 
 if (${HELPERS_cudnn})
     set(HAVE_CUDNN true)
-    # FIXME: we don't want static cudnn in release
-    set(CUDNNN "-lcudnn_static")
+    set(CUDNN_ROOT_DIR "" CACHE PATH "Folder contains NVIDIA cuDNN")
+
+    SET(CUDNN_LIBNAME "cudnn_static")
+    SET(CULIBOS_LIBNAME "culibos")
+
+    find_path(CUDNN_INCLUDE_DIR cudnn.h
+            HINTS ${CUDNN_ROOT_DIR} ${CUDA_TOOLKIT_ROOT_DIR}
+            PATH_SUFFIXES cuda/include include)
+
+    find_library(CUDNN_LIBRARY ${CUDNN_LIBNAME}
+            HINTS ${CUDNN_ROOT_DIR} ${CUDA_TOOLKIT_ROOT_DIR}
+            PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
+
+    find_library(CULIBOS_LIBRARY ${CULIBOS_LIBNAME}
+            HINTS ${CUDNN_ROOT_DIR} ${CUDA_TOOLKIT_ROOT_DIR}
+            PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
+
+
+    if (CUDNN_LIBRARY)
+        set(CUDNN ${CUDNN_LIBRARY} ${CULIBOS_LIBRARY})
+    else()
+        message(FATAL_ERROR "Unable to find cuDNN")
+    endif()
 endif()
 
 # Download and unpack flatbuffers at configure time
