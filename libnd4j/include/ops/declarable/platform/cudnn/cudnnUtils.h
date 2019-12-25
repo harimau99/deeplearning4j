@@ -18,20 +18,24 @@
 // @author raver119@gmail.com
 //
 
+#ifndef SD_CUDNNUTILS_H
+#define SD_CUDNNUTILS_H
 
-#include "cudnnUtils.h"
+#include <ops/declarable/PlatformHelper.h>
+#include <ops/declarable/OpRegistrator.h>
+#include <platform_boilerplate.h>
+#include <dll.h>
+
+#include <cudnn.h>
 
 namespace nd4j {
     namespace ops {
         namespace platforms {
-            PLATFORM_IMPL(conv2d) {
 
-                return Status::OK();
-            }
+            DECLARE_PLATFORM(conv2d);
 
-            PLATFORM_CHECK(conv2d) {
-                return true;
-            }
         }
     }
 }
+
+#endif //SD_CUDNNUTILS_H
