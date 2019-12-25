@@ -32,7 +32,7 @@ namespace nd4j {
     namespace ops {
         namespace platforms {
 
-            DECLARE_PLATFORM(conv2d);
+            DECLARE_PLATFORM(conv2d, ENGINE_CUDA);
 
         }
     }

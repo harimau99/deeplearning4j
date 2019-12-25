@@ -24,12 +24,12 @@
 namespace nd4j {
     namespace ops {
         namespace platforms {
-            PLATFORM_IMPL(conv2d) {
+            PLATFORM_IMPL(conv2d, ENGINE_CUDA) {
 
                 return Status::OK();
             }
 
-            PLATFORM_CHECK(conv2d) {
+            PLATFORM_CHECK(conv2d, ENGINE_CUDA) {
                 return true;
             }
         }
