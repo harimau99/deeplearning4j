@@ -163,9 +163,9 @@ endif()
 
 
 if (${HELPERS_cudnn})
-    set(HAVE_CUDNN true)
     set(CUDNN_ROOT_DIR "" CACHE PATH "Folder contains NVIDIA cuDNN")
 
+    # FIXME: we don't want static library in master
     SET(CUDNN_LIBNAME "cudnn_static")
     SET(CULIBOS_LIBNAME "culibos")
 
@@ -183,6 +183,7 @@ if (${HELPERS_cudnn})
 
 
     if (CUDNN_LIBRARY)
+        set(HAVE_CUDNN true)
         set(CUDNN ${CUDNN_LIBRARY} ${CULIBOS_LIBRARY})
     else()
         message(FATAL_ERROR "Unable to find cuDNN")
