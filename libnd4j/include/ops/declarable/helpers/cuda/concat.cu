@@ -85,38 +85,77 @@ BUILD_SINGLE_TEMPLATE(template void concatCudaLauncher, (const int blocksPerGrid
 //////////////////////////////////////////////////////////////////////////
 void concat(nd4j::LaunchContext * context, const std::vector<NDArray*>& inArrs, NDArray& output, const int axis) {
 
-    const int threadsPerBlock = 256;
-    const int blocksPerGrid = 512;
-    const int sharedMem = 512;
-
     const int numOfArrs = inArrs.size();
+
+    const bool isZcontin = output.strideAt(axis) == 1;
+
+    bool areInputsContin    = inArrs[0]->strideAt(axis) == 1;
+    bool allInputsSameOrder = true;
+
+    if(isZcontin) {
+        for (uint i = 1; i < inArrs.size(); ++i) {
+            areInputsContin    &= (inArrs[i]->strideAt(axis) == 1);
+            allInputsSameOrder &= inArrs[i-1]->ordering() == inArrs[i]->ordering();
+            if(!areInputsContin || !allInputsSameOrder)
+                break;
+        }
+    }
+
+    const bool luckCase = isZcontin && areInputsContin && allInputsSameOrder && output.ordering() == inArrs[0]->ordering();
 
     for(int i = 0; i < numOfArrs; ++i)
         inArrs[i]->syncToDevice();
-
     output.syncToDevice();
 
-    // prepare arrays of pointers on buffers and shapes
-    std::vector<void*> hInBuffers(numOfArrs);
-    std::vector<Nd4jLong*> hInShapeInfo(numOfArrs);
+    if(luckCase) {
 
-    for(int i = 0; i < numOfArrs; ++i) {
-        hInBuffers[i]   = inArrs[i]->getSpecialBuffer();
-        hInShapeInfo[i] = inArrs[i]->getSpecialShapeInfo();
+        const auto sizeofT    = output.sizeOfT();
+        const uint zDim       = output.sizeAt(axis);
+
+        for (uint i = 0; i < output.lengthOf() / zDim; ++i) {
+
+            const auto iShift = i * sizeofT;
+            void* z = static_cast<int8_t*>(output.getSpecialBuffer()) + zDim * iShift;
+
+            for (uint j = 0; j < numOfArrs; ++j) {
+                const auto xDim = inArrs[j]->sizeAt(axis);
+                void* x = static_cast<int8_t*>(inArrs[j]->getSpecialBuffer()) + xDim * iShift;
+                const auto memSizeToCopy = xDim * sizeofT;
+                cudaMemcpyAsync(z, x, memSizeToCopy, cudaMemcpyDeviceToDevice, *context->getCudaStream());
+                z = static_cast<int8_t*>(z) + memSizeToCopy;
+            }
+        }
+
+        if(cudaStreamSynchronize(*context->getCudaStream()) != 0)
+            throw std::runtime_error("concat cuda: luckCase failed!");
     }
+    else {      // general (slower) case
 
-    PointersManager manager(context, "helpers::concat");
+        const int threadsPerBlock = 256;
+        const int blocksPerGrid = 512;
+        const int sharedMem = 512;
 
-    void* dInBuffers   = manager.replicatePointer(hInBuffers.data(),    hInBuffers.size() * sizeof(void*));
-    void* dInShapeInfo = manager.replicatePointer(hInShapeInfo.data(),  hInShapeInfo.size() * sizeof(Nd4jLong*));
+        // prepare arrays of pointers on buffers and shapes
+        std::vector<void*> hInBuffers(numOfArrs);
+        std::vector<Nd4jLong*> hInShapeInfo(numOfArrs);
 
-    BUILD_SINGLE_SELECTOR(inArrs[0]->dataType(), concatCudaLauncher, (blocksPerGrid, threadsPerBlock, sharedMem, context->getCudaStream(), dInBuffers, dInShapeInfo, output.specialBuffer(), output.specialShapeInfo(), axis), LIBND4J_TYPES);
+        for(int i = 0; i < numOfArrs; ++i) {
+            hInBuffers[i]   = inArrs[i]->getSpecialBuffer();
+            hInShapeInfo[i] = inArrs[i]->getSpecialShapeInfo();
+        }
 
-    manager.synchronize();
+        PointersManager manager(context, "helpers::concat");
+
+        void* dInBuffers   = manager.replicatePointer(hInBuffers.data(),    hInBuffers.size() * sizeof(void*));
+        void* dInShapeInfo = manager.replicatePointer(hInShapeInfo.data(),  hInShapeInfo.size() * sizeof(Nd4jLong*));
+
+        BUILD_SINGLE_SELECTOR(inArrs[0]->dataType(), concatCudaLauncher, (blocksPerGrid, threadsPerBlock, sharedMem, context->getCudaStream(), dInBuffers, dInShapeInfo, output.specialBuffer(), output.specialShapeInfo(), axis), LIBND4J_TYPES);
+
+        manager.synchronize();
+    }
 
     for(int i = 0; i < numOfArrs; ++i)
         inArrs[i]->tickReadDevice();
-
     output.tickWriteDevice();
 }
 
