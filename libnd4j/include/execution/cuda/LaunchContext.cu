@@ -166,7 +166,7 @@ LaunchContext::LaunchContext() {
         return contextBuffers.isInitialized();
     }
 
-    void* LaunchContext::getCuDnnHandle() {
+    void* LaunchContext::getCuDnnHandle() const {
         return CublasHelper::getInstance()->cudnn();
     }
 
