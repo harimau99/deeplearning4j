@@ -43,10 +43,14 @@ namespace helpers {
     NDArray vmul(NDArray const& v, int n)
     {
         NDArray res('c', {n,n}, v.dataType()); // x = matrix_new(n, n);
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                res.t<T>(i, j) = -2 *  v.t<T>(i) * v.t<T>(j) + (i == j?T(1):T(0));
 
+        auto interloop = PRAGMA_THREADS_FOR_2D {
+            for (int i = start_x; i < n; i += inc_x)
+                for (int j = start_y; j < n; j += inc_y)
+                    res.t<T>(i, j) = -2 * v.t<T>(i) * v.t<T>(j) + (i == j ? T(1) : T(0));
+        };
+
+        samediff::Threads::parallel_for(interloop, 0, n, 1, 0, n, 1);
         return res;
     }
 
@@ -90,7 +94,7 @@ namespace helpers {
         }
         else {
             Q->assign(resQ({0,0, 0, N}));
-            R->assign(resR({0,N, 0, N}));
+            R->assign(resR({0,N, 0, 0}));
         }
     }
 
