@@ -20,6 +20,7 @@
 #include <ops/declarable/helpers/qr.h>
 #include <helpers/MmulHelper.h>
 #include <execution/Threads.h>
+#include <NDArrayFactory.h>
 
 namespace nd4j {
 namespace ops {
@@ -53,8 +54,8 @@ namespace helpers {
     void qrSingle(NDArray* matrix, NDArray* Q, NDArray* R, bool const fullMatricies) {
         Nd4jLong M = matrix->sizeAt(-2);
         Nd4jLong N = matrix->sizeAt(-1);
-        auto resQ = Q->ulike();
-        auto resR = R->ulike();
+        auto resQ = fullMatricies?Q->ulike():NDArrayFactory::create<T>(matrix->ordering(), {M,M}, Q->getContext());
+        auto resR = fullMatricies?R->ulike():matrix->ulike();
         NDArray q[M];
         NDArray z = *matrix;
         for (auto k = 0; k < N && k < M - 1; k++) { // loop for columns, but not further then row number
@@ -83,8 +84,14 @@ namespace helpers {
         MmulHelper::matmul(&resQ, matrix, &resR, false, false);
        // resR *= -1.f;
         resQ.transposei();
-        Q->assign(resQ);
-        R->assign(resR);
+        if (fullMatricies) {
+            Q->assign(resQ);
+            R->assign(resR);
+        }
+        else {
+            Q->assign(resQ({0,0, 0, N}));
+            R->assign(resR({0,N, 0, N}));
+        }
     }
 
     template <typename T>

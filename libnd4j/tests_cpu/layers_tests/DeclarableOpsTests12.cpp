@@ -2730,7 +2730,7 @@ TEST_F(DeclarableOpsTests12, QR_Test_1) {
 ////////////////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests12, QR_Test_1_1) {
 
-    auto in = NDArrayFactory::create<double>('c', {4, 5,3}, {
+    auto in = NDArrayFactory::create<double>('c', {4, 5, 3}, {
             12.,  -51.,    4.,
             6.,   167.,  -68.,
             -4.,    24.,  -41.,
@@ -2864,7 +2864,14 @@ TEST_F(DeclarableOpsTests12, QR_Test_2) {
     q->printIndexedBuffer("Orthogonal 5x5");
     r->printIndexedBuffer("Upper triangular 5x3");
 
-    ASSERT_TRUE(expQ.equalsTo(q));
-    ASSERT_TRUE(expR.equalsTo(r));
+    nd4j::ops::matmul opMul;
+    auto res2 = opMul.execute({q, r}, {}, {}); //MmulHelper::matmul(q, r, &in, false, false);
+    auto exp = res2->at(0);//->printIndexedBuffer("Result as result");
+    ASSERT_TRUE(exp->isSameShape(in));
+    ASSERT_TRUE(exp->equalsTo(in));
+    delete res2;
+
+//    ASSERT_TRUE(expQ.equalsTo(q));
+//    ASSERT_TRUE(expR.equalsTo(r));
     delete res;
 }

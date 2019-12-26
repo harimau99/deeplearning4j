@@ -33,8 +33,8 @@ namespace nd4j {
             if (block.getBArguments()->size())
                 fullMatricies = B_ARG(0);
             REQUIRE_TRUE(input->rankOf() >=2, 0, "qr: The rank of input array should not less than 2, but %i is given", input->rankOf());
-            REQUIRE_TRUE(outputQ->sizeAt(-1) == input->sizeAt(-2), 0, "qr: The last dimmensions should be equal with result Q, but %i and %i are given", outputQ->sizeAt(-1), input->sizeAt(-2));
-            REQUIRE_TRUE(outputR->sizeAt(-1) == input->sizeAt(-1), 0, "qr: The last dimmensions should be equal with result R, but %i and %i are given", outputR->sizeAt(-1), input->sizeAt(-1));
+            REQUIRE_TRUE((fullMatricies && outputQ->sizeAt(-1) == input->sizeAt(-2)) || (!fullMatricies && outputQ->isSameShape(input)), 0, "qr: The last dimmensions should be equal with result Q, but %i and %i are given", outputQ->sizeAt(-1), input->sizeAt(-2));
+            REQUIRE_TRUE((fullMatricies && outputR->sizeAt(-1) == input->sizeAt(-1)) || (!fullMatricies && outputR->sizeAt(-1) == outputR->sizeAt(-2)), 0, "qr: The last dimmensions should be equal with result R, but %i and %i are given", outputR->sizeAt(-1), input->sizeAt(-1));
 
             helpers::qr(block.launchContext(), input, outputQ, outputR, fullMatricies);
             return Status::OK();
