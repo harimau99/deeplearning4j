@@ -106,6 +106,10 @@ namespace nd4j {
                 delete _context;
         }
 
+        void Context::setTargetEngine(samediff::Engine engine) {
+            _engine = engine;
+        }
+
         bool Context::hasWorkspaceProvided() {
             return this->_workspace != nullptr;
         }
