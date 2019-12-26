@@ -111,27 +111,49 @@ namespace nd4j {
 template <typename T>
 void SpecialMethods<T>::concatCpuGeneric(const std::vector<NDArray*>& inArrs, NDArray& output, const int axis) {
 
-    const bool isZcontin = output.strideAt(axis) == 1;
+    const int numOfInArrs = inArrs.size();
+    const auto sizeofT    = output.sizeOfT();
 
-    bool areInputsContin    = inArrs[0]->strideAt(axis) == 1;
-    bool allInputsSameOrder = true;
+    T* zBuff = output.bufferAsT<T>();
 
-    if(isZcontin) {
-        for (uint i = 1; i < inArrs.size(); ++i) {
-            areInputsContin    &= (inArrs[i]->strideAt(axis) == 1);
-            allInputsSameOrder &= inArrs[i-1]->ordering() == inArrs[i]->ordering();
-            if(!areInputsContin || !allInputsSameOrder)
+    bool luckCase1 = ((axis == 0 && output.ordering() == 'c') || (axis == output.rankOf() - 1 && output.ordering() == 'f')) && output.ews() == 1;
+
+    if(luckCase1) {
+        for (uint i = 0; i < numOfInArrs; ++i) {
+            luckCase1 &= inArrs[i]->ordering() == output.ordering() && inArrs[i]->ews() == 1;
+            if(!luckCase1)
                 break;
         }
     }
 
-    const bool luckCase = isZcontin && areInputsContin && allInputsSameOrder && output.ordering() == inArrs[0]->ordering();
+    if(luckCase1) {     // for example {1,10} + {2,10} + {3,10} = {6, 10} order c; or {10,1} + {10,2} + {10,3} = {10, 6} order f
 
-    T* zBuff = output.bufferAsT<T>();
+        T* z = zBuff;
+        for (uint i = 0; i < numOfInArrs; ++i) {
+            const auto memAmountToCopy = inArrs[i]->lengthOf();
+            memcpy(z, inArrs[i]->bufferAsT<T>(), memAmountToCopy * sizeofT);
+            z += memAmountToCopy;
+        }
+        return;
+    }
 
-    if(luckCase) {
+    const bool isZcontin = output.strideAt(axis) == 1;
+    bool areInputsContin = true;
+    bool allSameOrder    = true;
 
-        const auto sizeofT    = output.sizeOfT();
+    if(isZcontin) {
+        for (uint i = 0; i < numOfInArrs; ++i) {
+            areInputsContin &= inArrs[i]->strideAt(axis) == 1;
+            allSameOrder    &= inArrs[i]->ordering() == output.ordering();
+            if(!areInputsContin || !allSameOrder)
+                break;
+        }
+    }
+
+    const bool luckCase2 = isZcontin && areInputsContin && allSameOrder;
+
+    if(luckCase2) {     // for example {2,1,3} + {2,5,3} + {2,10,3} = {2,16,3}, here axis 1 shoud have stride = 1 for all inputs arrays and output array
+
         const uint zDim       = output.sizeAt(axis);
 
         for (uint i = 0; i < output.lengthOf() / zDim; ++i) {
@@ -139,7 +161,7 @@ void SpecialMethods<T>::concatCpuGeneric(const std::vector<NDArray*>& inArrs, ND
 
             for (uint j = 0; j < inArrs.size(); ++j) {
                 const auto xDim = inArrs[j]->sizeAt(axis);
-                T* x = inArrs[j]->bufferAsT<T>() + xDim * i;
+                const T* x = inArrs[j]->bufferAsT<T>() + xDim * i;
                 memcpy(z, x, xDim * sizeofT);
                 z += xDim;
             }

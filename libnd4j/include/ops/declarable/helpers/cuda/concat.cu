@@ -85,39 +85,68 @@ BUILD_SINGLE_TEMPLATE(template void concatCudaLauncher, (const int blocksPerGrid
 //////////////////////////////////////////////////////////////////////////
 void concat(nd4j::LaunchContext * context, const std::vector<NDArray*>& inArrs, NDArray& output, const int axis) {
 
-    const int numOfArrs = inArrs.size();
+    const int numOfInArrs = inArrs.size();
+    const auto sizeofT    = output.sizeOfT();
 
-    const bool isZcontin = output.strideAt(axis) == 1;
+    for(int i = 0; i < numOfInArrs; ++i)
+        inArrs[i]->syncToDevice();
+    output.syncToDevice();
 
-    bool areInputsContin    = inArrs[0]->strideAt(axis) == 1;
-    bool allInputsSameOrder = true;
+    bool luckCase1 = ((axis == 0 && output.ordering() == 'c') || (axis == output.rankOf() - 1 && output.ordering() == 'f')) && output.ews() == 1;
 
-    if(isZcontin) {
-        for (uint i = 1; i < inArrs.size(); ++i) {
-            areInputsContin    &= (inArrs[i]->strideAt(axis) == 1);
-            allInputsSameOrder &= inArrs[i-1]->ordering() == inArrs[i]->ordering();
-            if(!areInputsContin || !allInputsSameOrder)
+    if(luckCase1) {
+        for (uint i = 0; i < numOfInArrs; ++i) {
+            luckCase1 &= inArrs[i]->ordering() == output.ordering() && inArrs[i]->ews() == 1;
+            if(!luckCase1)
                 break;
         }
     }
 
-    const bool luckCase = isZcontin && areInputsContin && allInputsSameOrder && output.ordering() == inArrs[0]->ordering();
+    if(luckCase1) {     // for example {1,10} + {2,10} + {3,10} = {6, 10} order c; or {10,1} + {10,2} + {10,3} = {10, 6} order f
 
-    for(int i = 0; i < numOfArrs; ++i)
-        inArrs[i]->syncToDevice();
-    output.syncToDevice();
+        void* z = static_cast<int8_t*>(output.getSpecialBuffer());
 
-    if(luckCase) {
+        for (uint i = 0; i < numOfInArrs; ++i) {
+            const auto memAmountToCopy = inArrs[i]->lengthOf() * sizeofT;
+            cudaMemcpyAsync(z, static_cast<int8_t*>(inArrs[i]->getSpecialBuffer()), memAmountToCopy, cudaMemcpyDeviceToDevice, *context->getCudaStream());
+            z = static_cast<int8_t*>(z) + memAmountToCopy;
+        }
 
-        const auto sizeofT    = output.sizeOfT();
-        const uint zDim       = output.sizeAt(axis);
+        if(cudaStreamSynchronize(*context->getCudaStream()) != 0)
+            throw std::runtime_error("concat cuda: luckCase1 failed!");
+
+        for(int i = 0; i < numOfInArrs; ++i)
+            inArrs[i]->tickReadDevice();
+        output.tickWriteDevice();
+
+        return;
+    }
+
+    const bool isZcontin = output.strideAt(axis) == 1;
+    bool areInputsContin = true;
+    bool allSameOrder    = true;
+
+    if(isZcontin) {
+        for (uint i = 0; i < inArrs.size(); ++i) {
+            areInputsContin &= inArrs[i]->strideAt(axis) == 1;
+            allSameOrder    &= output.ordering() == inArrs[i]->ordering();
+            if(!areInputsContin || !allSameOrder)
+                break;
+        }
+    }
+
+    const bool luckCase2 = isZcontin && areInputsContin && allSameOrder;
+
+    if(luckCase2) {     // for example {2,1,3} + {2,5,3} + {2,10,3} = {2,16,3}, here axis 1 shoud have stride = 1 for all inputs arrays and output array
+
+        const uint zDim = output.sizeAt(axis);
 
         for (uint i = 0; i < output.lengthOf() / zDim; ++i) {
 
             const auto iShift = i * sizeofT;
             void* z = static_cast<int8_t*>(output.getSpecialBuffer()) + zDim * iShift;
 
-            for (uint j = 0; j < numOfArrs; ++j) {
+            for (uint j = 0; j < numOfInArrs; ++j) {
                 const auto xDim = inArrs[j]->sizeAt(axis);
                 void* x = static_cast<int8_t*>(inArrs[j]->getSpecialBuffer()) + xDim * iShift;
                 const auto memSizeToCopy = xDim * sizeofT;
@@ -127,7 +156,7 @@ void concat(nd4j::LaunchContext * context, const std::vector<NDArray*>& inArrs, 
         }
 
         if(cudaStreamSynchronize(*context->getCudaStream()) != 0)
-            throw std::runtime_error("concat cuda: luckCase failed!");
+            throw std::runtime_error("concat cuda: luckCase2 failed!");
     }
     else {      // general (slower) case
 
@@ -136,10 +165,10 @@ void concat(nd4j::LaunchContext * context, const std::vector<NDArray*>& inArrs, 
         const int sharedMem = 512;
 
         // prepare arrays of pointers on buffers and shapes
-        std::vector<void*> hInBuffers(numOfArrs);
-        std::vector<Nd4jLong*> hInShapeInfo(numOfArrs);
+        std::vector<void*> hInBuffers(numOfInArrs);
+        std::vector<Nd4jLong*> hInShapeInfo(numOfInArrs);
 
-        for(int i = 0; i < numOfArrs; ++i) {
+        for(int i = 0; i < numOfInArrs; ++i) {
             hInBuffers[i]   = inArrs[i]->getSpecialBuffer();
             hInShapeInfo[i] = inArrs[i]->getSpecialShapeInfo();
         }
@@ -154,7 +183,7 @@ void concat(nd4j::LaunchContext * context, const std::vector<NDArray*>& inArrs, 
         manager.synchronize();
     }
 
-    for(int i = 0; i < numOfArrs; ++i)
+    for(int i = 0; i < numOfInArrs; ++i)
         inArrs[i]->tickReadDevice();
     output.tickWriteDevice();
 }
