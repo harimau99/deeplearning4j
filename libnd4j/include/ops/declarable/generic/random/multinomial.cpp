@@ -1,0 +1,98 @@
+/*******************************************************************************
+ * Copyright (c) 2015-2018 Skymind, Inc.
+ * Copyright (c) 2019 Konduit K.K.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ******************************************************************************/
+
+//
+// @author Oleh Semeniv (oleg.semeniv@gmail.com)
+//
+
+#include <op_boilerplate.h>
+#if NOT_EXCLUDED(OP_random_multinomial)
+
+#include <ops/declarable/CustomOperations.h>
+#include <helpers/RandomLauncher.h>
+#include <ops/declarable/helpers/random.h>
+
+namespace nd4j {
+    namespace ops {
+        ///////////////////////
+        /**
+         * multinomial (categorical) random generator
+         * takes 2D ndarray with logits with shape [batch_size (N), num_classes (K)]
+         * represents the unnormalized log-probabilities for all classes.
+         * Int arguments: 0 - scalar value of samples number, number of independent samples to draw for each experiment 1,N.
+         * Int arguments: 1 - optional argument, corresponds to dimension with batch_size
+         * data type: 2 - optional argument, integer type to use for the output. Default int64.
+         */
+        CUSTOM_OP_IMPL(random_multinomial, 1, 1, false, 0, 3) {
+            
+            const int argSize = block.getIArguments()->size();
+            REQUIRE_TRUE(argSize >= 2, 0, "Have to be specified atleast two"
+                " arguments batch with logits and number of samples,"
+                " number of specified arguments %i ", argSize);
+
+            auto nSamples =  INT_ARG(0);
+            // just skip op number of samples = 0
+            if (0 == nSamples)
+                return Status::OK();
+
+            auto input = INPUT_VARIABLE(0);
+            auto output = OUTPUT_VARIABLE(0);
+
+            const int rank = input->rankOf();
+            REQUIRE_TRUE(rank == 2, 0, "Logits should be a matrix, with requirement rank: %i == 2 ", rank);
+            const int dimC = argSize > 2 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
+
+            auto rng = block.randomGenerator();
+
+            helpers::fillRandomMultiNomial(block.launchContext(), rng, *input, *output, dimC);
+            return Status::OK();
+        }
+
+
+        DECLARE_SHAPE_FN(random_multinomial) {
+
+            const int argSize = block.getIArguments()->size();
+            REQUIRE_TRUE(argSize >= 2, 0, "Have to be specified atleast two"
+                " arguments batch with logits and number of samples,"
+                " number of specified arguments %i ", argSize);
+
+            auto input = INPUT_VARIABLE(0);
+            auto output = OUTPUT_VARIABLE(0);
+
+            const int rank = input->rankOf();
+            REQUIRE_TRUE(rank == 2, 0, "Logits should be a matrix, with requirement rank: %i == 2 ", rank);
+            const int dimC = argSize > 2 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
+            auto nSamples = INT_ARG(0);
+            auto nShape = input->getShapeAsVector();
+            auto nIndex = (0 == dimC) ? 1 : 0;
+            nShape[nIndex] = nSamples;
+            DataType nType = (argSize > 3) ? ( INT_ARG(2) >= 0 ? static_cast<DataType>(INT_ARG(2)) : nd4j::DataType::INT64) : nd4j::DataType::INT64;
+            return SHAPELIST(ConstantShapeHelper::getInstance()->createShapeInfo(nType, input->ordering(), nShape));
+        }
+
+        DECLARE_TYPES(random_multinomial) {
+            getOpDescriptor()
+                    ->setAllowedInputTypes(0, {ALL_FLOATS})
+                    ->setAllowedInputTypes(1, { ALL_INTS })
+                    ->setAllowedInputTypes(2, { INT32, INT64 })
+                    ->setAllowedOutputTypes({INT32, INT64})
+                ->setSameMode(true);
+        }
+    }
+}
+
+#endif

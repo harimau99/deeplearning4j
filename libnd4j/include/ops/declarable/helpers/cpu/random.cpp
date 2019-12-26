@@ -24,6 +24,7 @@
 //#include <graph/Context.h>
 #include <ShapeUtils.h>
 #include <helpers/RandomLauncher.h>
+#include <execution/Threads.h>
 
 namespace nd4j {
 namespace ops {
@@ -149,6 +150,57 @@ namespace helpers {
 
     void fillRandomUniform(LaunchContext* context, graph::RandomGenerator& rng, NDArray* min, NDArray* max, NDArray* output) {
         BUILD_SINGLE_SELECTOR(output->dataType(), fillRandomUniform_, (context, rng, min, max, output), NUMERIC_TYPES);
+    }
+
+
+    template <typename T>
+    void fillRandomMultiNomial_(LaunchContext* context, graph::RandomGenerator& rng, NDArray& input, NDArray& output, const int dimC) {
+        
+        const T* x = input.bufferAsT<T>();
+        T* z = output.bufferAsT<T>();
+        const int rank = input.rankOf();
+        bool bSimple = (dimC == rank - 1 && 'c' == input.ordering() && 1 == input.ews() &&
+            'c' == output.ordering() && 1 == output.ews());
+ 
+        T minVal = DataTypeUtils::min<float>();
+        T maxVal = 1.0 - minVal; // TODO this have to be rechecked
+
+        if (bSimple) {
+
+            auto nSampleIndex = (0 == dimC) ? 1 : 0;
+            const int nClassDim = input.sizeAt(dimC);
+            const int nNumSamples = output.sizeAt(nSampleIndex);
+            // TODO PRAGMA_THREADS_FOR_2D
+            auto func = PRAGMA_THREADS_FOR{
+                for (auto i = start; i < stop; i += increment) {
+                    
+                    auto nOutPossitionStart = nNumSamples * (i / increment);
+                    auto nOutPositionStop = nOutPossitionStart + nNumSamples;
+                    auto uniform_logits = log(-log(rng.relativeT<T>(i, minVal, maxVal)));
+                    
+                    for (auto j = nOutPossitionStart; j < nOutPositionStop; j++) {
+                        // TODO use sub array and argmax method
+                        
+                        int arg = 0;
+                        T Max = -minVal;
+                        for (auto k = 0; k < nClassDim; k++) {
+                            T tValue = (x[i + k] - uniform_logits);
+                            if (tValue > Max) {
+                                Max = tValue; arg = k;
+                            }
+                        }
+                        z[j] = arg;
+                    }
+                }
+            };
+            samediff::Threads::parallel_for(func, 0, input.lengthOf(), nClassDim);
+            return;
+        }
+        // TODO need investigate how to use it on f and find more optimal solution 
+    }
+
+    void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, NDArray& input, NDArray& output, const int dimC) {
+        BUILD_SINGLE_SELECTOR(input.dataType(), fillRandomMultiNomial_, (context, rng, input, output, dimC), FLOAT_TYPES);
     }
 }
 }
