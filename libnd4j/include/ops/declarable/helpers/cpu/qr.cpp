@@ -19,6 +19,7 @@
 //
 #include <ops/declarable/helpers/qr.h>
 #include <helpers/MmulHelper.h>
+#include <execution/Threads.h>
 
 namespace nd4j {
 namespace ops {
@@ -93,11 +94,14 @@ namespace helpers {
         std::unique_ptr<ResultSet> listOutQ(outputQ->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
         std::unique_ptr<ResultSet> listOutR(outputR->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
         std::unique_ptr<ResultSet> listInput(input->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
+        auto batching = PRAGMA_THREADS_FOR {
+            for (auto batch = start; batch < stop; batch += increment) {
+                //qr here
+                qrSingle<T>(listInput->at(batch), listOutQ->at(batch), listOutR->at(batch), fullMatricies);
+            }
+        };
 
-        for (auto batch = 0; batch < listOutQ->size(); ++batch) {
-            //qr here
-            qrSingle<T>(listInput->at(batch), listOutQ->at(batch), listOutR->at(batch), fullMatricies);
-        }
+        samediff::Threads::parallel_tad(batching, 0, listOutQ->size(), 1);
 
     }
 
