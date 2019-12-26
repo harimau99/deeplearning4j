@@ -29,6 +29,10 @@
 #include <ops/declarable/OpDescriptor.h>
 #include <execution/Engine.h>
 
+#ifndef __STANDALONE_BUILD__
+#include <config.h>
+#endif
+
 namespace nd4j {
     namespace graph {
 
@@ -55,7 +59,7 @@ namespace nd4j {
             bool _useMKLDNN = nd4j::Environment::getInstance()->isUseMKLDNN();
 
             // target engine for execution
-            samediff::Engine _engine;
+            samediff::Engine _engine = DEFAULT_ENGINE;
         public:
             explicit ContextPrototype(nd4j::ops::OpDescriptor* opDescriptor = nullptr, int nodeId = 1, bool inPlace = false);
             ~ContextPrototype() = default;

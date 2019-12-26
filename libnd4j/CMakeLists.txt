@@ -14,6 +14,10 @@ set(CMAKE_CXX_STANDARD 11)
 if (CUDA_BLAS)
     enable_language(CUDA)
     set(CMAKE_CUDA_STANDARD 11)
+
+    set(DEFAULT_ENGINE "samediff::ENGINE_CUDA")
+else()
+    set(DEFAULT_ENGINE "samediff::ENGINE_CPU")
 endif()
 
 # MSVC runtime lib can be either "MultiThreaded" or "MultiThreadedDLL", /MT and /MD respectively
@@ -59,6 +63,7 @@ if(NATIVE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     ENDIF()
 endif()
+
 
 if(NOT CUDA_BLAS)
     # we need this definition to avoid global memory use within mkldnn
