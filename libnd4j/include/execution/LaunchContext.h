@@ -27,6 +27,7 @@
 #include <cuda_runtime_api.h>
 #include <cuda_runtime.h>
 #include <cuda_device_runtime_api.h>
+#include "config.h"
 #endif
 
 // used for MKLDNN etc
