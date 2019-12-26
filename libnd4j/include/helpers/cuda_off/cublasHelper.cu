@@ -55,12 +55,15 @@ namespace nd4j {
     }
 
     static void* cudnn_() {
+#ifdef HAVE_CUDNN
         auto cudnnH = new cudnnHandle_t();
         auto status = cudnnCreate(cudnnH);
         if (status != CUDNN_STATUS_SUCCESS)
             throw cuda_exception::build("cuDNN handle creation failed !", status);
 
         return cudnnH;
+#else
+        return nullptr;
     }
 
     static void destroyHandle_(void* handle) {
