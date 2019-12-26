@@ -62,7 +62,7 @@ namespace nd4j {
             throw cuda_exception::build("cuDNN handle creation failed !", status);
 
         return cudnnH;
-#else
+#endif
         return nullptr;
     }
 
