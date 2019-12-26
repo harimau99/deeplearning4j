@@ -214,6 +214,8 @@ set(HAVE_FLATBUFFERS 1)
 set(FLATBUFFERS_PATH ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-src)
 include_directories(${FLATBUFFERS_PATH}/include)
 
+
+
 configure_file(include/config.h.in include/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 

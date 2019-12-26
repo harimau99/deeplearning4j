@@ -211,8 +211,6 @@ if(CUDA_BLAS)
 
         if (HAVE_CUDNN)
             message("cuDNN included")
-            set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DHAVE_CUDNN")
-            set(CMAKE_CUDA_FLAGS " ${CMAKE_CUDA_FLAGS} -DHAVE_CUDNN")
             file(GLOB_RECURSE CUSTOMOPS_CUDNN_SOURCES false ../include/ops/declarable/platform/cudnn/*.cu)
         endif()
 
@@ -224,8 +222,6 @@ if(CUDA_BLAS)
                 ${MEMORY_SOURCES} ${GRAPH_SOURCES} ${CUSTOMOPS_SOURCES} ${INDEXING_SOURCES} ${EXCEPTIONS_SOURCES} ${OPS_SOURCES} ${PERF_SOURCES} ${CUSTOMOPS_CUDNN_SOURCES})
 
         add_library(${LIBND4J_NAME} SHARED $<TARGET_OBJECTS:nd4jobj>)
-
-
 
         if (WIN32)
             message("MSVC runtime for library: ${MSVC_RT_LIB}")

@@ -13,4 +13,6 @@
 
 #cmakedefine FLATBUFFERS_PATH "@FLATBUFFERS_PATH@"
 
+#cmakedefine HAVE_CUDNN
+
 #endif
