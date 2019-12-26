@@ -25,6 +25,7 @@
 #include <exceptions/cuda_exception.h>
 #include <helpers/logger.h>
 #include <execution/AffinityManager.h>
+#include "config.h"
 
 #ifdef HAVE_CUDNN
 
