@@ -25,6 +25,7 @@
 #include <ops/declarable/OpRegistrator.h>
 #include <platform_boilerplate.h>
 #include <exceptions/cuda_exception.h>
+#include <exceptions/datatype_exception.h>
 #include <dll.h>
 
 #include <cudnn.h>
@@ -35,6 +36,23 @@ namespace nd4j {
 
             DECLARE_PLATFORM(conv2d, ENGINE_CUDA);
 
+
+            FORCEINLINE cudnnDataType_t cudnnDataType(nd4j::DataType dataType) {
+                switch (dataType) {
+                    case nd4j::DataType::FLOAT32:
+                        return CUDNN_DATA_FLOAT;
+                    case nd4j::DataType::DOUBLE:
+                        return CUDNN_DATA_DOUBLE;
+                    case nd4j::DataType::HALF:
+                        return CUDNN_DATA_HALF;
+                    case nd4j::DataType::INT32:
+                        return CUDNN_DATA_INT32;
+                    case nd4j::DataType::INT8:
+                        return CUDNN_DATA_INT8;
+                    default:
+                        throw datatype_exception::build("Unsupported data type", dataType);
+                }
+            }
         }
     }
 }

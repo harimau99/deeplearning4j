@@ -48,8 +48,32 @@ namespace nd4j {
                 int kH = INT_ARG(0) > 0 ? INT_ARG(0) : static_cast<int>(weights->sizeAt(0)); // filter(kernel) height
                 int kW = INT_ARG(1) > 0 ? INT_ARG(1) : static_cast<int>(weights->sizeAt(1)); // filter(kernel) width
 
+                auto dtype = cudnnDataType(input->dataType());
 
 
+                cudnnTensorDescriptor_t src;
+                cudnnCreateTensorDescriptor(&src);
+                res = cudnnSetTensor4dDescriptorEx(src, dtype, input->sizeAt(0), input->sizeAt(1), input->sizeAt(2), input->sizeAt(3), input->strideAt(0), input->strideAt(1), input->strideAt(2), input->strideAt(3));
+                if (res != 0)
+                    throw nd4j::cuda_exception::build("cudnnSetTensor4dDescriptorEx src failed", res);
+
+                cudnnFilterDescriptor_t wght;
+                cudnnCreateFilterDescriptor(&wght);
+                res = cudnnSetFilter4dDescriptor(wght, dtype, CUDNN_TENSOR_NCHW, weights->sizeAt(3), weights->sizeAt(2), kH, kW);
+                if (res != 0)
+                    throw nd4j::cuda_exception::build("cudnnSetFilter4dDescriptor failed", res);
+
+                cudnnConvolutionDescriptor_t cdc;
+                cudnnCreateConvolutionDescriptor(&cdc);
+                res = cudnnSetConvolution2dDescriptor(cdc, pH, pW, sH, sW, dH, dW, CUDNN_CROSS_CORRELATION, dtype);
+                if (res != 0)
+                    throw nd4j::cuda_exception::build("cudnnSetConvolution2dDescriptor failed", res);
+
+                cudnnTensorDescriptor_t dst;
+                cudnnCreateTensorDescriptor(&dst);
+                res = cudnnSetTensor4dDescriptorEx(dst, dtype, output->sizeAt(0), output->sizeAt(1), output->sizeAt(2), output->sizeAt(3), output->strideAt(0), output->strideAt(1), output->strideAt(2), output->strideAt(3));
+                if (res != 0)
+                    throw nd4j::cuda_exception::build("cudnnSetTensor4dDescriptorEx dst failed", res);
 
                 return Status::OK();
             }
