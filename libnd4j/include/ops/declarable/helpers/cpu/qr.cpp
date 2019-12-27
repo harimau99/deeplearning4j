@@ -66,12 +66,15 @@ namespace helpers {
             NDArray e('c', {M}, DataTypeUtils::fromT<T>()); // two internal buffers and scalar for squared norm
             z = matrixMinor<T>(z, k); // minor computing for current column with given matrix z (initally is a input matrix)
             auto currentColumn = z({0, 0, k, k + 1}); // retrieve k column from z to x buffer
-            auto norm = currentColumn.reduceAlongDims(reduce::Norm2, {0});
+            auto norm = currentColumn.reduceAlongDimension(reduce::Norm2, {0});
             if (matrix->t<T>(k,k) > T(0.f)) // negate on positive matrix diagonal element
-                norm.t<T>(0) = -norm.t<T>(0);
-            e.t<T>(k) = T(1.f); // e - is filled by 0 vector except diagonal element (filled by 1)
-            e = currentColumn + norm * e; // e[i] = x[i] + a * e[i] for each i from 0 to n - 1
-            auto normE = e.reduceAlongDims(reduce::Norm2, {0});
+                norm *= T(-1.f);//.applyTransform(transform::Neg, nullptr, nullptr); //t<T>(0) = -norm.t<T>(0);
+            //e.t<T>(k) = T(1.f); // e - is filled by 0 vector except diagonal element (filled by 1)
+            //auto tE = e;
+            //tE *= norm;
+            e.p(k, norm);
+            e += currentColumn;//  e += tE; // e[i] = x[i] + a * e[i] for each i from 0 to n - 1
+            auto normE = e.reduceAlongDimension(reduce::Norm2, {0});
             e /= normE;
             q[k] = vmul<T>(e, M);
             auto qQ = z.ulike();
@@ -102,17 +105,17 @@ namespace helpers {
     void qr_(NDArray* input, NDArray* outputQ, NDArray* outputR, bool const fullMatricies) {
         Nd4jLong lastDim = input->rankOf() - 1;
         Nd4jLong preLastDim = input->rankOf() - 2;
-        std::unique_ptr<ResultSet> listOutQ(outputQ->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
-        std::unique_ptr<ResultSet> listOutR(outputR->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
-        std::unique_ptr<ResultSet> listInput(input->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
+        ResultSet listOutQ(outputQ->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
+        ResultSet listOutR(outputR->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
+        ResultSet listInput(input->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
         auto batching = PRAGMA_THREADS_FOR {
             for (auto batch = start; batch < stop; batch += increment) {
                 //qr here
-                qrSingle<T>(listInput->at(batch), listOutQ->at(batch), listOutR->at(batch), fullMatricies);
+                qrSingle<T>(listInput.at(batch), listOutQ.at(batch), listOutR.at(batch), fullMatricies);
             }
         };
 
-        samediff::Threads::parallel_tad(batching, 0, listOutQ->size(), 1);
+        samediff::Threads::parallel_tad(batching, 0, listOutQ.size(), 1);
 
     }
 
