@@ -65,6 +65,8 @@ namespace helpers {
         for (auto k = 0; k < N && k < M - 1; k++) { // loop for columns, but not further then row number
             NDArray e('c', {M}, DataTypeUtils::fromT<T>()); // two internal buffers and scalar for squared norm
             z = matrixMinor<T>(z, k); // minor computing for current column with given matrix z (initally is a input matrix)
+            z.printIndexedBuffer("Minor!!!");
+
             auto currentColumn = z({0, 0, k, k + 1}); // retrieve k column from z to x buffer
             auto norm = currentColumn.reduceAlongDimension(reduce::Norm2, {0});
             if (matrix->t<T>(k,k) > T(0.f)) // negate on positive matrix diagonal element
@@ -72,6 +74,7 @@ namespace helpers {
             //e.t<T>(k) = T(1.f); // e - is filled by 0 vector except diagonal element (filled by 1)
             //auto tE = e;
             //tE *= norm;
+            norm.printIndexedBuffer("Norm!!!");
             e.p(k, norm);
             e += currentColumn;//  e += tE; // e[i] = x[i] + a * e[i] for each i from 0 to n - 1
             auto normE = e.reduceAlongDimension(reduce::Norm2, {0});
