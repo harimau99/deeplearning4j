@@ -57,7 +57,7 @@ namespace helpers {
     NDArray matrixMinor(LaunchContext* context, NDArray& in, Nd4jLong col) {
         NDArray m = in.ulike();
         auto stream = context->getCudaStream();
-        matrixMinorKernel<T><<<1, 1, 256, *stream>>>(m.dataBuffer()->specialAsT<T>(), m.specialShapeInfo(),
+        matrixMinorKernel<T><<<128, 128, 256, *stream>>>(m.dataBuffer()->specialAsT<T>(), m.specialShapeInfo(),
                 reinterpret_cast<T*>(in.specialBuffer()), in.specialShapeInfo(), col, in.rows(), in.columns());
 
         return m;
@@ -83,7 +83,7 @@ namespace helpers {
         NDArray res('c', {n,n}, v.dataType(), context); // x = matrix_new(n, n);
 
         auto stream = context->getCudaStream();
-        vmulKernel<T><<<1, 1, 128, *stream>>>(res.dataBuffer()->specialAsT<T>(), res.specialShapeInfo(),
+        vmulKernel<T><<<128, 128, 128, *stream>>>(res.dataBuffer()->specialAsT<T>(), res.specialShapeInfo(),
                 reinterpret_cast<T const*>(v.getSpecialBuffer()), v.getSpecialShapeInfo(), n);
         return res;
     }
