@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Konduit K.K.
+ * Copyright (c) 2015-2018 Skymind, Inc.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -14,29 +14,40 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
+
 //
 // @author raver119@gmail.com
 //
 
-#ifndef SD_CUDNNUTILS_H
-#define SD_CUDNNUTILS_H
-
+#include "testlayers.h"
+#include <initializer_list>
 #include <ops/declarable/PlatformHelper.h>
-#include <ops/declarable/OpRegistrator.h>
-#include <platform_boilerplate.h>
-#include <exceptions/cuda_exception.h>
-#include <dll.h>
 
-#include <cudnn.h>
+#ifdef HAVE_CUDNN
 
-namespace nd4j {
-    namespace ops {
-        namespace platforms {
+#include <ops/declarable/platform/cudnn/cudnnUtils.h>
 
-            DECLARE_PLATFORM(conv2d, ENGINE_CUDA);
+#endif
 
-        }
+class CuDnnTests : public testing::Test {
+public:
+
+};
+
+static void printer(std::initializer_list<nd4j::ops::platforms::PlatformHelper*> helpers) {
+
+    for (auto v:helpers) {
+        nd4j_printf("Initialized [%s]\n", v->name().c_str());
     }
 }
 
-#endif //SD_CUDNNUTILS_H
+
+TEST_F(CuDnnTests, helpers_includer) {
+    // we need this block, to make sure all helpers are still available within binary, and not optimized out by linker
+#ifdef HAVE_CUDNN
+    nd4j::ops::platforms::PLATFORM_conv2d_ENGINE_CUDA conv2d;
+
+
+    printer({&conv2d});
+#endif
+}

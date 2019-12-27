@@ -179,10 +179,12 @@ namespace nd4j {
 
             _uniqueH.emplace_back(op);
 
+            nd4j_debug("Adding helper for op \"%s\": [%lld - %i]\n", op->name().c_str(), op->hash(), (int) op->engine());
+
             std::pair<std::pair<std::string, samediff::Engine>, nd4j::ops::platforms::PlatformHelper*> pair({op->name(), op->engine()}, op);
             _helpersH.insert(pair);
 
-            std::pair<std::pair<Nd4jLong, samediff::Engine>, nd4j::ops::platforms::PlatformHelper*> pair2({op->hash(), op->engine()}, op);
+            std::pair<std::pair<Nd4jLong, samediff::Engine>, nd4j::ops::platforms::PlatformHelper*> pair2(p, op);
             _helpersLH.insert(pair2);
         }
 
