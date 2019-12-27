@@ -133,41 +133,46 @@ if(NOT CUDA_BLAS)
         include_directories(${CPUF_SOURCE_DIR}/include)
         set(CPU_FEATURES cpu_features)
     endif()
+endif()
 
-    # new mkl-dnn entry
-    if (${HELPERS_mkldnn})
-        message("Going to pull & build mkldnn")
-        set(HAVE_MKLDNN 1)
-        set(DNNL_LIBRARY_TYPE "STATIC" CACHE STRING "Hack to enforce static mode" FORCE)
 
-        configure_file(./CMakeLists.txt.mkldnn.in mkldnn-download/CMakeLists.txt)
-        execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-                    RESULT_VARIABLE result
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-download )
-        if(result)
-            message(FATAL_ERROR "CMake step for mkldnn failed: ${result}")
-        endif()
-        execute_process(COMMAND ${CMAKE_COMMAND} --build .
-                    RESULT_VARIABLE result
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-download )
-        if(result)
-            message(FATAL_ERROR "Build step for mkldnn failed: ${result}")
-        endif()
+# new mkl-dnn entry
+if (${HELPERS_mkldnn})
+    message("Going to pull & build mkldnn")
+    set(HAVE_MKLDNN 1)
+    set(DNNL_LIBRARY_TYPE "STATIC" CACHE STRING "Hack to enforce static mode" FORCE)
 
-        add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/mkldnn-src
-                    ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-build
-                    EXCLUDE_FROM_ALL)
-
-        set(mkldnn_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-build)
-        set(mkldnn_EXT_DIR ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-src)
-        set(MKLDNN_PATH "${mkldnn_SOURCE_DIR}")
-        include_directories(${mkldnn_SOURCE_DIR}/include ${mkldnn_EXT_DIR}/include ${mkldnn_SOURCE_DIR})
-        set(MKLDNN dnnl)
+    configure_file(./CMakeLists.txt.mkldnn.in mkldnn-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+            RESULT_VARIABLE result
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-download )
+    if(result)
+        message(FATAL_ERROR "CMake step for mkldnn failed: ${result}")
     endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+            RESULT_VARIABLE result
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-download )
+    if(result)
+        message(FATAL_ERROR "Build step for mkldnn failed: ${result}")
+    endif()
+
+    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/mkldnn-src
+            ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-build
+            EXCLUDE_FROM_ALL)
+
+    set(mkldnn_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-build)
+    set(mkldnn_EXT_DIR ${CMAKE_CURRENT_BINARY_DIR}/mkldnn-src)
+    set(MKLDNN_PATH "${mkldnn_SOURCE_DIR}")
+    include_directories(${mkldnn_SOURCE_DIR}/include ${mkldnn_EXT_DIR}/include ${mkldnn_SOURCE_DIR})
+    set(MKLDNN dnnl)
 endif()
 
 
 if (${HELPERS_cudnn})
+    if (NOT CUDA_BLAS)
+        message(FATAL_ERROR "Can't build cuDNN on non-CUDA platform")
+    endif()
+
     set(CUDNN_ROOT_DIR "" CACHE PATH "Folder contains NVIDIA cuDNN")
 
     # FIXME: we don't want static library in master
