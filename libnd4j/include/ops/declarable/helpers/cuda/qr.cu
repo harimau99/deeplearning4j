@@ -109,13 +109,10 @@ namespace helpers {
             NDArray e('c', {M}, DataTypeUtils::fromT<T>()); // two internal buffers and scalar for squared norm
             z = matrixMinor<T>(context, z, k); // minor computing for current column with given matrix z (initally is a input matrix)
             z.tickWriteDevice();
-            z.printIndexedBuffer("Minor!!!");
             auto currentColumn = z({0, 0, k, k + 1}); // retrieve k column from z to x buffer
             auto norm = currentColumn.reduceAlongDimension(reduce::Norm2, {0});
             if (diagonalIsPositive<T>(matrix, k)) //matrix->t<T>(k,k) > T(0.f)) // negate on positive matrix diagonal element
                 norm.applyTransform(transform::Neg, norm); // *= -1.f;//-norm.t<T>(0);
-
-            norm.tickWriteDevice(); norm.printIndexedBuffer("Norm!!!");
 
             e.p(k, norm); // e - is filled by 0 vector except diagonal element (filled by 1)
             e += currentColumn; // e[i] = x[i] + a * e[i] for each i from 0 to n - 1
@@ -138,8 +135,7 @@ namespace helpers {
         resQ.transposei();
         resQ.tickWriteDevice();
         resR.tickWriteDevice();
-        resQ.printIndexedBuffer("Q!!!");
-        resR.printIndexedBuffer("R!!!");
+
         if (fullMatricies) {
             Q->assign(resQ);
             R->assign(resR);
@@ -154,9 +150,7 @@ namespace helpers {
     void qr_(LaunchContext* context, NDArray* input, NDArray* outputQ, NDArray* outputR, bool const fullMatricies) {
         Nd4jLong lastDim = input->rankOf() - 1;
         Nd4jLong preLastDim = input->rankOf() - 2;
-//        auto inputTads = ConstantTadHelper::getInstance()->tadForDimensions(input->shapeInfo(), {preLastDim, lastDim});
-//        auto qOutputTads = ConstantTadHelper::getInstance()->tadForDimensions(outputQ->shapeInfo(), {preLastDim, lastDim});
-//        auto rOutputTads = ConstantTadHelper::getInstance()->tadForDimensions(outputR->shapeInfo(), {preLastDim, lastDim});
+
         NDArray::prepareSpecialUse({outputQ, outputR}, {input});
         ResultSet listOutQ(outputQ->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));
         ResultSet listOutR(outputR->allTensorsAlongDimension({(int)preLastDim, (int)lastDim}));

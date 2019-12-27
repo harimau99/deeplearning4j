@@ -2708,9 +2708,9 @@ TEST_F(DeclarableOpsTests12, QR_Test_1) {
     ASSERT_EQ(res->status(), ND4J_STATUS_OK);
     auto q = res->at(0);
     auto r = res->at(1);
-    q->printIndexedBuffer("Orthogonal 5x5");
+//    q->printIndexedBuffer("Orthogonal 5x5");
 //    expQ.printBuffer("Orthogonal Exp");
-    r->printIndexedBuffer("Upper triangular 5x3");
+//    r->printIndexedBuffer("Upper triangular 5x3");
 //    expR.printBuffer("Upper triangular Exp");
 //    q->printShapeInfo("Q shape");
 //    r->printShapeInfo("R shape");
@@ -2812,9 +2812,9 @@ TEST_F(DeclarableOpsTests12, QR_Test_1_1) {
     ASSERT_EQ(res->status(), ND4J_STATUS_OK);
     auto q = res->at(0);
     auto r = res->at(1);
-    q->printIndexedBuffer("Orthogonal 5x5");
+//    q->printIndexedBuffer("Orthogonal 5x5");
 //    expQ.printBuffer("Orthogonal Exp");
-    r->printIndexedBuffer("Upper triangular 5x3");
+//    r->printIndexedBuffer("Upper triangular 5x3");
 //    expR.printBuffer("Upper triangular Exp");
 //    q->printShapeInfo("Q shape");
 //    r->printShapeInfo("R shape");
@@ -2861,8 +2861,8 @@ TEST_F(DeclarableOpsTests12, QR_Test_2) {
     auto r = res->at(1);
     ASSERT_TRUE(q->isSameShape(expQ));
     ASSERT_TRUE(r->isSameShape(expR));
-    q->printIndexedBuffer("Orthogonal 5x5");
-    r->printIndexedBuffer("Upper triangular 5x3");
+//    q->printIndexedBuffer("Orthogonal 5x5");
+//    r->printIndexedBuffer("Upper triangular 5x3");
 
     nd4j::ops::matmul opMul;
     auto res2 = opMul.execute({q, r}, {}, {}); //MmulHelper::matmul(q, r, &in, false, false);
