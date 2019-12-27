@@ -58,13 +58,13 @@ namespace nd4j {
          *  0 - int value of samples number, number of independent samples to draw for each experiment 1,N.
          *  1 - optional argument, corresponds to dimension with batch_size
          *  2 - optional argument, integer type to use for the output. Default int64.
-         *  3 - optional argument, seed: integer, used to create a random seed for the distribution (temporary disabled).
+         *  3 - optional argument, integer seed, used to create a random seed for the distribution (temporary disabled).
          *
          * Output array:
          *    0 - 2D ndarray with the drawn samples of shape [batch_size, num_samples]
          */
         #if NOT_EXCLUDED(OP_random_multinomial)
-        DECLARE_CUSTOM_OP(random_multinomial, 1, 1, false, 0, 3);
+        DECLARE_CUSTOM_OP(random_multinomial, 1, 1, false, 0, 4);
         #endif
 
         #if NOT_EXCLUDED(OP_random_normal)

@@ -248,6 +248,110 @@ namespace helpers {
     BUILD_SINGLE_TEMPLATE(template void fillRandomUniform_, (LaunchContext* context,
             graph::RandomGenerator& rng, NDArray* min, NDArray* max, NDArray* output), NUMERIC_TYPES);
 
+
+///////////////////////////////////////////////////////////////////
+template<typename X, typename Z>
+__global__ void fillMultiNomialCuda(const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packBatchXOffset, const Nd4jLong* packClassXOffset,
+                                    void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packBatchZOffset, const Nd4jLong* packSamplesZOffset,
+                                    void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadBatchX, const Nd4jLong numOfTadBatchZ,
+                                    const Nd4jLong numOfTadClassX, const Nd4jLong numOfTadSampleZ, const int dimC, const int dimA, const float minVal) {
+
+    const X* x = reinterpret_cast<const X*>(vx);
+    Z* z = reinterpret_cast<Z*>(vz);
+    X* u = reinterpret_cast<const X*>(vu);
+
+    __shared__ Nd4jLong xDimCstride, zDimCstride, xDimAstride, zDimAstride;
+
+    if (0 == threadIdx.x) {
+        xDimCstride = shape::stride(xShapeInfo)[dimC];
+        zDimCstride = shape::stride(zShapeInfo)[dimC];
+
+        xDimAstride = shape::stride(xShapeInfo)[dimA];
+        zDimAstride = shape::stride(zShapeInfo)[dimA];
+    }
+    __syncthreads();
+
+    const auto tid = blockIdx.x * blockDim.x + threadIdx.x;
+    // TODO need double check the strides and tads that are used
+    for (Nd4jLong i = tid; i < numOfTadSampleZ; i += gridDim.x * blockDim.x) {
+        const X* xTad = x + packClassXOffset[i];
+        Z* zTad = z + packSamplesZOffset[i];
+        X* uTad = u + packSamplesZOffset[i];
+        for (auto nSampleIndexInBatch = 0; nSampleIndexInBatch < numOfTadBatchZ; nSampleIndexInBatch++) {
+            Z& arg = zTad[nSampleIndexInBatch * zDimCstride];
+            X Max = -minVal;
+            X uTad[nSampleIndexInBatch * zDimCstride] = log(-log(uTad[nSampleIndexInBatch * zDimCstride]));
+            for (auto k = 0; k < numOfTadBatchX; k++) {
+                X tValue = (xTad[k * xDimAstride] - uTad[nSampleIndexInBatch * zDimCstride]);
+                if (tValue > Max) {
+                    Max = tValue; arg = k;
+                }
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+template<typename X, typename Z>
+static void fillMultiNomialCudaLauncher(const int blocksPerGrid, const int threadsPerBlock, const cudaStream_t* stream,
+    const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packBatchXOffset, const Nd4jLong* packClassXOffset,
+    void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packBatchZOffset, const Nd4jLong* packSamplesZOffset,
+    void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadBatchX, const Nd4jLong numOfTadBatchZ, 
+    const Nd4jLong numOfTadClassX, const Nd4jLong numOfTadSampleZ, const int dimC, const int dimA, const float minVal){
+
+    fillMultiNomialCuda<X, Z> << <blocksPerGrid, threadsPerBlock, 256, * stream >> > (vx, xShapeInfo, packBatchXOffset, packClassXOffset, vz, zShapeInfo, packBatchZOffset, packSamplesZOffset, vu, uShapeInfo, numOfTadBatchX, numOfTadBatchZ,  numOfTadClassX, numOfTadSampleZ, dimC, dimA, minVal);
+}
+BUILD_DOUBLE_TEMPLATE(template void fillMultiNomialCuda, (const int blocksPerGrid, const int threadsPerBlock, const cudaStream_t* stream,
+    const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packBatchXOffset, const Nd4jLong* packClassXOffset,
+    void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packBatchZOffset, const Nd4jLong* packSamplesZOffset,
+    void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadBatchX, const Nd4jLong numOfTadBatchZ,
+    const Nd4jLong numOfTadClassX, const Nd4jLong numOfTadSampleZ, const int dimC, const int dimA, const float minVal), FLOAT_TYPES, INDEXING_TYPES);
+ 
+///////////////////////////////////////////////////////////////////
+void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, NDArray& input, NDArray& output, const int dimC) {
+
+     auto dimA = (0 == dimC) ? 1 : 0;
+     
+     auto packBatchX = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(input.getShapeInfo(), { dimC });
+     auto packClassX = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(input.getShapeInfo(), { dimA });
+     auto packBatchZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimC });
+     auto packSamplesZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimA });
+
+
+     const Nd4jLong numOfTadBatchX = packBatchX.numberOfTads();
+     const Nd4jLong numOfTadBatchZ = packBatchZ.numberOfTads();
+     const Nd4jLong numOfTadClassX = packClassX.numberOfTads();
+     const Nd4jLong numOfTadSampleZ = packSampleZ.numberOfTads();
+
+     const int threadsPerBlock = MAX_NUM_THREADS / 2;
+     const int blocksPerGrid = (numOfTadSampleZ + threadsPerBlock - 1) / threadsPerBlock;
+
+     NDArray uniform = NDArrayFactory::create<T>(output.ordering(), { output.lengthOf() }, context);
+     uniform.syncToDevice();
+     // fill up uniform with given length
+     float minVal = DataTypeUtils::min<float>();
+     float maxVal = 1.0;
+     RandomLauncher::fillUniform(context, rng, &uniform, minVal, maxVal);
+
+     PointersManager manager(context, "fillMultinomial");
+
+     NDArray::prepareSpecialUse({ &output }, { &input }, {&uniform});
+     BUILD_DOUBLE_SELECTOR(input.dataType(), output.dataType(), 
+             fillMultiNomialCudaLauncher, 
+             (blocksPerGrid, threadsPerBlock, context->getCudaStream(),
+             input.getSpecialBuffer(), input.getSpecialShapeInfo(), 
+             packBatchX.platformOffsets(), packClassX.platformOffsets(),
+             output.specialBuffer(), output.specialShapeInfo(), 
+             packBatchZ.platformOffsets(), packSamplesZ.platformOffsets(),
+             uniform.getSpecialBuffer(), uniform.getSpecialShapeInfo(),
+             numOfTadBatchX, numOfTadBatchZ, numOfTadClassX, numOfTadSampleZ,
+             dimC, dimA, minVal), NUMERIC_TYPES);
+ 
+     NDArray:numOfTadSampleZ:registerSpecialUse({ &output }, { &input }, {&uniform});
+    // TODO maybe have to be add other tads
+     manager.synchronize();
+ }
+
 }
 }
 }

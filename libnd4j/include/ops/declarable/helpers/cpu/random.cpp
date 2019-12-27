@@ -153,55 +153,86 @@ namespace helpers {
     }
 
 
-    template <typename T>
+    template <typename Tx, typename Tz>
     void fillRandomMultiNomial_(LaunchContext* context, graph::RandomGenerator& rng, NDArray& input, NDArray& output, const int dimC) {
         
-        const T* x = input.bufferAsT<T>();
-        T* z = output.bufferAsT<T>();
+        const Tx* x = input.bufferAsT<Tx>();
+        Tz* z = output.bufferAsT<Tz>();
+        
+        Tx minVal = DataTypeUtils::min<float>();
+        Tx maxVal = 1.0; 
+
+        auto dimA = (0 == dimC) ? 1 : 0;
+        const int nBatchSize = input.sizeAt(dimA);
+        const Tz nClassDim = input.sizeAt(dimC);
+        const int nNumSamples = output.sizeAt(dimA);
         const int rank = input.rankOf();
         bool bSimple = (dimC == rank - 1 && 'c' == input.ordering() && 1 == input.ews() &&
             'c' == output.ordering() && 1 == output.ews());
- 
-        T minVal = DataTypeUtils::min<float>();
-        T maxVal = 1.0 - minVal; // TODO this have to be rechecked
 
         if (bSimple) {
 
-            auto nSampleIndex = (0 == dimC) ? 1 : 0;
-            const int nClassDim = input.sizeAt(dimC);
-            const int nNumSamples = output.sizeAt(nSampleIndex);
-            // TODO PRAGMA_THREADS_FOR_2D
-            auto func = PRAGMA_THREADS_FOR{
-                for (auto i = start; i < stop; i += increment) {
+            auto func = PRAGMA_THREADS_FOR_2D{
+              for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
+                for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
                     
-                    auto nOutPossitionStart = nNumSamples * (i / increment);
-                    auto nOutPositionStop = nOutPossitionStart + nNumSamples;
-                    auto uniform_logits = log(-log(rng.relativeT<T>(i, minVal, maxVal)));
+                    int nBatchPosition = nBatchIndex * nClassDim;
+                    int nSamplePosition = nBatchIndex * nNumSamples;
+                    Tz& arg = z[nSamplePosition + nSampleIndexInBatch];
+                    Tx Max = -minVal;
+
+                    auto uniforn_log = log(-log(rng.relativeT<Tx>((nSamplePosition + nSampleIndexInBatch), minVal, maxVal)));
                     
-                    for (auto j = nOutPossitionStart; j < nOutPositionStop; j++) {
-                        // TODO use sub array and argmax method
-                        
-                        int arg = 0;
-                        T Max = -minVal;
-                        for (auto k = 0; k < nClassDim; k++) {
-                            T tValue = (x[i + k] - uniform_logits);
-                            if (tValue > Max) {
-                                Max = tValue; arg = k;
-                            }
+                    for (auto k = 0; k < nClassDim; k++) {
+                        Tx tValue = (x[nBatchPosition + k] - uniforn_log);
+                        if (tValue > Max) {
+                            Max = tValue; arg = k;
                         }
-                        z[j] = arg;
                     }
                 }
+              }
             };
-            samediff::Threads::parallel_for(func, 0, input.lengthOf(), nClassDim);
+
+            samediff::Threads::parallel_for(func, 0, nBatchSize, 1, 0, nNumSamples, 1);
             return;
         }
-        // TODO need investigate how to use it on f and find more optimal solution 
+
+        auto func = PRAGMA_THREADS_FOR_2D{
+ 
+              Nd4jLong coords[MAX_RANK];
+              for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
+                for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
+                    
+                    int nSamplePositionZ = nBatchIndex * output.strideAt(dimA);
+                    int nBatchPositionX = nBatchIndex * input.strideAt(dimA);
+
+                    shape::index2coords(nSamplePositionZ, output.getShapeInfo(), coords);
+                    const auto zOffset = shape::getOffset(output.getShapeInfo(), coords);
+                    Tz & arg = z[zOffset];
+                    Tx Max = -minVal;                    
+                    auto uniforn_log = log(-log(rng.relativeT<Tx>((nSamplePositionZ + nSampleIndexInBatch), minVal, maxVal)));
+                    
+                    shape::index2coords(nBatchPositionX, input.getShapeInfo(), coords);
+                    auto xOffset0 = shape::getOffset(input.getShapeInfo(), coords);
+                    for (auto k = 0; k < nClassDim; k++) {
+                        Tx tValue = (x[xOffset0] - uniforn_log);
+                        if (tValue > Max) {
+                            Max = tValue; arg = k;
+                        }
+                        xOffset0 += input.strideAt(dimC);
+                    }
+                }
+              }
+            };
+
+        samediff::Threads::parallel_for(func, 0, nBatchSize, 1, 0, nNumSamples, 1);
+        return;
     }
 
     void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, NDArray& input, NDArray& output, const int dimC) {
-        BUILD_SINGLE_SELECTOR(input.dataType(), fillRandomMultiNomial_, (context, rng, input, output, dimC), FLOAT_TYPES);
+        BUILD_DOUBLE_SELECTOR(input.dataType(), output.dataType(), fillRandomMultiNomial_, (context, rng, input, output, dimC), FLOAT_TYPES, INDEXING_TYPES);
     }
+
 }
 }
 }

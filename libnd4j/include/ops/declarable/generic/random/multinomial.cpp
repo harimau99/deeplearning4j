@@ -35,13 +35,13 @@ namespace nd4j {
          * represents the unnormalized log-probabilities for all classes.
          * Int arguments: 0 - scalar value of samples number, number of independent samples to draw for each experiment 1,N.
          * Int arguments: 1 - optional argument, corresponds to dimension with batch_size
-         * data type: 2 - optional argument, integer type to use for the output. Default int64.
+         * Int arguments: 2 - optional argument, integer type to use for the output. Default int64.
+         * Int arguments: 3 - optional argument, integer used to create a random seed for the distribution
          */
-        CUSTOM_OP_IMPL(random_multinomial, 1, 1, false, 0, 3) {
+        CUSTOM_OP_IMPL(random_multinomial, 1, 1, false, 0, 4) {
             
             const int argSize = block.getIArguments()->size();
-            REQUIRE_TRUE(argSize >= 2, 0, "Have to be specified atleast two"
-                " arguments batch with logits and number of samples,"
+            REQUIRE_TRUE(argSize >= 1, 0, "Have to be specified atleast number of samples,"
                 " number of specified arguments %i ", argSize);
 
             auto nSamples =  INT_ARG(0);
@@ -54,9 +54,12 @@ namespace nd4j {
 
             const int rank = input->rankOf();
             REQUIRE_TRUE(rank == 2, 0, "Logits should be a matrix, with requirement rank: %i == 2 ", rank);
-            const int dimC = argSize > 2 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
+            const int dimC = argSize > 1 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
 
             auto rng = block.randomGenerator();
+            if (argSize > 2) {
+                rng.setSeed(static_cast<int>(INT_ARG(3)));
+            }
 
             helpers::fillRandomMultiNomial(block.launchContext(), rng, *input, *output, dimC);
             return Status::OK();
@@ -66,8 +69,7 @@ namespace nd4j {
         DECLARE_SHAPE_FN(random_multinomial) {
 
             const int argSize = block.getIArguments()->size();
-            REQUIRE_TRUE(argSize >= 2, 0, "Have to be specified atleast two"
-                " arguments batch with logits and number of samples,"
+            REQUIRE_TRUE(argSize >= 1, 0, "Have to be specified atleast number of samples,"
                 " number of specified arguments %i ", argSize);
 
             auto input = INPUT_VARIABLE(0);
@@ -75,12 +77,12 @@ namespace nd4j {
 
             const int rank = input->rankOf();
             REQUIRE_TRUE(rank == 2, 0, "Logits should be a matrix, with requirement rank: %i == 2 ", rank);
-            const int dimC = argSize > 2 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
+            const int dimC = argSize > 1 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
             auto nSamples = INT_ARG(0);
             auto nShape = input->getShapeAsVector();
             auto nIndex = (0 == dimC) ? 1 : 0;
             nShape[nIndex] = nSamples;
-            DataType nType = (argSize > 3) ? ( INT_ARG(2) >= 0 ? static_cast<DataType>(INT_ARG(2)) : nd4j::DataType::INT64) : nd4j::DataType::INT64;
+            DataType nType = (argSize > 2) ? ( INT_ARG(2) >= 0 ? static_cast<DataType>(INT_ARG(2)) : nd4j::DataType::INT64) : nd4j::DataType::INT64;
             return SHAPELIST(ConstantShapeHelper::getInstance()->createShapeInfo(nType, input->ordering(), nShape));
         }
 
