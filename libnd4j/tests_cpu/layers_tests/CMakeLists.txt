@@ -144,5 +144,5 @@ elseif(CUDA_BLAS)
 
     message("CUDNN library: ${CUDNN}")
 
-	target_link_libraries(runtests ${LIBND4J_NAME}static ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDNN} gtest gtest_main)
+	target_link_libraries(runtests ${LIBND4J_NAME}static ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_cusolver_LIBRARY} ${CUDNN} ${MKLDNN} gtest gtest_main)
 endif()
