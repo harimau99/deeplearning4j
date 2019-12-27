@@ -97,6 +97,26 @@ namespace nd4j {
                 if (res != 0)
                     throw nd4j::cuda_exception::build("cudnnConvolutionForward failed", res);
 
+
+                if (bias != nullptr) {
+                    cudnnTensorDescriptor_t bs;
+                    cudnnCreateTensorDescriptor(&bs);
+                    if (isNCHW) {
+                        res = cudnnSetTensor4dDescriptor(bs, CUDNN_TENSOR_NCHW, dtype, 1, bias->lengthOf(), 1, 1);
+                        if (res != 0)
+                            throw nd4j::cuda_exception::build("cudnnSetTensor4dDescriptorEx bias NHWC failed", res);
+                    } else {
+                        res = cudnnSetTensor4dDescriptor(bs, CUDNN_TENSOR_NHWC, dtype, 1, 1, 1, bias->lengthOf());
+                        if (res != 0)
+                            throw nd4j::cuda_exception::build("cudnnSetTensor4dDescriptorEx bias NHWC failed", res);
+                    }
+
+                    res = cudnnAddTensor(*handle, &alpha, bs, bias->specialBuffer(), &alpha, dst, output->specialBuffer());
+                    if (res != 0)
+                        throw nd4j::cuda_exception::build("cudnnAddTensor failed", res);
+                }
+
+
                 NDArray::registerSpecialUse({output}, {input, weights, bias});
 
                 return Status::OK();
