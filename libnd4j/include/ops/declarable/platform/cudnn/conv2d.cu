@@ -20,6 +20,7 @@
 
 
 #include "cudnnUtils.h"
+#include <ops/declarable/helpers/convolutions.h>
 
 namespace nd4j {
     namespace ops {
@@ -36,6 +37,8 @@ namespace nd4j {
 
                 auto output  = OUTPUT_VARIABLE(0);                                   // [bS, oH, oW, oC] (NHWC) or [bS, oC, oH, oW] (NCHW)
 
+                NDArray::prepareSpecialUse({output}, {input, weights, bias});
+
                 int sH = INT_ARG(2);                                                        // strides height
                 int sW = INT_ARG(3);                                                        // strides width
                 int pH = INT_ARG(4);                                                        // paddings height
@@ -48,6 +51,11 @@ namespace nd4j {
                 int kH = INT_ARG(0) > 0 ? INT_ARG(0) : static_cast<int>(weights->sizeAt(0)); // filter(kernel) height
                 int kW = INT_ARG(1) > 0 ? INT_ARG(1) : static_cast<int>(weights->sizeAt(1)); // filter(kernel) width
 
+                int bS, iC, iH, iW, oC, oH, oW;                             // batch size, input channels, input height/width, output channels, output height/width;
+                int indIOioC, indIiH, indWoC, indWiC, indWkH, indOoH;       // corresponding indexes
+                ConvolutionUtils::getSizesAndIndexesConv2d(isNCHW, *input, *output, bS, iC, iH, iW, oC, oH, oW, indIOioC, indIiH, indWiC, indWoC, indWkH, indOoH);
+                ConvolutionUtils::calcPadding2D(pH, pW, oH, oW, iH, iW, kH, kW, sH, sW, dH, dW, isSameMode);
+
                 auto dtype = cudnnDataType(input->dataType());
 
 
@@ -57,9 +65,10 @@ namespace nd4j {
                 if (res != 0)
                     throw nd4j::cuda_exception::build("cudnnSetTensor4dDescriptorEx src failed", res);
 
+                // TODO: we definitely want NHWC here as well
                 cudnnFilterDescriptor_t wght;
                 cudnnCreateFilterDescriptor(&wght);
-                res = cudnnSetFilter4dDescriptor(wght, dtype, CUDNN_TENSOR_NCHW, weights->sizeAt(3), weights->sizeAt(2), kH, kW);
+                res = cudnnSetFilter4dDescriptor(wght, dtype, CUDNN_TENSOR_NCHW, oC, iC, kH, kW);
                 if (res != 0)
                     throw nd4j::cuda_exception::build("cudnnSetFilter4dDescriptor failed", res);
 
@@ -74,6 +83,21 @@ namespace nd4j {
                 res = cudnnSetTensor4dDescriptorEx(dst, dtype, output->sizeAt(0), output->sizeAt(1), output->sizeAt(2), output->sizeAt(3), output->strideAt(0), output->strideAt(1), output->strideAt(2), output->strideAt(3));
                 if (res != 0)
                     throw nd4j::cuda_exception::build("cudnnSetTensor4dDescriptorEx dst failed", res);
+
+                // TODO: workspace algorithms are supposed to be faster, so we should use it here if we have enough memory
+                cudnnConvolutionFwdAlgo_t algo;
+                res = cudnnGetConvolutionForwardAlgorithm(*handle, src, wght, cdc, dst, CUDNN_CONVOLUTION_FWD_NO_WORKSPACE, 0, &algo);
+                if (res != 0)
+                    throw nd4j::cuda_exception::build("cudnnGetConvolutionForwardAlgorithm failed", res);
+
+                // TODO: should be float if dtype is half/float, and double otherwise
+                float alpha = 1.0f;
+                float beta = 0.0f;
+                res = cudnnConvolutionForward(*handle, &alpha, src, input->specialBuffer(), wght, weights->specialBuffer(), cdc, algo, nullptr, 0, &beta, dst, output->specialBuffer());
+                if (res != 0)
+                    throw nd4j::cuda_exception::build("cudnnConvolutionForward failed", res);
+
+                NDArray::registerSpecialUse({output}, {input, weights, bias});
 
                 return Status::OK();
             }
