@@ -25,6 +25,7 @@
 #include <ShapeUtils.h>
 #include <helpers/RandomLauncher.h>
 #include <execution/Threads.h>
+#include <helpers/ConstantTadHelper.h>
 
 namespace nd4j {
 namespace ops {
@@ -163,14 +164,15 @@ namespace helpers {
         Tx maxVal = 1.0; 
 
         auto dimA = (0 == dimC) ? 1 : 0;
-        const int nBatchSize = input.sizeAt(dimA);
-        const Tz nClassDim = input.sizeAt(dimC);
-        const int nNumSamples = output.sizeAt(dimA);
         const int rank = input.rankOf();
         bool bSimple = (dimC == rank - 1 && 'c' == input.ordering() && 1 == input.ews() &&
             'c' == output.ordering() && 1 == output.ews());
 
         if (bSimple) {
+
+            const int nBatchSize = input.sizeAt(dimC);
+            const Tz nClassDim = input.sizeAt(dimA);
+            const int nNumSamples = output.sizeAt(dimA);
 
             auto func = PRAGMA_THREADS_FOR_2D{
               for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
@@ -197,35 +199,38 @@ namespace helpers {
             return;
         }
 
-        auto func = PRAGMA_THREADS_FOR_2D{
- 
-              Nd4jLong coords[MAX_RANK];
-              for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
-                for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
-                    
-                    int nSamplePositionZ = nBatchIndex * output.strideAt(dimA);
-                    int nBatchPositionX = nBatchIndex * input.strideAt(dimA);
+        auto packClassX = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(input.getShapeInfo(), { dimA });
+        auto packBatchZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimC });
+        auto packSamplesZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimA });
 
-                    shape::index2coords(nSamplePositionZ, output.getShapeInfo(), coords);
-                    const auto zOffset = shape::getOffset(output.getShapeInfo(), coords);
-                    Tz & arg = z[zOffset];
-                    Tx Max = -minVal;                    
-                    auto uniforn_log = log(-log(rng.relativeT<Tx>((nSamplePositionZ + nSampleIndexInBatch), minVal, maxVal)));
-                    
-                    shape::index2coords(nBatchPositionX, input.getShapeInfo(), coords);
-                    auto xOffset0 = shape::getOffset(input.getShapeInfo(), coords);
-                    for (auto k = 0; k < nClassDim; k++) {
-                        Tx tValue = (x[xOffset0] - uniforn_log);
+        const Nd4jLong numOfTadPerBatch = packBatchZ.numberOfTads();
+        const Nd4jLong numOfSamples = packSamplesZ.numberOfTads();
+        const Nd4jLong numOfClassX = packClassX.numberOfTads();
+        
+        const Nd4jLong zDimAstride = output.stridesOf()[dimA];
+        const Nd4jLong xDimAstride = input.stridesOf()[dimA];
+        
+        auto func = PRAGMA_THREADS_FOR_2D{
+            for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
+                for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
+
+                    const Tx* xTad = x + packClassX.platformOffsets()[nBatchIndex];
+                    Tz* zTad = (z + packSamplesZ.platformOffsets()[nBatchIndex]);
+
+                    Tz& arg = zTad[(nSampleIndexInBatch * zDimAstride)];
+                    Tx Max = -minVal;
+                    auto uniforn_log = log(-log(rng.relativeT<Tx>((nSampleIndexInBatch * zDimAstride), minVal, maxVal)));
+                    for (auto k = 0; k < numOfClassX; k++) {
+                        Tx tValue = (xTad[k * xDimAstride] - uniforn_log);
                         if (tValue > Max) {
                             Max = tValue; arg = k;
                         }
-                        xOffset0 += input.strideAt(dimC);
                     }
                 }
-              }
-            };
+            }
+        };
 
-        samediff::Threads::parallel_for(func, 0, nBatchSize, 1, 0, nNumSamples, 1);
+        samediff::Threads::parallel_for(func, 0, numOfTadPerBatch, 1, 0, numOfSamples, 1);
         return;
     }
 

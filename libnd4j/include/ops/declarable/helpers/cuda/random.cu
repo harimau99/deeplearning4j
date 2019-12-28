@@ -27,6 +27,7 @@
 #include <ShapeUtils.h>
 #include <NDArrayFactory.h>
 #include <cuda_exception.h>
+#include <helpers/ConstantTadHelper.h>
 
 namespace nd4j {
 namespace ops {
@@ -251,38 +252,36 @@ namespace helpers {
 
 ///////////////////////////////////////////////////////////////////
 template<typename X, typename Z>
-__global__ void fillMultiNomialCuda(const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packBatchXOffset, const Nd4jLong* packClassXOffset,
-                                    void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packBatchZOffset, const Nd4jLong* packSamplesZOffset,
-                                    void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadBatchX, const Nd4jLong numOfTadBatchZ,
-                                    const Nd4jLong numOfTadClassX, const Nd4jLong numOfTadSampleZ, const int dimC, const int dimA, const float minVal) {
-
+__global__ void fillMultiNomialCuda_(const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packClassXOffset,
+                                     void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packSamplesZOffset,
+                                     void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadPerBatch,
+                                     const Nd4jLong numOfSamples, const Nd4jLong numOfClassX, const int dimA, const X minVal) {
+                                  
     const X* x = reinterpret_cast<const X*>(vx);
     Z* z = reinterpret_cast<Z*>(vz);
     X* u = reinterpret_cast<const X*>(vu);
 
-    __shared__ Nd4jLong xDimCstride, zDimCstride, xDimAstride, zDimAstride;
+    __shared__ Nd4jLong xDimAstride, zDimAstride;
 
     if (0 == threadIdx.x) {
-        xDimCstride = shape::stride(xShapeInfo)[dimC];
-        zDimCstride = shape::stride(zShapeInfo)[dimC];
-
-        xDimAstride = shape::stride(xShapeInfo)[dimA];
         zDimAstride = shape::stride(zShapeInfo)[dimA];
+        xDimAstride = shape::stride(xShapeInfo)[dimA];
     }
     __syncthreads();
 
     const auto tid = blockIdx.x * blockDim.x + threadIdx.x;
-    // TODO need double check the strides and tads that are used
-    for (Nd4jLong i = tid; i < numOfTadSampleZ; i += gridDim.x * blockDim.x) {
-        const X* xTad = x + packClassXOffset[i];
-        Z* zTad = z + packSamplesZOffset[i];
-        X* uTad = u + packSamplesZOffset[i];
-        for (auto nSampleIndexInBatch = 0; nSampleIndexInBatch < numOfTadBatchZ; nSampleIndexInBatch++) {
-            Z& arg = zTad[nSampleIndexInBatch * zDimCstride];
+    
+    for (Nd4jLong nBatchIndex = tid; nBatchIndex < numOfTadPerBatch; nBatchIndex += gridDim.x * blockDim.x) {
+        const X* xTad = x + packClassXOffset[nBatchIndex];
+        Z* zTad = z + packSamplesZOffset[nBatchIndex];
+        X* uTad = u + packSamplesZOffset[nBatchIndex];
+        for (auto nSampleIndexInBatch = 0; nSampleIndexInBatch < numOfSamples; nSampleIndexInBatch++) {
+            auto samplePosition = nSampleIndexInBatch * zDimAstride;
+            Z& arg = zTad[samplePosition];
             X Max = -minVal;
-            X uTad[nSampleIndexInBatch * zDimCstride] = log(-log(uTad[nSampleIndexInBatch * zDimCstride]));
-            for (auto k = 0; k < numOfTadBatchX; k++) {
-                X tValue = (xTad[k * xDimAstride] - uTad[nSampleIndexInBatch * zDimCstride]);
+            X uTad[nSampleIndexInBatch * zDimCstride] = log(-log(uTad[samplePosition]));
+            for (auto k = 0; k < numOfClassX; k++) {
+                X tValue = (xTad[k * xDimAstride] - uTad[samplePosition]);
                 if (tValue > Max) {
                     Max = tValue; arg = k;
                 }
@@ -293,61 +292,56 @@ __global__ void fillMultiNomialCuda(const void* vx, const Nd4jLong* xShapeInfo, 
 
 //////////////////////////////////////////////////////////////////////////
 template<typename X, typename Z>
-static void fillMultiNomialCudaLauncher(const int blocksPerGrid, const int threadsPerBlock, const cudaStream_t* stream,
-    const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packBatchXOffset, const Nd4jLong* packClassXOffset,
-    void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packBatchZOffset, const Nd4jLong* packSamplesZOffset,
-    void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadBatchX, const Nd4jLong numOfTadBatchZ, 
-    const Nd4jLong numOfTadClassX, const Nd4jLong numOfTadSampleZ, const int dimC, const int dimA, const float minVal){
+linkage void fillMultiNomialCudaLauncher(
+    const int blocksPerGrid, const int threadsPerBlock, const cudaStream_t* stream,
+    const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packClassXOffset,
+    void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packSamplesZOffset,
+    void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadPerBatch, 
+    const Nd4jLong numOfSamples, const Nd4jLong numOfClassX, const int dimA, const X minVal){
 
-    fillMultiNomialCuda<X, Z> << <blocksPerGrid, threadsPerBlock, 256, * stream >> > (vx, xShapeInfo, packBatchXOffset, packClassXOffset, vz, zShapeInfo, packBatchZOffset, packSamplesZOffset, vu, uShapeInfo, numOfTadBatchX, numOfTadBatchZ,  numOfTadClassX, numOfTadSampleZ, dimC, dimA, minVal);
+    fillMultiNomialCuda_<X, Z> <<< blocksPerGrid, threadsPerBlock, 256, * stream >>> (
+        vx, xShapeInfo, packClassXOffset, 
+        vz, zShapeInfo, packSamplesZOffset, 
+        vu, uShapeInfo, numOfTadPerBatch,
+        numOfSamples, numOfClassX, dimA, X minVal);
 }
-BUILD_DOUBLE_TEMPLATE(template void fillMultiNomialCuda, (const int blocksPerGrid, const int threadsPerBlock, const cudaStream_t* stream,
-    const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packBatchXOffset, const Nd4jLong* packClassXOffset,
-    void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packBatchZOffset, const Nd4jLong* packSamplesZOffset,
-    void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadBatchX, const Nd4jLong numOfTadBatchZ,
-    const Nd4jLong numOfTadClassX, const Nd4jLong numOfTadSampleZ, const int dimC, const int dimA, const float minVal), FLOAT_TYPES, INDEXING_TYPES);
  
 ///////////////////////////////////////////////////////////////////
 void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, NDArray& input, NDArray& output, const int dimC) {
 
      auto dimA = (0 == dimC) ? 1 : 0;
-     
-     auto packBatchX = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(input.getShapeInfo(), { dimC });
+
      auto packClassX = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(input.getShapeInfo(), { dimA });
      auto packBatchZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimC });
      auto packSamplesZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimA });
 
-
-     const Nd4jLong numOfTadBatchX = packBatchX.numberOfTads();
-     const Nd4jLong numOfTadBatchZ = packBatchZ.numberOfTads();
-     const Nd4jLong numOfTadClassX = packClassX.numberOfTads();
-     const Nd4jLong numOfTadSampleZ = packSampleZ.numberOfTads();
+     const Nd4jLong numOfTadPerBatch = packBatchZ.numberOfTads();
+     const Nd4jLong numOfSamples = packSamplesZ.numberOfTads();
+     const Nd4jLong numOfClassX = packClassX.numberOfTads();
 
      const int threadsPerBlock = MAX_NUM_THREADS / 2;
-     const int blocksPerGrid = (numOfTadSampleZ + threadsPerBlock - 1) / threadsPerBlock;
-
-     NDArray uniform = NDArrayFactory::create<T>(output.ordering(), { output.lengthOf() }, context);
-     uniform.syncToDevice();
+     const int blocksPerGrid = (numOfTadPerBatch + threadsPerBlock - 1) / threadsPerBlock;
+     
      // fill up uniform with given length
-     float minVal = DataTypeUtils::min<float>();
-     float maxVal = 1.0;
+     NDArray uniform = NDArrayFactory::create<input.dataType()>(output.ordering(), { output.lengthOf() }, context);
+     uniform.syncToDevice();
+     auto minVal = static_cast<input.dataType()>(DataTypeUtils::min<input.dataType()>());
+     auto maxVal = static_cast<input.dataType()>(1.0);
      RandomLauncher::fillUniform(context, rng, &uniform, minVal, maxVal);
 
      PointersManager manager(context, "fillMultinomial");
 
      NDArray::prepareSpecialUse({ &output }, { &input }, {&uniform});
+
      BUILD_DOUBLE_SELECTOR(input.dataType(), output.dataType(), 
              fillMultiNomialCudaLauncher, 
              (blocksPerGrid, threadsPerBlock, context->getCudaStream(),
              input.getSpecialBuffer(), input.getSpecialShapeInfo(), 
-             packBatchX.platformOffsets(), packClassX.platformOffsets(),
-             output.specialBuffer(), output.specialShapeInfo(), 
-             packBatchZ.platformOffsets(), packSamplesZ.platformOffsets(),
-             uniform.getSpecialBuffer(), uniform.getSpecialShapeInfo(),
-             numOfTadBatchX, numOfTadBatchZ, numOfTadClassX, numOfTadSampleZ,
-             dimC, dimA, minVal), NUMERIC_TYPES);
+             packClassX.platformOffsets(), output.specialBuffer(), output.specialShapeInfo(), 
+             packSamplesZ.platformOffsets(), uniform.getSpecialBuffer(), uniform.getSpecialShapeInfo(),
+             numOfTadPerBatch, numOfSamples, numOfClassX, dimA, minVal), NUMERIC_TYPES);
  
-     NDArray:numOfTadSampleZ:registerSpecialUse({ &output }, { &input }, {&uniform});
+     NDArray:numOfTadPerBatch:registerSpecialUse({ &output }, { &input }, {&uniform});
     // TODO maybe have to be add other tads
      manager.synchronize();
  }
