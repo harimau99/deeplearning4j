@@ -28,6 +28,7 @@
 #include <NDArrayFactory.h>
 #include <cuda_exception.h>
 #include <helpers/ConstantTadHelper.h>
+#include <PointersManager.h>
 
 namespace nd4j {
 namespace ops {
@@ -255,11 +256,11 @@ template<typename X, typename Z>
 __global__ void fillMultiNomialCuda_(const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packClassXOffset,
                                      void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packSamplesZOffset,
                                      void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadPerBatch,
-                                     const Nd4jLong numOfSamples, const Nd4jLong numOfClassX, const int dimA, const X minVal) {
+                                     const Nd4jLong numOfSamples, const Nd4jLong numOfClassX, const int dimA, const float minVal) {
                                   
     const X* x = reinterpret_cast<const X*>(vx);
     Z* z = reinterpret_cast<Z*>(vz);
-    X* u = reinterpret_cast<const X*>(vu);
+    X* u = reinterpret_cast<X*>(vu);
 
     __shared__ Nd4jLong xDimAstride, zDimAstride;
 
@@ -275,13 +276,14 @@ __global__ void fillMultiNomialCuda_(const void* vx, const Nd4jLong* xShapeInfo,
         const X* xTad = x + packClassXOffset[nBatchIndex];
         Z* zTad = z + packSamplesZOffset[nBatchIndex];
         X* uTad = u + packSamplesZOffset[nBatchIndex];
-        for (auto nSampleIndexInBatch = 0; nSampleIndexInBatch < numOfSamples; nSampleIndexInBatch++) {
-            auto samplePosition = nSampleIndexInBatch * zDimAstride;
-            Z& arg = zTad[samplePosition];
+        for (Nd4jLong nSampleIndexInBatch = 0; nSampleIndexInBatch < numOfSamples; nSampleIndexInBatch++) {
+            Z& arg = zTad[nSampleIndexInBatch * zDimAstride];
             X Max = -minVal;
-            X uTad[nSampleIndexInBatch * zDimCstride] = log(-log(uTad[samplePosition]));
-            for (auto k = 0; k < numOfClassX; k++) {
-                X tValue = (xTad[k * xDimAstride] - uTad[samplePosition]);
+            // used https://en.wikipedia.org/wiki/Categorical_distribution
+            // methods: gumbel trick + softmax + argmax
+            uTad[nSampleIndexInBatch * zDimAstride] = log(-log(uTad[nSampleIndexInBatch * zDimAstride]));
+            for (Nd4jLong k = 0; k < numOfClassX; k++) {
+                X tValue = (xTad[k * xDimAstride] - uTad[nSampleIndexInBatch * zDimAstride]);
                 if (tValue > Max) {
                     Max = tValue; arg = k;
                 }
@@ -297,13 +299,13 @@ linkage void fillMultiNomialCudaLauncher(
     const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packClassXOffset,
     void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packSamplesZOffset,
     void* vu, const Nd4jLong* uShapeInfo, const Nd4jLong numOfTadPerBatch, 
-    const Nd4jLong numOfSamples, const Nd4jLong numOfClassX, const int dimA, const X minVal){
+    const Nd4jLong numOfSamples, const Nd4jLong numOfClassX, const int dimA, const float minVal){
 
     fillMultiNomialCuda_<X, Z> <<< blocksPerGrid, threadsPerBlock, 256, * stream >>> (
         vx, xShapeInfo, packClassXOffset, 
         vz, zShapeInfo, packSamplesZOffset, 
         vu, uShapeInfo, numOfTadPerBatch,
-        numOfSamples, numOfClassX, dimA, X minVal);
+        numOfSamples, numOfClassX, dimA, minVal);
 }
  
 ///////////////////////////////////////////////////////////////////
@@ -323,26 +325,17 @@ void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, 
      const int blocksPerGrid = (numOfTadPerBatch + threadsPerBlock - 1) / threadsPerBlock;
      
      // fill up uniform with given length
-     NDArray uniform = NDArrayFactory::create<input.dataType()>(output.ordering(), { output.lengthOf() }, context);
+     NDArray uniform(output.ordering(), { output.lengthOf() }, input.dataType());
      uniform.syncToDevice();
-     auto minVal = static_cast<input.dataType()>(DataTypeUtils::min<input.dataType()>());
-     auto maxVal = static_cast<input.dataType()>(1.0);
+     const float minVal = DataTypeUtils::min<float>();
+     const float maxVal = 1.0;
      RandomLauncher::fillUniform(context, rng, &uniform, minVal, maxVal);
 
      PointersManager manager(context, "fillMultinomial");
 
-     NDArray::prepareSpecialUse({ &output }, { &input }, {&uniform});
-
-     BUILD_DOUBLE_SELECTOR(input.dataType(), output.dataType(), 
-             fillMultiNomialCudaLauncher, 
-             (blocksPerGrid, threadsPerBlock, context->getCudaStream(),
-             input.getSpecialBuffer(), input.getSpecialShapeInfo(), 
-             packClassX.platformOffsets(), output.specialBuffer(), output.specialShapeInfo(), 
-             packSamplesZ.platformOffsets(), uniform.getSpecialBuffer(), uniform.getSpecialShapeInfo(),
-             numOfTadPerBatch, numOfSamples, numOfClassX, dimA, minVal), NUMERIC_TYPES);
- 
-     NDArray:numOfTadPerBatch:registerSpecialUse({ &output }, { &input }, {&uniform});
-    // TODO maybe have to be add other tads
+     NDArray::prepareSpecialUse({ &output }, { &input , &uniform});
+     BUILD_DOUBLE_SELECTOR(input.dataType(), output.dataType(), fillMultiNomialCudaLauncher, (blocksPerGrid, threadsPerBlock, context->getCudaStream(), input.getSpecialBuffer(), input.getSpecialShapeInfo(), packClassX.platformOffsets(), output.specialBuffer(), output.specialShapeInfo(), packSamplesZ.platformOffsets(), uniform.getSpecialBuffer(), uniform.getSpecialShapeInfo(), numOfTadPerBatch, numOfSamples, numOfClassX, dimA, minVal), FLOAT_TYPES, INDEXING_TYPES);
+     NDArray::registerSpecialUse({ &output }, { &input, &uniform});
      manager.synchronize();
  }
 

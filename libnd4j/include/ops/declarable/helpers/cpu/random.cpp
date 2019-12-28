@@ -182,9 +182,9 @@ namespace helpers {
                     int nSamplePosition = nBatchIndex * nNumSamples;
                     Tz& arg = z[nSamplePosition + nSampleIndexInBatch];
                     Tx Max = -minVal;
-
+                    // used https://en.wikipedia.org/wiki/Categorical_distribution
+                    // methods: gumbel trick + softmax + argmax
                     auto uniforn_log = log(-log(rng.relativeT<Tx>((nSamplePosition + nSampleIndexInBatch), minVal, maxVal)));
-                    
                     for (auto k = 0; k < nClassDim; k++) {
                         Tx tValue = (x[nBatchPosition + k] - uniforn_log);
                         if (tValue > Max) {
@@ -219,6 +219,8 @@ namespace helpers {
 
                     Tz& arg = zTad[(nSampleIndexInBatch * zDimAstride)];
                     Tx Max = -minVal;
+                    // used https://en.wikipedia.org/wiki/Categorical_distribution
+                    // methods: gumbel trick + softmax + argmax
                     auto uniforn_log = log(-log(rng.relativeT<Tx>((nSampleIndexInBatch * zDimAstride), minVal, maxVal)));
                     for (auto k = 0; k < numOfClassX; k++) {
                         Tx tValue = (xTad[k * xDimAstride] - uniforn_log);
