@@ -69,15 +69,7 @@ import org.nd4j.linalg.primitives.AtomicBoolean;
 import org.nd4j.linalg.primitives.Optional;
 import org.nd4j.linalg.primitives.Pair;
 import org.nd4j.linalg.util.ArrayUtil;
-import org.nd4j.nativeblas.LongPointerWrapper;
-import org.nd4j.nativeblas.NativeOps;
-import org.nd4j.nativeblas.NativeOpsHolder;
-import org.nd4j.nativeblas.Nd4jCpu;
-import org.nd4j.nativeblas.OpaqueConstantDataBuffer;
-import org.nd4j.nativeblas.OpaqueShapeList;
-import org.nd4j.nativeblas.OpaqueTadPack;
-import org.nd4j.nativeblas.OpaqueVariable;
-import org.nd4j.nativeblas.OpaqueVariablesSet;
+import org.nd4j.nativeblas.*;
 
 import java.util.*;
 

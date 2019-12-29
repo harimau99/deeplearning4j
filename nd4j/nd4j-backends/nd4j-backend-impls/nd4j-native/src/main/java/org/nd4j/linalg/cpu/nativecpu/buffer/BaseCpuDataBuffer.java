@@ -27,6 +27,7 @@ import org.nd4j.linalg.api.memory.Deallocatable;
 import org.nd4j.linalg.api.memory.Deallocator;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.pointers.PagedPointer;
+import org.nd4j.linalg.cpu.nativecpu.ops.NativeOpExecutioner;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.memory.deallocation.DeallocatorService;
 import org.nd4j.nativeblas.NativeOps;
@@ -90,40 +91,39 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         this.elementSize = (byte) elementSize;
 
         if (dataType() != DataType.UTF8)
-            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, dataType().toInt(), false);
+            ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(length, dataType(), false);
 
         if (dataType() == DataType.DOUBLE) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asDoublePointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asDoublePointer();
 
             indexer = DoubleIndexer.create((DoublePointer) pointer);
         } else if (dataType() == DataType.FLOAT) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asFloatPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asFloatPointer();
 
             setIndexer(FloatIndexer.create((FloatPointer) pointer));
         } else if (dataType() == DataType.INT32) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asIntPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asIntPointer();
 
             setIndexer(IntIndexer.create((IntPointer) pointer));
         } else if (dataType() == DataType.LONG) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asLongPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asLongPointer();
 
             setIndexer(LongIndexer.create((LongPointer) pointer));
         } else if (dataType() == DataType.SHORT) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asShortPointer();
 
             setIndexer(ShortIndexer.create((ShortPointer) pointer));
         } else if (dataType() == DataType.BYTE) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBytePointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asBytePointer();
 
             setIndexer(ByteIndexer.create((BytePointer) pointer));
         } else if (dataType() == DataType.UBYTE) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBytePointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asBytePointer();
 
             setIndexer(UByteIndexer.create((BytePointer) pointer));
         } else if (dataType() == DataType.UTF8) {
-            // FIXME: probably wrong
-            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, INT8.toInt(), false);
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBytePointer();
+            ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(length, INT8, false);
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asBytePointer();
 
             setIndexer(ByteIndexer.create((BytePointer) pointer));
         }
@@ -149,8 +149,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         super(underlyingBuffer, length, offset);
 
         // for vew we need "externally managed" pointer and deallocator registration
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCpuDataBuffer) underlyingBuffer).ptrDataBuffer, length * underlyingBuffer.getElementSize(), offset * underlyingBuffer.getElementSize());
-        //NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, new PagedPointer(this.addressPointer()), length);
+        ptrDataBuffer = ((BaseCpuDataBuffer) underlyingBuffer).ptrDataBuffer.createView(length * underlyingBuffer.getElementSize(), offset * underlyingBuffer.getElementSize());
         Nd4j.getDeallocatorService().pickObject(this);
 
 
@@ -164,7 +163,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         type = currentType;
 
         if (ptrDataBuffer == null) {
-            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length(), type.toInt(), false);
+            ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(length(), type, false);
             Nd4j.getDeallocatorService().pickObject(this);
         }
 
@@ -191,17 +190,17 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             throw new IllegalArgumentException("Unable to create a buffer of length <= 0");
 
         if (dataType() != DataType.UTF8)
-            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, dataType().toInt(), false);
+            ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(length, dataType(), false);
 
         if (dataType() == DataType.DOUBLE) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asDoublePointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asDoublePointer();
 
             indexer = DoubleIndexer.create((DoublePointer) pointer);
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.FLOAT) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asFloatPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asFloatPointer();
 
             setIndexer(FloatIndexer.create((FloatPointer) pointer));
 
@@ -209,62 +208,62 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
                 fillPointerWithZero();
 
         } else if (dataType() == DataType.HALF) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asShortPointer();
 
             setIndexer(HalfIndexer.create((ShortPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.BFLOAT16) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asShortPointer();
 
             setIndexer(Bfloat16Indexer.create((ShortPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.INT) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asIntPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asIntPointer();
 
             setIndexer(IntIndexer.create((IntPointer) pointer));
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.LONG) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asLongPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asLongPointer();
 
             setIndexer(LongIndexer.create((LongPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.BYTE) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBytePointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asBytePointer();
 
             setIndexer(ByteIndexer.create((BytePointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.SHORT) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asShortPointer();
 
             setIndexer(ShortIndexer.create((ShortPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UBYTE) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBytePointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asBytePointer();
 
             setIndexer(UByteIndexer.create((BytePointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UINT16) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asShortPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asShortPointer();
 
             setIndexer(UShortIndexer.create((ShortPointer) pointer));
 
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UINT32) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asIntPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asIntPointer();
 
             // FIXME: we need unsigned indexer here
             setIndexer(IntIndexer.create((IntPointer) pointer));
@@ -272,7 +271,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.UINT64) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asLongPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asLongPointer();
 
             // FIXME: we need unsigned indexer here
             setIndexer(LongIndexer.create((LongPointer) pointer));
@@ -280,7 +279,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             if (initialize)
                 fillPointerWithZero();
         } else if (dataType() == DataType.BOOL) {
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length).asBoolPointer();
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length).asBoolPointer();
 
             setIndexer(BooleanIndexer.create((BooleanPointer) pointer));
 
@@ -288,8 +287,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
                 fillPointerWithZero();
         } else if (dataType() == DataType.UTF8) {
             // we are allocating buffer as INT8 intentionally
-            ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length(), INT8.toInt(), false);
-            pointer = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer), length()).asBytePointer();
+            ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(length(), INT8, false);
+            pointer = new PagedPointer(ptrDataBuffer.primaryBuffer(), length()).asBytePointer();
 
             setIndexer(ByteIndexer.create((BytePointer) pointer));
 
@@ -301,7 +300,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
     }
 
     public void actualizePointerAndIndexer() {
-        val cptr = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer);
+        val cptr = ptrDataBuffer.primaryBuffer();
 
         // skip update if pointers are equal
         if (cptr != null && pointer != null && cptr.address() == pointer.address())
@@ -357,7 +356,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
     @Override
     public Pointer addressPointer() {
         // we're fetching actual pointer right from C++
-        val tempPtr = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer));
+        val tempPtr = new PagedPointer(ptrDataBuffer.primaryBuffer());
 
         switch (this.type) {
             case DOUBLE: return tempPtr.asDoublePointer();
@@ -391,7 +390,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             throw new IllegalArgumentException("Unable to create a buffer of length <= 0");
 
         // creating empty native DataBuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(0, dataType(), false);
 
         if (dataType() == DataType.DOUBLE) {
             attached = true;
@@ -489,7 +488,7 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         }
 
         // storing pointer into native DataBuffer
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, length);
+        ptrDataBuffer.setPrimaryBuffer(pointer, length);
 
         // adding deallocator reference
         Nd4j.getDeallocatorService().pickObject(this);
@@ -500,8 +499,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
     public BaseCpuDataBuffer(Pointer pointer, Indexer indexer, long length) {
         super(pointer, indexer, length);
 
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, type.toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, this.pointer, length);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(0, type, false);
+        ptrDataBuffer.setPrimaryBuffer(this.pointer, length);
         Nd4j.getDeallocatorService().pickObject(this);;
     }
 
@@ -539,8 +538,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         pointer = new FloatPointer(data);
 
         // creating & registering native DataBuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(data.length, DataType.FLOAT.toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, data.length);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(data.length, DataType.FLOAT, false);
+        ptrDataBuffer.setPrimaryBuffer(pointer, data.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         setIndexer(FloatIndexer.create((FloatPointer) pointer));
@@ -563,8 +562,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
         pointer = workspace.alloc(data.length * getElementSize(), dataType(), false).asFloatPointer().put(data);
 
-        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, pointer, this.length);
+        this.ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(0, dataType(), false);
+        this.ptrDataBuffer.setPrimaryBuffer(pointer, this.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         workspaceGenerationId = workspace.getGenerationId();
@@ -585,8 +584,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
         pointer = workspace.alloc(data.length * getElementSize(), dataType(), false).asDoublePointer().put(data);
 
-        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, pointer, this.length);
+        this.ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(0, dataType(), false);
+        this.ptrDataBuffer.setPrimaryBuffer(pointer, this.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         workspaceGenerationId = workspace.getGenerationId();
@@ -608,8 +607,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
         pointer = workspace.alloc(data.length * getElementSize(), dataType(), false).asIntPointer().put(data);
 
-        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, pointer, this.length);
+        this.ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(0, dataType(), false);
+        this.ptrDataBuffer.setPrimaryBuffer(pointer, this.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         workspaceGenerationId = workspace.getGenerationId();
@@ -630,8 +629,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
 
         pointer = workspace.alloc(data.length * getElementSize(), dataType(), false).asLongPointer().put(data);
 
-        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, dataType().toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, pointer, this.length);
+        this.ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(0, dataType(), false);
+        this.ptrDataBuffer.setPrimaryBuffer(pointer, this.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         workspaceGenerationId = workspace.getGenerationId();
@@ -674,8 +673,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         indexer = DoubleIndexer.create((DoublePointer) pointer);
 
         // creating & registering native DataBuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(data.length, DataType.DOUBLE.toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, data.length);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(data.length, DataType.DOUBLE, false);
+        ptrDataBuffer.setPrimaryBuffer(pointer, data.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         length = data.length;
@@ -709,8 +708,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         setIndexer(IntIndexer.create((IntPointer) pointer));
 
         // creating & registering native DataBuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(data.length, DataType.INT32.toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, data.length);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(data.length, DataType.INT32, false);
+        ptrDataBuffer.setPrimaryBuffer(pointer, data.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         length = data.length;
@@ -730,8 +729,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         setIndexer(LongIndexer.create((LongPointer) pointer));
 
         // creating & registering native DataBuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(data.length, DataType.INT64.toInt(), false);
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, pointer, data.length);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(data.length, DataType.INT64, false);
+        ptrDataBuffer.setPrimaryBuffer(pointer, data.length);
         Nd4j.getDeallocatorService().pickObject(this);
 
         length = data.length;
@@ -774,12 +773,12 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
      * */
     @Override
     public DataBuffer reallocate(long length) {
-        val oldPointer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer);
+        val oldPointer = ptrDataBuffer.primaryBuffer();
 
         if (isAttached()) {
             val capacity = length * getElementSize();
             val nPtr = getParentWorkspace().alloc(capacity, dataType(), false);
-            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, nPtr, length);
+            this.ptrDataBuffer.setPrimaryBuffer(nPtr, length);
 
             switch (dataType()) {
                 case BOOL:
@@ -828,8 +827,8 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
             Pointer.memcpy(pointer, oldPointer, this.length() * getElementSize());
             workspaceGenerationId = getParentWorkspace().getGenerationId();
         } else {
-            NativeOpsHolder.getInstance().getDeviceNativeOps().dbExpand(this.ptrDataBuffer, length);
-            val nPtr = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer), length);
+            this.ptrDataBuffer.expand(length);
+            val nPtr = new PagedPointer(this.ptrDataBuffer.primaryBuffer(), length);
 
             switch (dataType()) {
                 case BOOL:

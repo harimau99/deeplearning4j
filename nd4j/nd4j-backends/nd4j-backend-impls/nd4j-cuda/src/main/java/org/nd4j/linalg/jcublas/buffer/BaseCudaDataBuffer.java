@@ -111,7 +111,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
         initTypeAndSize();
 
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, this.type.toInt(), false);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(0, this.type, false);
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, this.type.width() * length);
         this.allocationPoint.setPointers(pointer, specialPointer, length);
 
@@ -129,7 +129,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         super(pointer, indexer, length);
 
         // allocating interop buffer
-        this.ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, type.toInt(), false);
+        this.ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(length, type, false);
 
         //cuda specific bits
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length * elementSize);
@@ -253,7 +253,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
                 NativeOpsHolder.getInstance().getDeviceNativeOps().dbAllocatePrimaryBuffer(ptrDataBuffer);
             } else {
                 val ptr = parentWorkspace.alloc(this.length * this.elementSize, MemoryKind.HOST, this.dataType(), false);
-                NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(ptrDataBuffer, ptr, this.length);
+                ptrDataBuffer.setPrimaryBuffer(ptr, this.length);
             }
             this.allocationPoint.setAllocationStatus(location);
             this.allocationPoint.tickDeviceWrite();
@@ -326,7 +326,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.originalOffset = 0;
 
         // we allocate native DataBuffer AND it will contain our device pointer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(length, type.toInt(), false);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(length, type, false);
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length * type.width());
 
         if (initialize) {
@@ -358,13 +358,13 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         this.originalOffset = 0;
 
         // allocating empty databuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(0, type.toInt(), false);
+        ptrDataBuffer = OpaqueDataBuffer.allocateDataBuffer(0, type, false);
 
         if (workspace.getWorkspaceConfiguration().getPolicyMirroring() == MirroringPolicy.FULL) {
             val devicePtr = workspace.alloc(length * elementSize, MemoryKind.DEVICE, type, initialize);
 
             // allocate from workspace, and pass it  to native DataBuffer
-            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
+            ptrDataBuffer.setSpecialBuffer(devicePtr, this.length);
 
             if (initialize) {
                 val ctx = AtomicAllocator.getInstance().getDeviceContext();
@@ -374,7 +374,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         }  else {
             // we can register this pointer as device, because it's pinned memory
             val devicePtr = workspace.alloc(length * elementSize, MemoryKind.HOST, type, initialize);
-            NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(ptrDataBuffer, devicePtr, this.length);
+            ptrDataBuffer.setSpecialBuffer(devicePtr, this.length);
 
             if (initialize) {
                 val ctx = AtomicAllocator.getInstance().getDeviceContext();
@@ -435,7 +435,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         ((BaseCudaDataBuffer) underlyingBuffer).lazyAllocateHostPointer();
 
         // we're creating view of the native DataBuffer
-        ptrDataBuffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(((BaseCudaDataBuffer) underlyingBuffer).ptrDataBuffer, length * underlyingBuffer.getElementSize(), offset * underlyingBuffer.getElementSize());
+        ptrDataBuffer = ((BaseCudaDataBuffer) underlyingBuffer).ptrDataBuffer.createView(length * underlyingBuffer.getElementSize(), offset * underlyingBuffer.getElementSize());
         this.allocationPoint = new AllocationPoint(ptrDataBuffer, length);
         val hostPointer = allocationPoint.getHostPointer();
 
@@ -1508,7 +1508,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
     }
 
     public void actualizePointerAndIndexer() {
-        val cptr = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(ptrDataBuffer);
+        val cptr = ptrDataBuffer.primaryBuffer();
 
         // skip update if pointers are equal
         if (cptr != null && pointer != null && cptr.address() == pointer.address())
@@ -1563,8 +1563,8 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
     @Override
     public DataBuffer reallocate(long length) {
-        val oldHostPointer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer);
-        val oldDevicePointer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbSpecialBuffer(this.ptrDataBuffer);
+        val oldHostPointer = this.ptrDataBuffer.primaryBuffer();
+        val oldDevicePointer = this.ptrDataBuffer.specialBuffer();
 
         if (isAttached()) {
             val capacity = length * getElementSize();
@@ -1572,7 +1572,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
             if (oldDevicePointer != null && oldDevicePointer.address() != 0) {
                 val nPtr = getParentWorkspace().alloc(capacity, MemoryKind.DEVICE, dataType(), false);
                 NativeOpsHolder.getInstance().getDeviceNativeOps().memcpySync(nPtr, oldDevicePointer, length * getElementSize(), 3, null);
-                NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, nPtr, length);
+                this.ptrDataBuffer.setPrimaryBuffer(nPtr, length);
 
                 allocationPoint.tickDeviceRead();
             }
@@ -1580,7 +1580,7 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
             if (oldHostPointer != null && oldHostPointer.address() != 0) {
                 val nPtr = getParentWorkspace().alloc(capacity, MemoryKind.HOST, dataType(), false);
                 Pointer.memcpy(nPtr, oldHostPointer, this.length() * getElementSize());
-                NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetPrimaryBuffer(this.ptrDataBuffer, nPtr, length);
+                this.ptrDataBuffer.setPrimaryBuffer(nPtr, length);
 
                 allocationPoint.tickHostRead();
 
@@ -1632,8 +1632,8 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
 
             workspaceGenerationId = getParentWorkspace().getGenerationId();
         } else {
-            NativeOpsHolder.getInstance().getDeviceNativeOps().dbExpand(this.ptrDataBuffer, length);
-            val nPtr = new PagedPointer(NativeOpsHolder.getInstance().getDeviceNativeOps().dbPrimaryBuffer(this.ptrDataBuffer), length);
+            this.ptrDataBuffer.expand(length);
+            val nPtr = new PagedPointer(this.ptrDataBuffer.primaryBuffer(), length);
 
             switch (dataType()) {
                 case BOOL:
