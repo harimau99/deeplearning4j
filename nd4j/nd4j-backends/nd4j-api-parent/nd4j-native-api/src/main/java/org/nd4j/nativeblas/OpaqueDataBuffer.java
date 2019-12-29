@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015-2019 Skymind, Inc.
+ * Copyright (c) 2019 Konduit K.K.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -22,6 +23,7 @@ import org.bytedeco.javacpp.Pointer;
 import org.nd4j.linalg.api.buffer.DataType;
 
 /**
+ * This class is a opaque pointer to InteropDataBuffer, used for Java/C++ interop related to INDArray DataBuffer
  *
  * @author saudet
  */
