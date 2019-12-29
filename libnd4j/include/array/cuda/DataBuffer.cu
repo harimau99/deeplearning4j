@@ -222,12 +222,12 @@ void DataBuffer::memcpy(const DataBuffer &dst, const DataBuffer &src) {
         throw std::runtime_error("DataBuffer::memcpy: Source data buffer is smaller than destination");
 
     if (src.isSpecialActual()) {
-        cudaMemcpy(dst._specialBuffer, src._specialBuffer, dst.getLenInBytes(), cudaMemcpyDeviceToDevice);
-        dst.readSpecial();
+        cudaMemcpyAsync(dst._specialBuffer, src._specialBuffer, dst.getLenInBytes(), cudaMemcpyDeviceToDevice, *LaunchContext::defaultContext()->getCudaStream());
     } else if (src.isPrimaryActual()) {
-        std::memcpy(dst._primaryBuffer, src._primaryBuffer, dst._lenInBytes);
-        dst.readPrimary();
+        cudaMemcpyAsync(dst._specialBuffer, src._primaryBuffer, dst.getLenInBytes(), cudaMemcpyHostToDevice, *LaunchContext::defaultContext()->getCudaStream());
     }
+
+    dst.readSpecial();
 }
 
 ////////////////////////////////////////////////////////////////////////
