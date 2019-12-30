@@ -28,6 +28,9 @@ import org.nd4j.linalg.api.buffer.DataType;
  * @author saudet
  */
 public class OpaqueDataBuffer extends Pointer {
+    // TODO: make this configurable
+    private static final int MAX_TRIES = 3;
+
     public OpaqueDataBuffer(Pointer p) { super(p); }
 
     /**
@@ -38,10 +41,34 @@ public class OpaqueDataBuffer extends Pointer {
      * @return
      */
     public static OpaqueDataBuffer allocateDataBuffer(long numElements, @NonNull DataType dataType, boolean allocateBoth) {
-        // TODO: add OOM handling right here
-        val buffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(numElements, dataType.toInt(), allocateBoth);
+        OpaqueDataBuffer buffer = null;
+        int ec = 0;
+        String em = null;
 
-        return buffer;
+        for (int t = 0; t < MAX_TRIES; t++) {
+            try {
+                // try to allocate data buffer
+                buffer = NativeOpsHolder.getInstance().getDeviceNativeOps().allocateDataBuffer(numElements, dataType.toInt(), allocateBoth);
+
+                // check error code
+                ec = NativeOpsHolder.getInstance().getDeviceNativeOps().lastErrorCode();
+                if (ec != 0) {
+                    if (em == null)
+                        em = NativeOpsHolder.getInstance().getDeviceNativeOps().lastErrorMessage();
+
+                    // if allocation failed it might be caused by casual OOM, so we'll try GC
+                    System.gc();
+                } else {
+                    // just return the buffer
+                    return buffer;
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // if MAX_TRIES is over, we'll just throw an exception
+        throw new RuntimeException("Allocation failed: [" + em + "]");
     }
 
     /**
@@ -51,8 +78,70 @@ public class OpaqueDataBuffer extends Pointer {
      * @param numElements
      */
     public void expand(long numElements) {
-        // TODO: add OOM handling right here
-        NativeOpsHolder.getInstance().getDeviceNativeOps().dbExpand(this, numElements);
+        int ec = 0;
+        String em = null;
+
+        for (int t = 0; t < MAX_TRIES; t++) {
+            try {
+                // try to expand the buffer
+                NativeOpsHolder.getInstance().getDeviceNativeOps().dbExpand(this, numElements);
+
+                // check error code
+                ec = NativeOpsHolder.getInstance().getDeviceNativeOps().lastErrorCode();
+                if (ec != 0) {
+                    if (em == null)
+                        em = NativeOpsHolder.getInstance().getDeviceNativeOps().lastErrorMessage();
+
+                    // if expansion failed it might be caused by casual OOM, so we'll try GC
+                    System.gc();
+                } else {
+                    // just return
+                    return;
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // if MAX_TRIES is over, we'll just throw an exception
+        throw new RuntimeException("DataBuffer expansion failed: [" + em + "]");
+    }
+
+    /**
+     * This method creates a view out of this InteropDataBuffer
+     *
+     * @param bytesLength
+     * @param bytesOffset
+     * @return
+     */
+    public OpaqueDataBuffer createView(long bytesLength, long bytesOffset) {
+        OpaqueDataBuffer buffer = null;
+        int ec = 0;
+        String em = null;
+
+        for (int t = 0; t < MAX_TRIES; t++) {
+            try {
+                buffer = NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(this, bytesLength, bytesOffset);
+
+                // check error code
+                ec = NativeOpsHolder.getInstance().getDeviceNativeOps().lastErrorCode();
+                if (ec != 0) {
+                    if (em == null)
+                        em = NativeOpsHolder.getInstance().getDeviceNativeOps().lastErrorMessage();
+
+                    // if view creation failed it might be caused by casual OOM, so we'll try GC
+                    System.gc();
+                } else {
+                    // just return
+                    return buffer;
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // if MAX_TRIES is over, we'll just throw an exception
+        throw new RuntimeException("DataBuffer expansion failed: [" + em + "]");
     }
 
     /**
@@ -91,17 +180,5 @@ public class OpaqueDataBuffer extends Pointer {
      */
     public void setSpecialBuffer(Pointer ptr, long numElements) {
         NativeOpsHolder.getInstance().getDeviceNativeOps().dbSetSpecialBuffer(this, ptr, numElements);
-    }
-
-    /**
-     * This method creates a view out of this InteropDataBuffer
-     *
-     * @param bytesLength
-     * @param bytesOffset
-     * @return
-     */
-    public OpaqueDataBuffer createView(long bytesLength, long bytesOffset) {
-        // TODO: add OOM handling right here
-        return NativeOpsHolder.getInstance().getDeviceNativeOps().dbCreateView(this, bytesLength, bytesOffset);
     }
 }
