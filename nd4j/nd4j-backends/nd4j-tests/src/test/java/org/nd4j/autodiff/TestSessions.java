@@ -113,7 +113,6 @@ public class TestSessions extends BaseNd4jTest {
         m.put("x", x);
         m.put("y", y);
 
-        System.out.println("----------------------------------");
         Map<String,INDArray> outMap = is.output(Collections.singletonList("d"), m, null,
                 Collections.<String>emptyList(), null, At.defaultAt(Operation.TRAINING));
 
@@ -145,7 +144,6 @@ public class TestSessions extends BaseNd4jTest {
         m.put("x", x);
         m.put("y", y);
 
-        System.out.println("----------------------------------");
         InferenceSession is = new InferenceSession(sd);
 //        String outName = merge.name();
         String outName = outVar.name();
@@ -184,14 +182,14 @@ public class TestSessions extends BaseNd4jTest {
         InferenceSession is = new InferenceSession(sd);
         String n = merge.name();
 
-        System.out.println("----------------------------------");
+//        System.out.println("----------------------------------");
         Map<String,INDArray> outMap = is.output(Collections.singletonList(n), m, null, Collections.<String>emptyList(),
                 null, At.defaultAt(Operation.TRAINING));
         assertEquals(1, outMap.size());
         assertEquals(expTrue, outMap.get(n));
 
 
-        System.out.println("----------------------------------");
+//        System.out.println("----------------------------------");
         //Check false case:
         bArr.assign(0);
         is = new InferenceSession(sd);
@@ -221,7 +219,7 @@ public class TestSessions extends BaseNd4jTest {
 //            System.out.println(sd.summary());
             sd.summary();
 
-            System.out.println("----------------------------------");
+//            System.out.println("----------------------------------");
             //This particular test/graph doesn't use placeholders
             InferenceSession is = new InferenceSession(sd);
             is.setMmgr(new NoOpMemoryMgr());    //So arrays aren't deallocated during execution
