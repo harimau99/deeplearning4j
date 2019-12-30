@@ -1003,3 +1003,48 @@ TEST_F(RNGTests, test_uniform_119) {
     auto status = op.execute({&x}, {&z}, {1.0, 2.0}, {}, {});
     ASSERT_EQ(Status::OK(), status);
 }
+
+TEST_F(RNGTests, test_multinomial_1) {
+    
+    NDArray probs('f', { 3, 1 }, { 0.3, 0.3, 0.3 }, nd4j::DataType::FLOAT32);
+    NDArray expected('f', { 3, 3 }, { 0, 0, 1,  0, 0, 1,  0, 0, 1 }, nd4j::DataType::INT64);
+    
+    nd4j::ops::random_multinomial op;
+    
+    auto result = op.execute({ &probs }, { }, { 3, 0, INT64, 123 });
+    auto output = result->at(0);
+    
+    ASSERT_EQ(Status::OK(), result->status());
+    ASSERT_TRUE(expected.isSameShape(output));
+   
+    delete result;
+    
+}
+
+TEST_F(RNGTests, test_multinomial_2) {
+
+    NDArray probs('c', { 1, 3 }, { 0.3, 0.3, 0.3 }, nd4j::DataType::FLOAT32);
+    NDArray expected('c', { 3, 3 }, { 0, 0, 0,  0, 0, 0,  0, 0, 0 }, nd4j::DataType::INT64);
+
+    nd4j::ops::random_multinomial op;
+    auto result = op.execute({ &probs }, { }, { 3, 1, INT64, 123 });
+    auto output = result->at(0);
+    ASSERT_EQ(Status::OK(), result->status());
+    ASSERT_TRUE(expected.isSameShape(output));
+    ASSERT_TRUE(expected.equalsTo(output));
+    delete result;
+}
+
+TEST_F(RNGTests, test_multinomial_3) {
+
+    NDArray probs('c', {  3, 1 }, { 0.3, 0.3, 0.3 }, nd4j::DataType::FLOAT32);
+    NDArray expected('c', {  3, 1 }, { 0, 0, 0 }, nd4j::DataType::INT64);
+
+    nd4j::ops::random_multinomial op;
+    auto result = op.execute({ &probs }, { }, { 3, 1, INT64, 123 });
+    auto output = result->at(0);
+    ASSERT_EQ(Status::OK(), result->status());
+    ASSERT_TRUE(expected.isSameShape(output));
+    
+    delete result;
+}

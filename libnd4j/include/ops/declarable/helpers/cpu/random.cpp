@@ -167,14 +167,15 @@ namespace helpers {
         const int rank = input.rankOf();
         bool bSimple = (dimC == rank - 1 && 'c' == input.ordering() && 1 == input.ews() &&
             'c' == output.ordering() && 1 == output.ews());
-
+        
         if (bSimple) {
-
+            
             const int nBatchSize = input.sizeAt(dimC);
-            const Tz nClassDim = input.sizeAt(dimA);
+            const int nClassDim = input.sizeAt(dimA);
             const int nNumSamples = output.sizeAt(dimA);
 
             auto func = PRAGMA_THREADS_FOR_2D{
+
               for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
                 for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
                     
@@ -184,8 +185,8 @@ namespace helpers {
                     Tx Max = -minVal;
                     // used https://en.wikipedia.org/wiki/Categorical_distribution
                     // methods: gumbel trick + softmax + argmax
-                    auto uniforn_log = log(-log(rng.relativeT<Tx>((nSamplePosition + nSampleIndexInBatch), minVal, maxVal)));
                     for (auto k = 0; k < nClassDim; k++) {
+                        auto uniforn_log = log(-log(rng.relativeT<Tx>((nSamplePosition + nSampleIndexInBatch + k), minVal, maxVal)));
                         Tx tValue = (x[nBatchPosition + k] - uniforn_log);
                         if (tValue > Max) {
                             Max = tValue; arg = k;
@@ -199,30 +200,31 @@ namespace helpers {
             return;
         }
 
+        
         auto packClassX = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(input.getShapeInfo(), { dimA });
         auto packBatchZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimC });
         auto packSamplesZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimA });
 
         const Nd4jLong numOfTadPerBatch = packBatchZ.numberOfTads();
         const Nd4jLong numOfSamples = packSamplesZ.numberOfTads();
-        const Nd4jLong numOfClassX = packClassX.numberOfTads();
+        const Nd4jLong numOfClassX = input.sizeAt(dimA);
         
         const Nd4jLong zDimAstride = output.stridesOf()[dimA];
         const Nd4jLong xDimAstride = input.stridesOf()[dimA];
-        
+
         auto func = PRAGMA_THREADS_FOR_2D{
             for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
                 for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
 
                     const Tx* xTad = x + packClassX.platformOffsets()[nBatchIndex];
-                    Tz* zTad = (z + packSamplesZ.platformOffsets()[nBatchIndex]);
+                    Tz* zTad = z + packSamplesZ.platformOffsets()[nBatchIndex];
 
-                    Tz& arg = zTad[(nSampleIndexInBatch * zDimAstride)];
+                    Tz& arg = zTad[nSampleIndexInBatch * zDimAstride];
                     Tx Max = -minVal;
                     // used https://en.wikipedia.org/wiki/Categorical_distribution
                     // methods: gumbel trick + softmax + argmax
-                    auto uniforn_log = log(-log(rng.relativeT<Tx>((nSampleIndexInBatch * zDimAstride), minVal, maxVal)));
                     for (auto k = 0; k < numOfClassX; k++) {
+                        auto uniforn_log = log(-log(rng.relativeT<Tx>(k + (nSampleIndexInBatch * zDimAstride), minVal, maxVal)));
                         Tx tValue = (xTad[k * xDimAstride] - uniforn_log);
                         if (tValue > Max) {
                             Max = tValue; arg = k;

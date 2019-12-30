@@ -64,7 +64,7 @@ namespace nd4j {
                 return Status::OK();
 
             auto rng = block.randomGenerator();
-            if (argSize > 2) {
+            if (argSize > 3) {
                 rng.setSeed(static_cast<int>(INT_ARG(3)));
             }
 
@@ -79,16 +79,19 @@ namespace nd4j {
             REQUIRE_TRUE(argSize >= 1, 0, "Have to be specified atleast number of samples,"
                 " number of specified arguments %i ", argSize);
 
-            auto input = INPUT_VARIABLE(0);
-            auto output = OUTPUT_VARIABLE(0);
+            auto nSamples = INT_ARG(0);
 
+            auto input = INPUT_VARIABLE(0);
+            REQUIRE_TRUE(!input->isEmpty(), 0, "Number of classes should be positive, got 0. ");
             const int rank = input->rankOf();
             REQUIRE_TRUE(rank == 2, 0, "Logits should be a matrix, with requirement rank: %i == 2 ", rank);
             const int dimC = argSize > 1 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
-            auto nSamples = INT_ARG(0);
+           
+
             auto nShape = input->getShapeAsVector();
             auto dimA = (0 == dimC) ? 1 : 0;
             nShape[dimA] = nSamples;
+
             DataType nType = (argSize > 2) ? ( INT_ARG(2) >= 0 ? static_cast<DataType>(INT_ARG(2)) : nd4j::DataType::INT64) : nd4j::DataType::INT64;
             return SHAPELIST(ConstantShapeHelper::getInstance()->createShapeInfo(nType, input->ordering(), nShape));
         }
@@ -96,8 +99,6 @@ namespace nd4j {
         DECLARE_TYPES(random_multinomial) {
             getOpDescriptor()
                     ->setAllowedInputTypes(0, {ALL_FLOATS})
-                    ->setAllowedInputTypes(1, { ALL_INTS })
-                    ->setAllowedInputTypes(2, { INT32, INT64 })
                     ->setAllowedOutputTypes({INT32, INT64})
                 ->setSameMode(true);
         }
