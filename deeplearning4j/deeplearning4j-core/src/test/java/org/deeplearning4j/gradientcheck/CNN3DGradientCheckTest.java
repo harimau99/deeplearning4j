@@ -149,9 +149,8 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
                                                 }
                                             }
 
-                                            boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS,
-                                                    DEFAULT_MAX_REL_ERROR, DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS,
-                                                    RETURN_ON_FIRST_FAILURE, input, labels, null, null, true, 128);
+                                            boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(input)
+                                                    .labels(labels).subset(true).maxPerParam(128));
 
                                             assertTrue(msg, gradOK);
 
@@ -253,9 +252,8 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
                         }
                     }
 
-                    boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS,
-                            DEFAULT_MAX_REL_ERROR, DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS,
-                            RETURN_ON_FIRST_FAILURE, input, labels, null, null, true, 512);
+                    boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(input)
+                            .labels(labels).subset(true).maxPerParam(512));
 
                     assertTrue(msg, gradOK);
 
@@ -630,9 +628,8 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
                 }
             }
 
-            boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS,
-                    DEFAULT_MAX_REL_ERROR, DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS,
-                    RETURN_ON_FIRST_FAILURE, input, labels, null, null, true, 128);
+            boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(input)
+                    .labels(labels).subset(true).maxPerParam(128));
 
             assertTrue(msg, gradOK);
 

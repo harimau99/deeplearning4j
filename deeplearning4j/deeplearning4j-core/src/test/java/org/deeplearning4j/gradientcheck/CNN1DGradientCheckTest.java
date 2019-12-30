@@ -414,8 +414,8 @@ public class CNN1DGradientCheckTest extends BaseDL4JTest {
 
                     INDArray label = TestUtils.randomOneHot(2, finalNOut);
 
-                    boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                            DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, f, label, fm, null);
+                    boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(f)
+                            .labels(label).inputMask(fm));
 
                     assertTrue(s, gradOK);
                     TestUtils.testModelSerialization(net);
@@ -509,8 +509,8 @@ public class CNN1DGradientCheckTest extends BaseDL4JTest {
 
             INDArray label = TestUtils.randomOneHotTimeSeries(2, finalNOut, (int)outSize2);
 
-            boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                    DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, f, label, fm, null);
+            boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(f)
+                    .labels(label).inputMask(fm));
 
             assertTrue(s, gradOK);
             TestUtils.testModelSerialization(net);

@@ -539,8 +539,8 @@ public class GradientCheckTests extends BaseDL4JTest {
 //        expectation in case linear regression(with only element wise multiplication layer): large weight for the fourth weight
             log.info("params after learning: " + netGraph.getLayer(1).paramTable());
 
-            boolean gradOK = checkGradients(netGraph, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                    DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, new INDArray[]{features}, new INDArray[]{labels});
+            boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.GraphConfig().net(netGraph).inputs(new INDArray[]{features})
+                    .labels(new INDArray[]{labels}));
 
             msg = "elementWiseMultiplicationLayerTest() - activationFn=" + "ID" + ", lossFn=" + "Cos-sim"
                     + ", outputActivation=" + "Id" + ", doLearningFirst=" + "true";
@@ -592,8 +592,8 @@ public class GradientCheckTests extends BaseDL4JTest {
                 }
 
                 String msg = "mask=" + maskArray + ", inputRank=" + inputRank;
-                boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                        DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, in, label, fMask, null);
+                boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(in)
+                        .labels(label).inputMask(fMask));
                 assertTrue(msg, gradOK);
                 TestUtils.testModelSerialization(net);
 

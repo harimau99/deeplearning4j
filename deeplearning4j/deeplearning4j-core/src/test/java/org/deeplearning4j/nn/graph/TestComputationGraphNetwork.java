@@ -2117,8 +2117,8 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         INDArray features = Nd4j.rand(new int[] {dataSize, inputSize});
         INDArray labels = Nd4j.rand(new int[] {dataSize, outputSize});
 
-        boolean gradOK = GradientCheckUtil.checkGradients(net, 1e-6, 1e-3,
-                1e-8, false, true, new INDArray[]{features}, new INDArray[]{labels}, null, null);
+        boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.GraphConfig().net(net).inputs(new INDArray[]{features})
+                .labels(new INDArray[]{labels}));
         assertTrue(gradOK);
     }
 

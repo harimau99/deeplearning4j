@@ -1014,8 +1014,8 @@ public class KerasModelEndToEndTest extends BaseDL4JTest {
         }
 
         Nd4j.setDataType(DataType.DOUBLE);
-        boolean passed = GradientCheckUtil.checkGradients(netToTest, eps, max_rel_error, min_abs_error, true, false,
-                input, labels, null, null, true, 9);
+        boolean passed = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(netToTest).input(input)
+                .labels(labels).subset(true).maxPerParam(9));
         assertTrue("Gradient check failed", passed);
     }
 

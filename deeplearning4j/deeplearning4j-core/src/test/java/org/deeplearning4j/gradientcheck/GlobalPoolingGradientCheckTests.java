@@ -213,8 +213,8 @@ public class GlobalPoolingGradientCheckTests extends BaseDL4JTest {
                     System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
             }
 
-            boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                            DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, input, labels, featuresMask, null);
+            boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)
+                    .labels(labels).inputMask(featuresMask));
 
             assertTrue(gradOK);
             TestUtils.testModelSerialization(mln);
@@ -296,8 +296,8 @@ public class GlobalPoolingGradientCheckTests extends BaseDL4JTest {
                             System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                     }
 
-                    boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                                    DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, input, labels, inputMask, null);
+                    boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)
+                            .labels(labels).inputMask(inputMask));
 
                     assertTrue(gradOK);
                     TestUtils.testModelSerialization(mln);

@@ -141,8 +141,8 @@ public class OutputLayerGradientChecks extends BaseDL4JTest {
                 }
 
                 System.out.println("Starting test: " + testName);
-                boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                        DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, input, labels, null, labelMask);
+                boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)
+                        .labels(labels).labelMask(labelMask));
 
                 assertTrue(testName, gradOK);
                 TestUtils.testModelSerialization(mln);
@@ -248,8 +248,8 @@ public class OutputLayerGradientChecks extends BaseDL4JTest {
                     }
 
                     System.out.println("Starting test: " + testName);
-                    boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                            DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, input, labels, null, labelMask);
+                    boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)
+                            .labels(labels).labelMask(labelMask));
 
                     assertTrue(testName, gradOK);
                     TestUtils.testModelSerialization(mln);
@@ -397,8 +397,8 @@ public class OutputLayerGradientChecks extends BaseDL4JTest {
                         }
 
                         System.out.println("Starting test: " + testName);
-                        boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
-                                DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, input, labels, null, labelMask);
+                        boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)
+                                .labels(labels).labelMask(labelMask));
 
                         assertTrue(testName, gradOK);
                         TestUtils.testModelSerialization(mln);
