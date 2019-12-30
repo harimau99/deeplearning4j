@@ -551,7 +551,6 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
     @Test
     public void testDeconv3d() {
         Nd4j.getRandom().setSeed(12345);
-
         // Note: we checked this with a variety of parameters, but it takes a lot of time.
         int[] depths = {8, 8, 9};
         int[] heights = {8, 9, 9};
@@ -571,7 +570,7 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
         int finalNOut = 2;
         int[] deconvOut = {2, 3, 4};
 
-        for( int i=0; i<activations.length; i++ ){
+        for (int i = 0; i < activations.length; i++) {
             Activation afn = activations[i];
             int miniBatchSize = mbs[i];
             int depth = depths[i];
@@ -584,7 +583,7 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
             int dOut = deconvOut[i];
 
             INDArray input;
-            if(df == Convolution3D.DataFormat.NDHWC){
+            if (df == Convolution3D.DataFormat.NDHWC) {
                 input = Nd4j.rand(new int[]{miniBatchSize, depth, height, width, convNIn});
             } else {
                 input = Nd4j.rand(new int[]{miniBatchSize, convNIn, depth, height, width});
@@ -596,8 +595,8 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
 
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .dataType(DataType.DOUBLE)
-                    .updater(new NoOp()).weightInit(WeightInit.LECUN_NORMAL)
-                    .weightInit(new NormalDistribution(0, 1))
+                    .updater(new NoOp())
+                    .weightInit(new NormalDistribution(0, 0.1))
                     .list()
                     .layer(0, new Convolution3D.Builder().activation(afn).kernelSize(kernel)
                             .stride(stride).nIn(convNIn).nOut(dOut).hasBias(false)
