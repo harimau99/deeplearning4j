@@ -316,7 +316,7 @@ public class GradientCheckUtil {
             }
         }
 
-        if(c.print != PrintMode.FAILURES_ONLY) {
+        if(c.print == PrintMode.ALL) {
             int i=0;
             for (Layer l : c.net.getLayers()) {
                 Set<String> s = l.paramTable().keySet();
@@ -331,6 +331,10 @@ public class GradientCheckUtil {
         DataSet ds = new DataSet(c.input, c.labels, c.inputMask, c.labelMask);
         int currParamNameIdx = 0;
 
+        if(c.excludeParams != null && !c.excludeParams.isEmpty()){
+            log.info("NOTE: parameters will be skipped due to config: {}", c.excludeParams);
+        }
+
         INDArray params = c.net.params(); //Assumption here: params is a view that we can modify in-place
         for (long i = 0; i < nParams; ) {
             //Get param name
@@ -339,7 +343,7 @@ public class GradientCheckUtil {
             }
             String paramName = paramNames.get(currParamNameIdx);
             if(c.excludeParams != null && c.excludeParams.contains(paramName)){
-                log.info("Skipping parameters for parameter name: {}", paramName);
+//                log.info("Skipping parameters for parameter name: {}", paramName);
                 i = paramEnds[currParamNameIdx++];
                 continue;
             }
@@ -413,11 +417,9 @@ public class GradientCheckUtil {
             i += step;
         }
 
-        if (c.print != PrintMode.FAILURES_ONLY) {
-            val nPass = nParams - totalNFailures;
-            log.info("GradientCheckUtil.checkGradients(): " + nParams + " params checked, " + nPass + " passed, "
+        val nPass = nParams - totalNFailures;
+        log.info("GradientCheckUtil.checkGradients(): " + nParams + " params checked, " + nPass + " passed, "
                             + totalNFailures + " failed. Largest relative error = " + maxError);
-        }
 
         return totalNFailures == 0;
     }
@@ -531,6 +533,10 @@ public class GradientCheckUtil {
             paramEnds[i] = paramEnds[i - 1] + paramTable.get(paramNames.get(i)).length();
         }
 
+        if(c.excludeParams != null && !c.excludeParams.isEmpty()){
+            log.info("NOTE: parameters will be skipped due to config: {}", c.excludeParams);
+        }
+
         int currParamNameIdx = 0;
         int totalNFailures = 0;
         double maxError = 0.0;
@@ -543,7 +549,7 @@ public class GradientCheckUtil {
             }
             String paramName = paramNames.get(currParamNameIdx);
             if(c.excludeParams != null && c.excludeParams.contains(paramName)){
-                log.info("Skipping parameters for parameter name: {}", paramName);
+                //log.info("Skipping parameters for parameter name: {}", paramName);
                 i = paramEnds[currParamNameIdx++];
                 continue;
             }

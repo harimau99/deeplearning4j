@@ -508,7 +508,7 @@ public class GradientCheckTestsComputationGraph extends BaseDL4JTest {
         assertTrue(msg, gradOK);
 
         //Second: test with input mask arrays.
-        INDArray inMask = Nd4j.zeros(3, 5);
+        INDArray inMask = Nd4j.zeros(3, 4);
         inMask.putRow(0, Nd4j.create(new double[] {1, 1, 0, 0}));
         inMask.putRow(1, Nd4j.create(new double[] {1, 1, 1, 0}));
         inMask.putRow(2, Nd4j.create(new double[] {1, 1, 1, 1}));
