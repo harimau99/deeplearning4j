@@ -76,6 +76,7 @@ public abstract class BaseNd4jTest {
 
         //Suppress ND4J initialization - don't need this logged for every test...
         System.setProperty(ND4JSystemProperties.LOG_INITIALIZATION, "false");
+        System.setProperty(ND4JSystemProperties.ND4J_IGNORE_AVX, "true");
         System.gc();
     }
 

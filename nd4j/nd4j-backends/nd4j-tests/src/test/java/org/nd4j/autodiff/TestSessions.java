@@ -218,7 +218,8 @@ public class TestSessions extends BaseNd4jTest {
             File f = new ClassPathResource("tf_graphs/examples/while1/iter_" + numIter + "/frozen_model.pb").getFile();
             SameDiff sd = TFGraphMapper.importGraph(f);
 
-            System.out.println(sd.summary());
+//            System.out.println(sd.summary());
+            sd.summary();
 
             System.out.println("----------------------------------");
             //This particular test/graph doesn't use placeholders

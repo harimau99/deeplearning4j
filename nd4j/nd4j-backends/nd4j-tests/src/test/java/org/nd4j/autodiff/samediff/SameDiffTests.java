@@ -2402,7 +2402,8 @@ public class SameDiffTests extends BaseNd4jTest {
         sd.calculateGradients(phMap, "in", "W", "b");
 
         log.info("--------------- sd.execBackwards() #2 ---------------");
-        System.out.println(sd.getFunction("grad").summary());
+//        System.out.println(sd.getFunction("grad").summary());
+        sd.getFunction("grad").summary();
 
         in.setArray(Nd4j.linspace(1, 10, 10).reshape(2, 5));
         grad = Nd4j.linspace(1, 8, 8).reshape(2, 4);
@@ -3232,7 +3233,8 @@ public class SameDiffTests extends BaseNd4jTest {
 
         Map<String, INDArray> secondBranch = Maps.newHashMap();
         secondBranch.put("a", Nd4j.createFromArray(7.0));
-        System.out.println(sd.summary());
+//        System.out.println(sd.summary());
+        sd.summary();
         INDArray outArr = sd.output(secondBranch, "out").get("out");
         assertEquals(Nd4j.createFromArray(14.0), outArr);
 
