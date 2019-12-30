@@ -3520,4 +3520,19 @@ public class SameDiffTests extends BaseNd4jTest {
             assertEquals(config, fromJson);
         }
     }
+
+    @Test
+    public void testRngSanityCheck(){
+        Nd4j.getRandom().setSeed(12345);
+        for(DataType dt : DataType.values()) {
+            if (!dt.isNumerical())
+                continue;
+            SameDiff sameDiff = SameDiff.create();
+            INDArray indaShape = Nd4j.createFromArray(3, 10);
+            SDVariable sdShape = sameDiff.constant(indaShape);
+            SDVariable random = sameDiff.random().uniform("data", 0.0, 10.0, sdShape, dt);
+            INDArray out = random.eval();
+            String s = out.toString();
+        }
+    }
 }
