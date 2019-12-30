@@ -253,9 +253,9 @@ namespace helpers {
 
 ///////////////////////////////////////////////////////////////////
 template<typename X, typename Z>
-__global__ void fillMultiNomialCuda_(graph::RandomGenerator* devRng, const void* vx, const Nd4jLong* xShapeInfo, const Nd4jLong* packClassXOffset,
-                                     void* vz, const Nd4jLong* zShapeInfo, const Nd4jLong* packSamplesZOffset,
-                                     const Nd4jLong numOfTadPerBatch,
+__global__ void fillMultiNomialCuda_(graph::RandomGenerator* devRng, const void* vx, const Nd4jLong* xShapeInfo, 
+                                     void* vz, const Nd4jLong* zShapeInfo, 
+                                     const Nd4jLong batchValue,
                                      const Nd4jLong numOfSamples, const Nd4jLong numOfClassX, const int dimA, 
                                      const float minVal, const float maxVal) {
                                   
@@ -271,20 +271,22 @@ __global__ void fillMultiNomialCuda_(graph::RandomGenerator* devRng, const void*
     __syncthreads();
 
     const auto tid = blockIdx.x * blockDim.x + threadIdx.x;
-    
-    for (Nd4jLong nBatchIndex = tid; nBatchIndex < numOfTadPerBatch; nBatchIndex += gridDim.x * blockDim.x) {
-        const X* xTad = x + packClassXOffset[nBatchIndex];
-        Z* zTad = z + packSamplesZOffset[nBatchIndex];
-        for (Nd4jLong nSampleIndexInBatch = 0; nSampleIndexInBatch < numOfSamples; nSampleIndexInBatch++) {
-            Z& arg = zTad[nSampleIndexInBatch * zDimAstride];
-            X Max = -minVal;
-            // used https://en.wikipedia.org/wiki/Categorical_distribution
-            // methods: gumbel trick + softmax + argmax
-            for (Nd4jLong k = 0; k < numOfClassX; k++) {
-                X tValue = (xTad[k * xDimAstride] - log(-log(devRng->relativeT<X>(k + (nSampleIndexInBatch * zDimAstride), minVal, maxVal))));
-                if (tValue > Max) {
-                    Max = tValue; arg = k;
-                }
+    // TODO i = ij / S
+    // j = ij - i*N
+    //  combine N*S in one loop
+    for (Nd4jLong index = tid; index < batchValue*numOfSamples; index += gridDim.x * blockDim.x) {
+        const Nd4jLong nBatchIndex = index / batchValue;
+        const Nd4jLong nSampleIndexInBatch = nBatchIndex - nBatchIndex * batchValue;
+        const X* xTad = x + nBatchIndex;
+        Z* zTad = z + nSampleIndexInBatch;
+        Z& arg = zTad[nSampleIndexInBatch * zDimAstride];
+        X Max = -minVal;
+        // used https://en.wikipedia.org/wiki/Categorical_distribution
+        // methods: gumbel trick + softmax + argmax
+        for (Nd4jLong k = 0; k < numOfClassX; k++) {
+            X tValue = (xTad[k * xDimAstride] - log(-log(devRng->relativeT<X>(k + (nSampleIndexInBatch * zDimAstride), minVal, maxVal))));
+            if (tValue > Max) {
+                Max = tValue; arg = k;
             }
         }
     }
@@ -295,13 +297,12 @@ template<typename X, typename Z>
 linkage void fillMultiNomialCudaLauncher(
     const int blocksPerGrid, const int threadsPerBlock, const cudaStream_t* stream,
     graph::RandomGenerator* devRng, const void* vx, const Nd4jLong* xShapeInfo, 
-    const Nd4jLong* packClassXOffset, void* vz, const Nd4jLong* zShapeInfo, 
-    const Nd4jLong* packSamplesZOffset, const Nd4jLong numOfTadPerBatch, const Nd4jLong numOfSamples, 
+    void* vz, const Nd4jLong* zShapeInfo, 
+    const Nd4jLong batchValue, const Nd4jLong numOfSamples, 
     const Nd4jLong numOfClassX, const int dimA, const float minVal, const float maxVal){
 
     fillMultiNomialCuda_<X, Z> <<< blocksPerGrid, threadsPerBlock, 256, * stream >>> (
-        devRng, vx, xShapeInfo, packClassXOffset, 
-        vz, zShapeInfo, packSamplesZOffset, numOfTadPerBatch,
+        devRng, vx, xShapeInfo, vz, zShapeInfo, batchValue,
         numOfSamples, numOfClassX, dimA, minVal, maxVal);
 }
  
@@ -310,16 +311,12 @@ void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, 
 
      auto dimA = (0 == dimC) ? 1 : 0;
 
-     auto packClassX = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(input.getShapeInfo(), { dimA });
-     auto packBatchZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimC });
-     auto packSamplesZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimA });
-
-     const Nd4jLong numOfTadPerBatch = packBatchZ.numberOfTads();
-     const Nd4jLong numOfSamples = packSamplesZ.numberOfTads();
+     const Nd4jLong batchValue = output.sizeAt(dimC);
+     const Nd4jLong numOfSamples = output.sizeAt(dimA);
      const Nd4jLong numOfClassX = input.sizeAt(dimA);
-
+     // TODO check this
      const int threadsPerBlock = MAX_NUM_THREADS / 2;
-     const int blocksPerGrid = (numOfTadPerBatch + threadsPerBlock - 1) / threadsPerBlock;
+     const int blocksPerGrid = (batchValue + threadsPerBlock - 1) / threadsPerBlock;
      
      const float minVal = DataTypeUtils::min<float>();
      const float maxVal = 1.0;
@@ -337,7 +334,11 @@ void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, 
      }
      
      NDArray::prepareSpecialUse({ &output }, { &input });
-     BUILD_DOUBLE_SELECTOR(input.dataType(), output.dataType(), fillMultiNomialCudaLauncher, (blocksPerGrid, threadsPerBlock, context->getCudaStream(), devRng, input.getSpecialBuffer(), input.getSpecialShapeInfo(), packClassX.platformOffsets(), output.specialBuffer(), output.specialShapeInfo(), packSamplesZ.platformOffsets(), numOfTadPerBatch, numOfSamples, numOfClassX, dimA, minVal, maxVal), FLOAT_TYPES, INDEXING_TYPES);
+     BUILD_DOUBLE_SELECTOR(input.dataType(), output.dataType(), fillMultiNomialCudaLauncher, 
+      (blocksPerGrid, threadsPerBlock, context->getCudaStream(), devRng, input.getSpecialBuffer(), 
+       input.getSpecialShapeInfo(), output.specialBuffer(), 
+       output.specialShapeInfo(), batchValue, numOfSamples, 
+       numOfClassX, dimA, minVal, maxVal), FLOAT_TYPES, INDEXING_TYPES);
      NDArray::registerSpecialUse({ &output }, { &input });
      manager.synchronize();
 

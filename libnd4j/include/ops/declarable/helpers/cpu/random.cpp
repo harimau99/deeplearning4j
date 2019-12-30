@@ -176,48 +176,45 @@ namespace helpers {
 
             auto func = PRAGMA_THREADS_FOR_2D{
 
-              for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
-                for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
-                    
-                    int nBatchPosition = nBatchIndex * nClassDim;
-                    int nSamplePosition = nBatchIndex * nNumSamples;
-                    Tz& arg = z[nSamplePosition + nSampleIndexInBatch];
-                    Tx Max = -minVal;
-                    // used https://en.wikipedia.org/wiki/Categorical_distribution
-                    // methods: gumbel trick + softmax + argmax
-                    for (auto k = 0; k < nClassDim; k++) {
-                        auto uniforn_log = log(-log(rng.relativeT<Tx>((nSamplePosition + nSampleIndexInBatch + k), minVal, maxVal)));
-                        Tx tValue = (x[nBatchPosition + k] - uniforn_log);
-                        if (tValue > Max) {
-                            Max = tValue; arg = k;
-                        }
-                    }
-                }
-              }
-            };
+                for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
+                     for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
+                         
+                         int nBatchPosition = nBatchIndex * nClassDim;
+                         int nSamplePosition = nBatchIndex * nNumSamples;
+                         Tz& arg = z[nSamplePosition + nSampleIndexInBatch];
+                         Tx Max = -minVal;
+                         // used https://en.wikipedia.org/wiki/Categorical_distribution
+                         // methods: gumbel trick + softmax + argmax
+                         for (auto k = 0; k < nClassDim; k++) {
+                             auto unifornLog = log(-log(rng.relativeT<Tx>((nSamplePosition + nSampleIndexInBatch + k), minVal, maxVal)));
+                             Tx tValue = (x[nBatchPosition + k] - unifornLog);
+                             if (tValue > Max) {
+                                 Max = tValue; arg = k;
+                             }
+                         }
+                     }
+                }    
+            };  
 
             samediff::Threads::parallel_for(func, 0, nBatchSize, 1, 0, nNumSamples, 1);
             return;
         }
 
-        
-        auto packClassX = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(input.getShapeInfo(), { dimA });
-        auto packBatchZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimC });
-        auto packSamplesZ = nd4j::ConstantTadHelper::getInstance()->tadForDimensions(output.getShapeInfo(), { dimA });
-
-        const Nd4jLong numOfTadPerBatch = packBatchZ.numberOfTads();
-        const Nd4jLong numOfSamples = packSamplesZ.numberOfTads();
+        const Nd4jLong batchValue = output.sizeAt(dimC);
+        const Nd4jLong numOfSamples = output.sizeAt(dimA);
         const Nd4jLong numOfClassX = input.sizeAt(dimA);
         
         const Nd4jLong zDimAstride = output.stridesOf()[dimA];
         const Nd4jLong xDimAstride = input.stridesOf()[dimA];
+        const Nd4jLong zDimCstride = output.stridesOf()[dimC];
+        const Nd4jLong xDimCstride = input.stridesOf()[dimC];
 
         auto func = PRAGMA_THREADS_FOR_2D{
             for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
                 for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
 
-                    const Tx* xTad = x + packClassX.platformOffsets()[nBatchIndex];
-                    Tz* zTad = z + packSamplesZ.platformOffsets()[nBatchIndex];
+                    const Tx* xTad = x + (nBatchIndex * xDimCstride);
+                    Tz* zTad = z + (nBatchIndex * zDimCstride);
 
                     Tz& arg = zTad[nSampleIndexInBatch * zDimAstride];
                     Tx Max = -minVal;
@@ -234,7 +231,7 @@ namespace helpers {
             }
         };
 
-        samediff::Threads::parallel_for(func, 0, numOfTadPerBatch, 1, 0, numOfSamples, 1);
+        samediff::Threads::parallel_for(func, 0, batchValue, 1, 0, numOfSamples, 1);
         return;
     }
 

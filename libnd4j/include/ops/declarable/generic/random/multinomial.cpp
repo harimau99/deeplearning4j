@@ -40,17 +40,17 @@ namespace nd4j {
          */
         CUSTOM_OP_IMPL(random_multinomial, 1, 1, false, 0, 4) {
             
+            auto input = INPUT_VARIABLE(0);
+            auto output = OUTPUT_VARIABLE(0);
+            auto nSamples = INT_ARG(0);
             const int argSize = block.getIArguments()->size();
+
             REQUIRE_TRUE(argSize >= 1, 0, "Have to be specified atleast number of samples,"
                 " number of specified arguments %i ", argSize);
 
-            auto nSamples =  INT_ARG(0);
             // just skip op number of samples = 0
-            if (0 == nSamples)
+            if (0 == nSamples) 
                 return Status::OK();
-
-            auto input = INPUT_VARIABLE(0);
-            auto output = OUTPUT_VARIABLE(0);
 
             REQUIRE_TRUE(!input->isEmpty(), 0, "Number of classes should be positive, got 0. ");
 
@@ -58,10 +58,11 @@ namespace nd4j {
             REQUIRE_TRUE(rank == 2, 0, "Logits should be a matrix, with requirement rank: %i == 2 ", rank);
             const int dimC = argSize > 1 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
 
-            // TODO check if array with zeros will created
             auto dimA = (0 == dimC) ? 1 : 0;
-            if (0 == input->sizeAt(dimA))
+            if (0 == input->sizeAt(dimA)) {
+                *output = 0;
                 return Status::OK();
+            }
 
             auto rng = block.randomGenerator();
             if (argSize > 3) {
@@ -95,12 +96,11 @@ namespace nd4j {
             DataType nType = (argSize > 2) ? ( INT_ARG(2) >= 0 ? static_cast<DataType>(INT_ARG(2)) : nd4j::DataType::INT64) : nd4j::DataType::INT64;
             return SHAPELIST(ConstantShapeHelper::getInstance()->createShapeInfo(nType, input->ordering(), nShape));
         }
-        // TODO check this
+        
         DECLARE_TYPES(random_multinomial) {
             getOpDescriptor()
                     ->setAllowedInputTypes(0, {ALL_FLOATS})
-                    ->setAllowedOutputTypes({INT32, INT64})
-                ->setSameMode(true);
+                    ->setAllowedOutputTypes(0, { ALL_INDICES });
         }
     }
 }
