@@ -221,11 +221,19 @@ void DataBuffer::memcpy(const DataBuffer &dst, const DataBuffer &src) {
     if (src._lenInBytes < dst._lenInBytes)
         throw std::runtime_error("DataBuffer::memcpy: Source data buffer is smaller than destination");
 
+
     if (src.isSpecialActual()) {
-        cudaMemcpyAsync(dst._specialBuffer, src._specialBuffer, dst.getLenInBytes(), cudaMemcpyDeviceToDevice, *LaunchContext::defaultContext()->getCudaStream());
+        res = cudaMemcpyAsync(dst._specialBuffer, src._specialBuffer, dst.getLenInBytes(), cudaMemcpyDeviceToDevice, *LaunchContext::defaultContext()->getCudaStream());
     } else if (src.isPrimaryActual()) {
-        cudaMemcpyAsync(dst._specialBuffer, src._primaryBuffer, dst.getLenInBytes(), cudaMemcpyHostToDevice, *LaunchContext::defaultContext()->getCudaStream());
+        res = cudaMemcpyAsync(dst._specialBuffer, src._primaryBuffer, dst.getLenInBytes(), cudaMemcpyHostToDevice, *LaunchContext::defaultContext()->getCudaStream());
     }
+
+    if (res != 0)
+        throw cuda_exception::build("DataBuffer::memcpy: cudaMemcpyAsync failed!", res);
+
+    res = cudaStreamSynchronize(*LaunchContext::defaultContext()->getCudaStream());
+    if (res != 0)
+        throw cuda_exception::build("DataBuffer::memcpy: streamSync failed!", res);
 
     dst.readSpecial();
 }
@@ -235,7 +243,9 @@ void DataBuffer::migrate() {
     memory::Workspace* newWorkspace = nullptr;
     void* newBuffer;
     ALLOCATE_SPECIAL(newBuffer, newWorkspace, getLenInBytes(), int8_t);
-    cudaMemcpy(newBuffer, _specialBuffer, getLenInBytes(), cudaMemcpyDeviceToDevice);
+    auto res = cudaMemcpy(newBuffer, _specialBuffer, getLenInBytes(), cudaMemcpyDeviceToDevice);
+    if (res != 0)
+        throw cuda_exception::build("DataBuffer::migrate: cudaMemcpyAsync failed!", res);
 
     if (_isOwnerSpecial) {
         // now we're releasing original buffer
