@@ -132,7 +132,7 @@ public class TestActivation extends BaseNd4jTest {
                         {"@class"}, //Identity
                         {"@class", "alpha"}, //Leaky Relu
                         {"@class"}, //rational tanh
-                        {"@class"}, //relu
+                        {"@class", "max", "negativeSlope", "threshold"}, //relu
                         {"@class", "l", "u"}, //rrelu
                         {"@class"}, //sigmoid
                         {"@class"}, //Softmax

@@ -62,7 +62,7 @@ public class DataSetUtilsTest extends BaseNd4jTest {
 		//
 		int mtLv = 0;
 		//
-		sis.initValues( mtLv, "TEST", System.out, System.err, tmpFld.getRoot().getAbsolutePath(), "Test", "ABC", false, false );
+		sis.initValues( mtLv, "TEST", System.out, System.err, tmpFld.getRoot().getAbsolutePath(), "Test", "ABC", true, true );
 		//
 		INDArray in_INDA = Nd4j.zeros( 8, 8 );
 		INDArray ot_INDA = Nd4j.ones( 8, 1 );

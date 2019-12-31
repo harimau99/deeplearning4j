@@ -593,9 +593,11 @@ public class GradientCheckUtil {
             if (relError > c.maxRelError || Double.isNaN(relError)) {
                 double absError = Math.abs(backpropGradient - numericalGradient);
                 if (absError < c.minAbsoluteError) {
-                    log.info("Param " + i + " (" + paramName + ") passed: grad= " + backpropGradient
-                                    + ", numericalGrad= " + numericalGradient + ", relError= " + relError
-                                    + "; absolute error = " + absError + " < minAbsoluteError = " + c.minAbsoluteError);
+                    if(c.print == PrintMode.ALL || c.print == PrintMode.ZEROS && absError == 0.0) {
+                        log.info("Param " + i + " (" + paramName + ") passed: grad= " + backpropGradient
+                                + ", numericalGrad= " + numericalGradient + ", relError= " + relError
+                                + "; absolute error = " + absError + " < minAbsoluteError = " + c.minAbsoluteError);
+                    }
                 } else {
                     log.info("Param " + i + " (" + paramName + ") FAILED: grad= " + backpropGradient
                                     + ", numericalGrad= " + numericalGradient + ", relError= " + relError
