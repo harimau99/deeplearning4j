@@ -330,11 +330,10 @@ public class GradCheckUtil {
                                     + "; absolute error = " + absError + " < minAbsoluteError = " + minAbsError);
                         }
                     } else {
-                        if (print)
-                            log.info("Param " + i + " (" + name + strIdx + ") FAILED: grad= " + analyticGrad
-                                    + ", numericalGrad= " + numericalGrad + ", relError= " + relError
-                                    + ", absError=" + absError
-                                    + ", scorePlus=" + scorePlus + ", scoreMinus= " + scoreMinus);
+                        log.info("Param " + i + " (" + name + strIdx + ") FAILED: grad= " + analyticGrad
+                                + ", numericalGrad= " + numericalGrad + ", relError= " + relError
+                                + ", absError=" + absError
+                                + ", scorePlus=" + scorePlus + ", scoreMinus= " + scoreMinus);
                         if (exitOnFirstFailure)
                             return false;
                         totalNFailures++;
