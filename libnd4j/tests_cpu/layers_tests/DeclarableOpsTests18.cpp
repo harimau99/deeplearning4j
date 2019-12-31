@@ -38,3 +38,15 @@ public:
         fflush(stdout);
     }
 };
+
+TEST_F(DeclarableOpsTests18, test_bitcast_1) {
+    auto x = NDArrayFactory::create<double>(0.23028551377579154);
+    auto z = NDArrayFactory::create<Nd4jLong>(0);
+    auto e = NDArrayFactory::create<Nd4jLong>(4597464930322771456L);
+
+    nd4j::ops::bitcast op;
+    auto status = op.execute({&x}, {&z}, {}, {(Nd4jLong) nd4j::DataType::INT64}, {});
+    ASSERT_EQ(Status::OK(), status);
+
+    ASSERT_EQ(e, z);
+}
