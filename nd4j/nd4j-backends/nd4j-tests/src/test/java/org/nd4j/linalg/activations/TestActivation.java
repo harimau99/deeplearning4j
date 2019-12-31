@@ -146,7 +146,7 @@ public class TestActivation extends BaseNd4jTest {
 
         for (int i = 0; i < activations.length; i++) {
             String asJson = mapper.writeValueAsString(activations[i]);
-            System.out.println(asJson);
+//            System.out.println(asJson);
 
             JsonNode node = mapper.readTree(asJson);
 

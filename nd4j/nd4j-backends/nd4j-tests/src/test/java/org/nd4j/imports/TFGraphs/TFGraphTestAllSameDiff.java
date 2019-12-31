@@ -118,7 +118,12 @@ public class TFGraphTestAllSameDiff {   //Note: Can't extend BaseNd4jTest here a
             "matrix_band_part/.*",
 
             // 12.20.2019 - https://github.com/eclipse/deeplearning4j/issues/8559
-            "fused_batch_norm/.*"
+            "fused_batch_norm/.*",
+
+            // AB 2019/12/24 - https://github.com/eclipse/deeplearning4j/issues/8572
+            "emptyArrayTests/reshape/rank2_shape2-0_2-0--1",
+            "emptyArrayTests/reshape/rank3_shape0-1-2_-1-1",
+            "emptyArrayTests/reshape/rank3_shape0-1-2_10--1"
     };
 
     /* As per TFGraphTestList.printArraysDebugging - this field defines a set of regexes for test cases that should have

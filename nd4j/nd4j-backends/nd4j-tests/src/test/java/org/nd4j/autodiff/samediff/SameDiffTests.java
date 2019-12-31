@@ -709,9 +709,9 @@ public class SameDiffTests extends BaseNd4jTest {
         val s = in2.add(5.0);
 
         Map<String,INDArray> map = sd.outputAll(null);
-        log.info("Result M: {}", map.get(m.name()));
-        log.info("Result F: {}", map.get(f.name()));
-        log.info("Result S: {}", map.get(s.name()));
+//        log.info("Result M: {}", map.get(m.name()));
+//        log.info("Result F: {}", map.get(f.name()));
+//        log.info("Result S: {}", map.get(s.name()));
     }
 
     @Test
@@ -1654,7 +1654,6 @@ public class SameDiffTests extends BaseNd4jTest {
         INDArray expOut = Nd4j.create(DataType.BOOL, ia.shape());
 
         Nd4j.exec(new IsStrictlyIncreasing(ia, expOut));
-        System.out.println(expOut);
     }
 
     @Test
@@ -1997,8 +1996,6 @@ public class SameDiffTests extends BaseNd4jTest {
         SDVariable varIndices = sd.constant("indices", indices);
         SDVariable gather = sd.gather(var, varIndices, 0);
 
-        System.out.println(in);
-
         INDArray exp = Nd4j.pullRows(in, 1, new int[]{0, 1, 5});  //Along dimension 1 -> equiv to "indexes for axis 0"
         INDArray act = gather.eval();
 
@@ -2019,8 +2016,6 @@ public class SameDiffTests extends BaseNd4jTest {
                 .build();
 
         Nd4j.exec(op);
-
-        System.out.println(out);
 
         INDArray exp = Nd4j.pullRows(in, 1, new int[]{0, 1, 5});  //Along dimension 1 == indexes for dimension 0
 
@@ -2396,12 +2391,12 @@ public class SameDiffTests extends BaseNd4jTest {
         Map<String, INDArray> phMap = new HashMap<>();
         phMap.put(fn.getGradPlaceholderName(), grad);
 
-        log.info("--------------- out.eval() ---------------");
+//        log.info("--------------- out.eval() ---------------");
         out.eval();
-        log.info("--------------- sd.execBackwards() #1 ---------------");
+//        log.info("--------------- sd.execBackwards() #1 ---------------");
         sd.calculateGradients(phMap, "in", "W", "b");
 
-        log.info("--------------- sd.execBackwards() #2 ---------------");
+//        log.info("--------------- sd.execBackwards() #2 ---------------");
 //        System.out.println(sd.getFunction("grad").summary());
         sd.getFunction("grad").summary();
 
@@ -3431,11 +3426,11 @@ public class SameDiffTests extends BaseNd4jTest {
         SDVariable rand1 = sd1.var("random", new UniformInitScheme('c', 3), DataType.FLOAT, 3, 1);
 
 
-        Nd4j.getRandom().setSeed(0);
-        System.out.println(rand0.eval());
-
-        Nd4j.getRandom().setSeed(0);
-        System.out.println(rand1.eval());
+//        Nd4j.getRandom().setSeed(0);
+//        System.out.println(rand0.eval());
+//
+//        Nd4j.getRandom().setSeed(0);
+//        System.out.println(rand1.eval());
 
         INDArray a0 = rand0.eval();
         Nd4j.getRandom().setSeed(0);
