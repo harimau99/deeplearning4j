@@ -144,9 +144,9 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
 
                                             if (PRINT_RESULTS) {
                                                 log.info(msg);
-                                                for (int j = 0; j < net.getnLayers(); j++) {
-                                                    log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
-                                                }
+//                                                for (int j = 0; j < net.getnLayers(); j++) {
+//                                                    log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                                                }
                                             }
 
                                             boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(input)
@@ -247,9 +247,9 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
 
                     if (PRINT_RESULTS) {
                         log.info(msg);
-                        for (int j = 0; j < net.getnLayers(); j++) {
-                            log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
-                        }
+//                        for (int j = 0; j < net.getnLayers(); j++) {
+//                            log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                        }
                     }
 
                     boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(input)
@@ -429,9 +429,9 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
 
                         if (PRINT_RESULTS) {
                             log.info(msg);
-                            for (int j = 0; j < net.getnLayers(); j++) {
-                                log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
-                            }
+//                            for (int j = 0; j < net.getnLayers(); j++) {
+//                                log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                            }
                         }
 
                         boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS,
@@ -528,9 +528,9 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
 
                     if (PRINT_RESULTS) {
                         log.info(msg);
-                        for (int j = 0; j < net.getnLayers(); j++) {
-                            log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
-                        }
+//                        for (int j = 0; j < net.getnLayers(); j++) {
+//                            log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                        }
                     }
 
                     boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS,
@@ -623,9 +623,9 @@ public class CNN3DGradientCheckTest extends BaseDL4JTest {
 
             if (PRINT_RESULTS) {
                 log.info(msg);
-                for (int j = 0; j < net.getnLayers(); j++) {
-                    log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
-                }
+//                for (int j = 0; j < net.getnLayers(); j++) {
+//                    log.info("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                }
             }
 
             boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(input)

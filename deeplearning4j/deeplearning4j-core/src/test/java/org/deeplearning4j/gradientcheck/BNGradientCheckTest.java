@@ -56,11 +56,6 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class BNGradientCheckTest extends BaseDL4JTest {
-//    private static final boolean PRINT_RESULTS = true;
-//    private static final boolean RETURN_ON_FIRST_FAILURE = false;
-//    private static final double DEFAULT_EPS = 1e-5;
-//    private static final double DEFAULT_MAX_REL_ERROR = 1e-5;
-//    private static final double DEFAULT_MIN_ABS_ERROR = 1e-9;
 
     static {
         Nd4j.setDataType(DataType.DOUBLE);
@@ -93,8 +88,8 @@ public class BNGradientCheckTest extends BaseDL4JTest {
             MultiLayerNetwork mln = new MultiLayerNetwork(builder.build());
             mln.init();
 
-            for (int j = 0; j < mln.getnLayers(); j++)
-                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//            for (int j = 0; j < mln.getnLayers(); j++)
+//                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
 
             //Mean and variance vars are not gradient checkable; mean/variance "gradient" is used to implement running mean/variance calc
             //i.e., runningMean = decay * runningMean + (1-decay) * batchMean
@@ -138,8 +133,8 @@ public class BNGradientCheckTest extends BaseDL4JTest {
             MultiLayerNetwork mln = new MultiLayerNetwork(builder.build());
             mln.init();
 
-            for (int j = 0; j < mln.getnLayers(); j++)
-                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//            for (int j = 0; j < mln.getnLayers(); j++)
+//                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
 
             //Mean and variance vars are not gradient checkable; mean/variance "gradient" is used to implement running mean/variance calc
             //i.e., runningMean = decay * runningMean + (1-decay) * batchMean
@@ -216,7 +211,7 @@ public class BNGradientCheckTest extends BaseDL4JTest {
                             String name = new Object() {
                             }.getClass().getEnclosingMethod().getName();
 
-                            System.out.println("Num params: " + mln.numParams());
+//                            System.out.println("Num params: " + mln.numParams());
 
                             if (doLearningFirst) {
                                 //Run a number of iterations of learning
@@ -240,8 +235,8 @@ public class BNGradientCheckTest extends BaseDL4JTest {
                             System.out.println(name + " - activationFn=" + afn + ", lossFn=" + lf
                                     + ", outputActivation=" + outputActivation + ", doLearningFirst="
                                     + doLearningFirst + ", l1=" + l1vals[j] + ", l2=" + l2vals[j]);
-                            for (int k = 0; k < mln.getnLayers(); k++)
-                                System.out.println("Layer " + k + " # params: " + mln.getLayer(k).numParams());
+//                            for (int k = 0; k < mln.getnLayers(); k++)
+//                                System.out.println("Layer " + k + " # params: " + mln.getLayer(k).numParams());
 
                             //Mean and variance vars are not gradient checkable; mean/variance "gradient" is used to implement running mean/variance calc
                             //i.e., runningMean = decay * runningMean + (1-decay) * batchMean
@@ -344,8 +339,8 @@ public class BNGradientCheckTest extends BaseDL4JTest {
                             System.out.println(name + " - activationFn=" + afn + ", lossFn=" + lf
                                     + ", outputActivation=" + outputActivation + ", doLearningFirst="
                                     + doLearningFirst + ", l1=" + l1vals[j] + ", l2=" + l2vals[j]);
-                            for (int k = 0; k < mln.getnLayers(); k++)
-                                System.out.println("Layer " + k + " # params: " + mln.getLayer(k).numParams());
+//                            for (int k = 0; k < mln.getnLayers(); k++)
+//                                System.out.println("Layer " + k + " # params: " + mln.getLayer(k).numParams());
 
                             //Mean and variance vars are not gradient checkable; mean/variance "gradient" is used to implement running mean/variance calc
                             //i.e., runningMean = decay * runningMean + (1-decay) * batchMean
@@ -388,8 +383,8 @@ public class BNGradientCheckTest extends BaseDL4JTest {
             MultiLayerNetwork mln = new MultiLayerNetwork(builder.build());
             mln.init();
 
-            for (int j = 0; j < mln.getnLayers(); j++)
-                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//            for (int j = 0; j < mln.getnLayers(); j++)
+//                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
 
             //Mean and variance vars are not gradient checkable; mean/variance "gradient" is used to implement running mean/variance calc
             //i.e., runningMean = decay * runningMean + (1-decay) * batchMean
@@ -433,8 +428,8 @@ public class BNGradientCheckTest extends BaseDL4JTest {
             MultiLayerNetwork mln = new MultiLayerNetwork(builder.build());
             mln.init();
 
-            for (int j = 0; j < mln.getnLayers(); j++)
-                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//            for (int j = 0; j < mln.getnLayers(); j++)
+//                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
 
             //Mean and variance vars are not gradient checkable; mean/variance "gradient" is used to implement running mean/variance calc
             //i.e., runningMean = decay * runningMean + (1-decay) * batchMean
@@ -575,8 +570,8 @@ public class BNGradientCheckTest extends BaseDL4JTest {
                         System.out.println(name + " - activationFn=" + afn + ", lossFn=" + lf
                                 + ", outputActivation=" + outputActivation + ", doLearningFirst="
                                 + doLearningFirst + ", l1=" + l1vals[j] + ", l2=" + l2vals[j]);
-                        for (int k = 0; k < net.getNumLayers(); k++)
-                            System.out.println("Layer " + k + " # params: " + net.getLayer(k).numParams());
+//                        for (int k = 0; k < net.getNumLayers(); k++)
+//                            System.out.println("Layer " + k + " # params: " + net.getLayer(k).numParams());
 
                         //Mean and variance vars are not gradient checkable; mean/variance "gradient" is used to implement running mean/variance calc
                         //i.e., runningMean = decay * runningMean + (1-decay) * batchMean

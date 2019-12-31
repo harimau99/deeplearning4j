@@ -102,7 +102,7 @@ public class BatchNormalizationTest extends BaseDL4JTest {
         INDArray mean = output.mean(0);
         INDArray stdev = output.std(false, 0);
 
-        System.out.println(Arrays.toString(mean.data().asFloat()));
+//        System.out.println(Arrays.toString(mean.data().asFloat()));
 
         assertArrayEquals(new float[nOut], mean.data().asFloat(), 1e-6f);
         assertEquals(Nd4j.ones(nOut), stdev);
@@ -161,8 +161,8 @@ public class BatchNormalizationTest extends BaseDL4JTest {
 
         INDArray out = l.activate(input, true, LayerWorkspaceMgr.noWorkspaces());
 
-        System.out.println(Arrays.toString(outExpected.data().asDouble()));
-        System.out.println(Arrays.toString(out.data().asDouble()));
+//        System.out.println(Arrays.toString(outExpected.data().asDouble()));
+//        System.out.println(Arrays.toString(out.data().asDouble()));
 
         assertEquals(outExpected, out);
 
@@ -190,9 +190,9 @@ public class BatchNormalizationTest extends BaseDL4JTest {
         assertEquals(dldgammaExp, dldgamma);
         assertEquals(dldbetaExp, dldbeta);
 
-        System.out.println("EPSILONS");
-        System.out.println(Arrays.toString(dldinExp.data().asDouble()));
-        System.out.println(Arrays.toString(p.getSecond().dup().data().asDouble()));
+//        System.out.println("EPSILONS");
+//        System.out.println(Arrays.toString(dldinExp.data().asDouble()));
+//        System.out.println(Arrays.toString(p.getSecond().dup().data().asDouble()));
         assertEquals(dldinExp, p.getSecond());
     }
 
@@ -303,8 +303,8 @@ public class BatchNormalizationTest extends BaseDL4JTest {
 
         INDArray out = l.activate(input, true, LayerWorkspaceMgr.noWorkspaces());
 
-        System.out.println(Arrays.toString(outExpected.data().asDouble()));
-        System.out.println(Arrays.toString(out.data().asDouble()));
+//        System.out.println(Arrays.toString(outExpected.data().asDouble()));
+//        System.out.println(Arrays.toString(out.data().asDouble()));
 
         assertEquals(outExpected, out);
 

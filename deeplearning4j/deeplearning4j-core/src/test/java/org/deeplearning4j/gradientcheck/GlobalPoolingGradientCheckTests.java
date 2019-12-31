@@ -92,8 +92,8 @@ public class GlobalPoolingGradientCheckTests extends BaseDL4JTest {
                 if (PRINT_RESULTS) {
                     System.out.println("testLSTMGlobalPoolingBasicMultiLayer() - " + pt + ", minibatch = "
                                     + miniBatchSize);
-                    for (int j = 0; j < mln.getnLayers(); j++)
-                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                    for (int j = 0; j < mln.getnLayers(); j++)
+//                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                 }
 
                 boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -150,8 +150,8 @@ public class GlobalPoolingGradientCheckTests extends BaseDL4JTest {
                 if (PRINT_RESULTS) {
                     System.out.println(
                                     "testCnnGlobalPoolingBasicMultiLayer() - " + pt + ", minibatch = " + miniBatchSize);
-                    for (int j = 0; j < mln.getnLayers(); j++)
-                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                    for (int j = 0; j < mln.getnLayers(); j++)
+//                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                 }
 
                 boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -209,8 +209,8 @@ public class GlobalPoolingGradientCheckTests extends BaseDL4JTest {
 
             if (PRINT_RESULTS) {
                 System.out.println("testLSTMGlobalPoolingBasicMultiLayer() - " + pt + ", minibatch = " + miniBatchSize);
-                for (int j = 0; j < mln.getnLayers(); j++)
-                    System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                for (int j = 0; j < mln.getnLayers(); j++)
+//                    System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
             }
 
             boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)
@@ -292,8 +292,8 @@ public class GlobalPoolingGradientCheckTests extends BaseDL4JTest {
                     if (PRINT_RESULTS) {
                         System.out.println("testCnnGlobalPoolingBasicMultiLayer() - " + pt + ", minibatch = "
                                         + miniBatchSize);
-                        for (int j = 0; j < mln.getnLayers(); j++)
-                            System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                        for (int j = 0; j < mln.getnLayers(); j++)
+//                            System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                     }
 
                     boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)

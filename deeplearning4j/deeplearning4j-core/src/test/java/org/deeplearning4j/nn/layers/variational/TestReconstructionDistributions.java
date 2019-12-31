@@ -349,7 +349,7 @@ public class TestReconstructionDistributions extends BaseDL4JTest {
                                 totalFailureCount++;
                             }
                         } else {
-                            log.info("Input (" + j + "," + i + ") passed: grad= " + backpropGrad + ", numericalGrad= "
+                            log.trace("Input (" + j + "," + i + ") passed: grad= " + backpropGrad + ", numericalGrad= "
                                             + numericalGrad + ", relError= " + relError);
                         }
                     }

@@ -51,10 +51,6 @@ import static org.nd4j.linalg.indexing.NDArrayIndex.*;
 public class GradientCheckTestsMasking extends BaseDL4JTest {
 
     private static final boolean PRINT_RESULTS = true;
-    private static final boolean RETURN_ON_FIRST_FAILURE = false;
-    private static final double DEFAULT_EPS = 1e-6;
-    private static final double DEFAULT_MAX_REL_ERROR = 1e-3;
-    private static final double DEFAULT_MIN_ABS_ERROR = 1e-7;
 
     static {
         Nd4j.setDataType(DataType.DOUBLE);
@@ -186,8 +182,8 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
 
             if (PRINT_RESULTS) {
                 System.out.println("testBidirectionalLSTMMasking() - testNum = " + testNum++);
-                for (int j = 0; j < mln.getnLayers(); j++)
-                    System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                for (int j = 0; j < mln.getnLayers(); j++)
+//                    System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
             }
 
             boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)

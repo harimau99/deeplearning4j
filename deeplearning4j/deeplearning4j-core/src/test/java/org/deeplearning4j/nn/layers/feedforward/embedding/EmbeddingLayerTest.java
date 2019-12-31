@@ -344,7 +344,7 @@ public class EmbeddingLayerTest extends BaseDL4JTest {
         net.computeGradientAndScore();
         net2.computeGradientAndScore();
 
-        System.out.println(net.score() + "\t" + net2.score());
+//        System.out.println(net.score() + "\t" + net2.score());
         assertEquals(net2.score(), net.score(), 1e-6);
 
         Map<String, INDArray> gradient = net.gradient().gradientForVariable();
@@ -416,7 +416,7 @@ public class EmbeddingLayerTest extends BaseDL4JTest {
         net.computeGradientAndScore();
         net2.computeGradientAndScore();
 
-        System.out.println(net.score() + "\t" + net2.score());
+//        System.out.println(net.score() + "\t" + net2.score());
         assertEquals(net2.score(), net.score(), 1e-5);
 
         Map<String, INDArray> gradient = net.gradient().gradientForVariable();
@@ -513,7 +513,7 @@ public class EmbeddingLayerTest extends BaseDL4JTest {
                 net.computeGradientAndScore();
                 net2.computeGradientAndScore();
 
-                System.out.println(net.score() + "\t" + net2.score());
+//                System.out.println(net.score() + "\t" + net2.score());
                 assertEquals(net2.score(), net.score(), 1e-5);
 
                 Map<String, INDArray> gradients = net.gradient().gradientForVariable();

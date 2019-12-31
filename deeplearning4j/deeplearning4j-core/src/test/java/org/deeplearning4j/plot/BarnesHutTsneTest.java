@@ -178,7 +178,7 @@ public class BarnesHutTsneTest extends BaseDL4JTest {
         INDArray data = iter.next().getFeatures();
 
         INDArray perplexityOutput = b.computeGaussianPerplexity(data, 30.0);
-        System.out.println(perplexityOutput);
+//        System.out.println(perplexityOutput);
     }
 
     @Test
@@ -217,17 +217,17 @@ public class BarnesHutTsneTest extends BaseDL4JTest {
         StopWatch watch = new StopWatch();
         watch.start();
         b.fit(data);
-        System.out.println(b.getData());
+//        System.out.println(b.getData());
         watch.stop();
         File outDir = testDir.newFolder();
         ClassPathResource labels = new ClassPathResource("mnist2500_labels.txt");
         List<String> labelsList = IOUtils.readLines(labels.getInputStream());
         b.saveAsFile(/*labelsList,*/ new File(outDir, "raw.txt").getAbsolutePath());
-        System.out.println(b.getData());
+//        System.out.println(b.getData());
 
         System.out.println("Fit done in " + watch);
         assertEquals(2500, b.getData().size(0));
-        System.out.println(b.getData());
+//        System.out.println(b.getData());
 
         INDArray a1 = b.getData().getRow(0);
         INDArray a2 = b.getData().getRow(1);
@@ -338,7 +338,7 @@ public class BarnesHutTsneTest extends BaseDL4JTest {
 
         double[] dC = {-0.0618386320333619, -0.06266654959379839, 0.029998268806149204, 0.10780566335888186, -0.19449543068355346, -0.14763764361792697, 0.17493572758118422, 0.1926109839221966, -0.15176648259935419, 0.10974665709698186, 0.13102419155322598, 0.004941641352409449, 0.19159764518354974, -0.26332838053474944, -0.023631441261541583, 0.09838669432305949, 0.09709129638394683, -0.01605053000727605, 0.06566171635025217, -0.17325078066035252, -0.1090854255505605, 0.023350644966904276, 0.075192354899586, -0.08278373866517603, 0.18431338134579323, 0.2766031655578053, -0.17557907233268688, 0.10616148241800637, -0.09999024423215641, -0.017181932145255287, 0.06711331400576945, -0.01388231800826619, -0.10248189290485302, 0.20786521034824304, 0.11254913977572988, -0.289564646781519, 0.13491805919337516, -0.07504249344962562, 0.004154656287570634, -0.10516715438388784, -0.27984655075804576, 0.09811828071286613, 0.03684521473995052, -0.054645216532387256, -0.18147132772800725, 0.027588750493223044, 0.214734364419479, -0.026729138234415008, -0.28410504978879136, 0.007015481601883835, 0.04427981739424874, -0.059253265830134655, -0.05325479031206952, -0.11319889109674944, 0.1530133971867549};
         INDArray actual = gradient.getGradientFor("yIncs");
-        System.out.println(actual);
+//        System.out.println(actual);
         assertArrayEquals(dC, actual.reshape(1,55).toDoubleVector(), 1e-05);
     }
 
@@ -482,8 +482,8 @@ public class BarnesHutTsneTest extends BaseDL4JTest {
             List<DataPoint> results = new ArrayList<>();
             List<Double> distances = new ArrayList<>();
             tree.search(target, 11, results, distances);
-            System.out.println("Results:" + results);
-            System.out.println("Distances:" + distances);
+//            System.out.println("Results:" + results);
+//            System.out.println("Distances:" + distances);
         }
     }
 

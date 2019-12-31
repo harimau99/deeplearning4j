@@ -108,8 +108,8 @@ public class CNN1DGradientCheckTest extends BaseDL4JTest {
 
                     if (PRINT_RESULTS) {
                         System.out.println(msg);
-                        for (int j = 0; j < net.getnLayers(); j++)
-                            System.out.println("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                        for (int j = 0; j < net.getnLayers(); j++)
+//                            System.out.println("Layer " + j + " # params: " + net.getLayer(j).numParams());
                     }
 
                     boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -188,8 +188,8 @@ public class CNN1DGradientCheckTest extends BaseDL4JTest {
 
                         if (PRINT_RESULTS) {
                             System.out.println(msg);
-                            for (int j = 0; j < net.getnLayers(); j++)
-                                System.out.println("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                            for (int j = 0; j < net.getnLayers(); j++)
+//                                System.out.println("Layer " + j + " # params: " + net.getLayer(j).numParams());
                         }
 
                         boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -272,8 +272,8 @@ public class CNN1DGradientCheckTest extends BaseDL4JTest {
 
                         if (PRINT_RESULTS) {
                             System.out.println(msg);
-                            for (int j = 0; j < net.getnLayers(); j++)
-                                System.out.println("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                            for (int j = 0; j < net.getnLayers(); j++)
+//                                System.out.println("Layer " + j + " # params: " + net.getLayer(j).numParams());
                         }
 
                         boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -349,8 +349,8 @@ public class CNN1DGradientCheckTest extends BaseDL4JTest {
 
                         if (PRINT_RESULTS) {
                             System.out.println(msg);
-                            for (int j = 0; j < net.getnLayers(); j++)
-                                System.out.println("Layer " + j + " # params: " + net.getLayer(j).numParams());
+//                            for (int j = 0; j < net.getnLayers(); j++)
+//                                System.out.println("Layer " + j + " # params: " + net.getLayer(j).numParams());
                         }
 
                         boolean gradOK = GradientCheckUtil.checkGradients(net, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,

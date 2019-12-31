@@ -124,8 +124,8 @@ public class LSTMGradientCheckTests extends BaseDL4JTest {
             String testName = "testLSTMBasic(" + (graves ? "GravesLSTM" : "LSTM") + ")";
             if (PRINT_RESULTS) {
                 System.out.println(testName);
-                for (int j = 0; j < mln.getnLayers(); j++)
-                    System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                for (int j = 0; j < mln.getnLayers(); j++)
+//                    System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
             }
 
             boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -213,8 +213,8 @@ public class LSTMGradientCheckTests extends BaseDL4JTest {
                         + outputActivation + ", l2=" + l2 + ", l1=" + l1;
                 if (PRINT_RESULTS) {
                     System.out.println(testName);
-                    for (int j = 0; j < mln.getnLayers(); j++)
-                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                    for (int j = 0; j < mln.getnLayers(); j++)
+//                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                 }
 
                 boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(mln).input(input)
@@ -341,8 +341,8 @@ public class LSTMGradientCheckTests extends BaseDL4JTest {
                     System.out.println("testGradientGravesBidirectionalLSTMFull() - activationFn=" + afn
                             + ", lossFn=" + lf + ", outputActivation=" + outputActivation + ", l2=" + l2
                             + ", l1=" + l1);
-                    for (int j = 0; j < mln.getnLayers(); j++)
-                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                    for (int j = 0; j < mln.getnLayers(); j++)
+//                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                 }
 
                 boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,

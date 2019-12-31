@@ -190,7 +190,7 @@ public class DataSetIteratorTest extends BaseDL4JTest {
         INDArray output = model.output(dataTest.getFeatures());
         Evaluation eval = new Evaluation(outputNum);
         eval.eval(dataTest.getLabels(), output);
-        System.out.println(eval.stats());
+//        System.out.println(eval.stats());
     }
 
     @Test
@@ -257,7 +257,7 @@ public class DataSetIteratorTest extends BaseDL4JTest {
             INDArray output = model.output(testDS.getFeatures());
             eval.eval(testDS.getLabels(), output);
         }
-        System.out.println(eval.stats(true));
+//        System.out.println(eval.stats(true));
         listener.exportScores(System.out);
     }
 

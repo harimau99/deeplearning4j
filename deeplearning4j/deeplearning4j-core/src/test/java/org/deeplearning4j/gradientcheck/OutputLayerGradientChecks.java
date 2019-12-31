@@ -136,8 +136,8 @@ public class OutputLayerGradientChecks extends BaseDL4JTest {
                 String testName = "testRnnLossLayer(lf=" + lf + ", maskType=" + mt + ", outputActivation = " + oa + ")";
                 if (PRINT_RESULTS) {
                     System.out.println(testName);
-                    for (int j = 0; j < mln.getnLayers(); j++)
-                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                    for (int j = 0; j < mln.getnLayers(); j++)
+//                        System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                 }
 
                 System.out.println("Starting test: " + testName);
@@ -243,8 +243,8 @@ public class OutputLayerGradientChecks extends BaseDL4JTest {
                     String testName = "testCnnLossLayer(lf=" + lf + ", maskType=" + mt + ", outputActivation = " + oa + ")";
                     if (PRINT_RESULTS) {
                         System.out.println(testName);
-                        for (int j = 0; j < mln.getnLayers(); j++)
-                            System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                        for (int j = 0; j < mln.getnLayers(); j++)
+//                            System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                     }
 
                     System.out.println("Starting test: " + testName);
@@ -392,8 +392,8 @@ public class OutputLayerGradientChecks extends BaseDL4JTest {
                         String testName = "testCnn3dLossLayer(dataFormat=" + dataFormat + ",lf=" + lf + ", maskType=" + mt + ", outputActivation = " + oa + ")";
                         if (PRINT_RESULTS) {
                             System.out.println(testName);
-                            for (int j = 0; j < mln.getnLayers(); j++)
-                                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                            for (int j = 0; j < mln.getnLayers(); j++)
+//                                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                         }
 
                         System.out.println("Starting test: " + testName);

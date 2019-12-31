@@ -120,8 +120,8 @@ public class GradientCheckTests extends BaseDL4JTest {
             System.out.println("testMinibatchApplication() - activationFn=" + afn + ", lossFn="
                     + lf + ", outputActivation=" + outputActivation + ", doLearningFirst="
                     + doLearningFirst);
-            for (int j = 0; j < mln.getnLayers(); j++)
-                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//            for (int j = 0; j < mln.getnLayers(); j++)
+//                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
         }
 
         boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -200,8 +200,8 @@ public class GradientCheckTests extends BaseDL4JTest {
                         System.out.println("testGradientMLP2LayerIrisSimpleRandom() - activationFn=" + afn + ", lossFn="
                                         + lf + ", outputActivation=" + outputActivation + ", doLearningFirst="
                                         + doLearningFirst);
-                        for (int j = 0; j < mln.getnLayers(); j++)
-                            System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                        for (int j = 0; j < mln.getnLayers(); j++)
+//                            System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                     }
 
                     boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -294,8 +294,8 @@ public class GradientCheckTests extends BaseDL4JTest {
                             System.out.println("testGradientMLP2LayerIrisSimpleRandom() - activationFn=" + afn
                                             + ", lossFn=" + lf + ", outputActivation=" + outputActivation
                                             + ", doLearningFirst=" + doLearningFirst + ", l2=" + l2 + ", l1=" + l1);
-                            for (int j = 0; j < mln.getnLayers(); j++)
-                                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                            for (int j = 0; j < mln.getnLayers(); j++)
+//                                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                         }
 
                         boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -339,8 +339,8 @@ public class GradientCheckTests extends BaseDL4JTest {
 
         if (PRINT_RESULTS) {
             System.out.println("testEmbeddingLayerSimple");
-            for (int j = 0; j < mln.getnLayers(); j++)
-                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//            for (int j = 0; j < mln.getnLayers(); j++)
+//                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
         }
 
         boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -379,8 +379,8 @@ public class GradientCheckTests extends BaseDL4JTest {
 
         if (PRINT_RESULTS) {
             System.out.println("testEmbeddingLayerSimple");
-            for (int j = 0; j < mln.getnLayers(); j++)
-                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//            for (int j = 0; j < mln.getnLayers(); j++)
+//                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
         }
 
         boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -469,8 +469,8 @@ public class GradientCheckTests extends BaseDL4JTest {
                                         + doLearningFirst + ", l2=" + l2 + ", l1=" + l1;
                         if (PRINT_RESULTS) {
                             System.out.println(msg);
-                            for (int j = 0; j < mln.getnLayers(); j++)
-                                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                            for (int j = 0; j < mln.getnLayers(); j++)
+//                                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                         }
 
                         boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
@@ -767,8 +767,8 @@ public class GradientCheckTests extends BaseDL4JTest {
                             System.out.println("testGradientMLP2LayerIrisSimpleRandom() - activationFn=" + afn + ", lossFn="
                                     + lf + ", outputActivation=" + outputActivation + ", doLearningFirst="
                                     + doLearningFirst + ", layerNorm=" + layerNorm);
-                            for (int j = 0; j < mln.getnLayers(); j++)
-                                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
+//                            for (int j = 0; j < mln.getnLayers(); j++)
+//                                System.out.println("Layer " + j + " # params: " + mln.getLayer(j).numParams());
                         }
 
                         boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
