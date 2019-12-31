@@ -1214,5 +1214,6 @@ public interface NativeOps {
     void deleteDataBuffer(OpaqueDataBuffer dataBuffer);
     void dbClose(OpaqueDataBuffer dataBuffer);
     int  dbLocality(OpaqueDataBuffer dataBuffer);
+    int  dbDeviceId(OpaqueDataBuffer dataBuffer);
     void dbExpand(OpaqueDataBuffer dataBuffer, long newLength);
 }

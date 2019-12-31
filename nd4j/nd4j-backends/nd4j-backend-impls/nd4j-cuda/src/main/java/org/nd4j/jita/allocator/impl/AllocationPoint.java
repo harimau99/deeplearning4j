@@ -121,7 +121,7 @@ public class AllocationPoint {
     }
 
     public int getDeviceId() {
-        return 0; //NativeOpsHolder.getInstance().getDeviceNativeOps().;
+        return ptrDataBuffer.deviceId();
     }
 
     public void setDeviceId(int deviceId) {

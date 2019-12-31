@@ -3843,6 +3843,10 @@ void dbClose(OpaqueDataBuffer *dataBuffer) {
     dataBuffer->getDataBuffer()->close();
 }
 
+int dbDeviceId(OpaqueDataBuffer *dataBuffer) {
+    return dataBuffer->deviceId();
+}
+
 int dbLocality(OpaqueDataBuffer *dataBuffer) {
     auto p = dataBuffer->dataBuffer()->isPrimaryActual();
     auto d = dataBuffer->dataBuffer()->isSpecialActual();

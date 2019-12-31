@@ -80,6 +80,10 @@ namespace nd4j {
         _offset = offset;
     }
 
+    int InteropDataBuffer::deviceId() const {
+        return _dataBuffer->deviceId();
+    }
+
 
     void InteropDataBuffer::registerSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList) {
         for (const auto &v:writeList) {

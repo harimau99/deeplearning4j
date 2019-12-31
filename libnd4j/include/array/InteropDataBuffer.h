@@ -56,6 +56,8 @@ namespace nd4j {
 
         void expand(size_t newlength);
 
+        int deviceId() const;
+
         static void registerSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList);
         static void prepareSpecialUse(const std::vector<const InteropDataBuffer*>& writeList, const std::vector<const InteropDataBuffer*>& readList, bool synchronizeWritables = false);
 

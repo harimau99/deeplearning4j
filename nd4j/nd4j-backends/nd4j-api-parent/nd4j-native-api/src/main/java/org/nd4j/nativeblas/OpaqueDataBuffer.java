@@ -161,6 +161,14 @@ public class OpaqueDataBuffer extends Pointer {
     }
 
     /**
+     * This method returns deviceId of this DataBuffer
+     * @return
+     */
+    public int deviceId() {
+        return NativeOpsHolder.getInstance().getDeviceNativeOps().dbDeviceId(this);
+    }
+
+    /**
      * This method allows to set external pointer as primary buffer.
      *
      * PLEASE NOTE: if InteropDataBuffer owns current memory buffer, it will be released

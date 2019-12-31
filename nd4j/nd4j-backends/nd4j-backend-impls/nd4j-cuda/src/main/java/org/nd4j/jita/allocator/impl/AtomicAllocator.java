@@ -381,8 +381,7 @@ public class AtomicAllocator implements Allocator {
      * @return
      */
     public Integer getDeviceId(INDArray array) {
-        throw new UnsupportedOperationException("Pew-pew");
-        //return getAllocationPoint(array).getDeviceId();
+        return getAllocationPoint(array).getDeviceId();
     }
 
 

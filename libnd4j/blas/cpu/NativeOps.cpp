@@ -3162,6 +3162,10 @@ int dbLocality(OpaqueDataBuffer *dataBuffer) {
     return 0;
 }
 
+int dbDeviceId(OpaqueDataBuffer *dataBuffer) {
+    return dataBuffer->deviceId();
+}
+
 void dbClose(OpaqueDataBuffer *dataBuffer) {
     dataBuffer->getDataBuffer()->close();
 }
