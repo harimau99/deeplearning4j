@@ -1037,11 +1037,11 @@ TEST_F(RNGTests, test_multinomial_2) {
 
 TEST_F(RNGTests, test_multinomial_3) {
 
-    NDArray probs('c', {  3, 1 }, { 0.3, 0.3, 0.3 }, nd4j::DataType::FLOAT32);
-    NDArray expected('c', {  3, 1 }, { 0, 0, 0 }, nd4j::DataType::INT64);
+    NDArray probs('c', {  4, 3 }, { 0.3, 0.3, 0.4, 0.3, 0.4, 0.3, 0.3, 0.3, 0.4, 0.4, 0.3, 0.3 }, nd4j::DataType::FLOAT32);
+    NDArray expected('c', {  4, 5 }, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, nd4j::DataType::INT64);
 
     nd4j::ops::random_multinomial op;
-    auto result = op.execute({ &probs }, { }, { 3, 1, INT64, 123 });
+    auto result = op.execute({ &probs }, { }, { 5, 0, INT64, 123 });
     auto output = result->at(0);
     ASSERT_EQ(Status::OK(), result->status());
     ASSERT_TRUE(expected.isSameShape(output));

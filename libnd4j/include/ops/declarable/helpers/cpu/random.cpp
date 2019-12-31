@@ -162,76 +162,80 @@ namespace helpers {
         
         Tx minVal = DataTypeUtils::min<float>();
         Tx maxVal = 1.0; 
+        Tx Max = -minVal;
 
         auto dimA = (0 == dimC) ? 1 : 0;
+        const Nd4jLong batchValue = output.sizeAt(dimC);
+        const Nd4jLong numOfSamples = output.sizeAt(dimA);
+        const Nd4jLong numOfClassX = input.sizeAt(dimA);
+
         const int rank = input.rankOf();
         bool bSimple = (dimC == rank - 1 && 'c' == input.ordering() && 1 == input.ews() &&
             'c' == output.ordering() && 1 == output.ews());
         
         if (bSimple) {
             
-            const int nBatchSize = input.sizeAt(dimC);
-            const int nClassDim = input.sizeAt(dimA);
-            const int nNumSamples = output.sizeAt(dimA);
-
-            auto func = PRAGMA_THREADS_FOR_2D{
+           auto func = PRAGMA_THREADS_FOR_3D{
 
                 for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
                      for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
-                         
-                         int nBatchPosition = nBatchIndex * nClassDim;
-                         int nSamplePosition = nBatchIndex * nNumSamples;
-                         Tz& arg = z[nSamplePosition + nSampleIndexInBatch];
-                         Tx Max = -minVal;
-                         // used https://en.wikipedia.org/wiki/Categorical_distribution
-                         // methods: gumbel trick + softmax + argmax
-                         for (auto k = 0; k < nClassDim; k++) {
-                             auto unifornLog = log(-log(rng.relativeT<Tx>((nSamplePosition + nSampleIndexInBatch + k), minVal, maxVal)));
-                             Tx tValue = (x[nBatchPosition + k] - unifornLog);
+                         for (auto nClass = start_z; nClass < stop_z; nClass += inc_z) {
+                             
+                             auto nBatchPosition = nBatchIndex * numOfClassX;
+                             auto nSamplePosition = nBatchIndex * numOfSamples;
+                             Tz& arg = z[nSamplePosition + nSampleIndexInBatch];
+                             if (0 == nClass) {
+                                 Max = -minVal;
+                             }
+                             // used https://en.wikipedia.org/wiki/Categorical_distribution
+                             // methods: gumbel trick + softmax + argmax
+                             auto unifornLog = log(-log(rng.relativeT<Tx>((nSamplePosition + nSampleIndexInBatch + nClass), minVal, maxVal)));
+                             Tx tValue = (x[nBatchPosition + nClass] - unifornLog);
                              if (tValue > Max) {
-                                 Max = tValue; arg = k;
+                                 Max = tValue; 
+                                 arg = nClass;
                              }
                          }
                      }
                 }    
             };  
 
-            samediff::Threads::parallel_for(func, 0, nBatchSize, 1, 0, nNumSamples, 1);
+            samediff::Threads::parallel_for(func, 0, batchValue, 1, 0, numOfSamples, 1, 0, numOfClassX, 1);
             return;
         }
 
-        const Nd4jLong batchValue = output.sizeAt(dimC);
-        const Nd4jLong numOfSamples = output.sizeAt(dimA);
-        const Nd4jLong numOfClassX = input.sizeAt(dimA);
-        
         const Nd4jLong zDimAstride = output.stridesOf()[dimA];
         const Nd4jLong xDimAstride = input.stridesOf()[dimA];
         const Nd4jLong zDimCstride = output.stridesOf()[dimC];
         const Nd4jLong xDimCstride = input.stridesOf()[dimC];
 
-        auto func = PRAGMA_THREADS_FOR_2D{
+        auto func = PRAGMA_THREADS_FOR_3D{
             for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
                 for (auto nSampleIndexInBatch = start_y; nSampleIndexInBatch < stop_y; nSampleIndexInBatch += inc_y) {
+                    for (auto nClass = start_z; nClass < stop_z; nClass += inc_z) {
 
-                    const Tx* xTad = x + (nBatchIndex * xDimCstride);
-                    Tz* zTad = z + (nBatchIndex * zDimCstride);
+                        const Tx* xTad = x + (nBatchIndex * xDimCstride);
+                        Tz* zTad = z + (nBatchIndex * zDimCstride);
 
-                    Tz& arg = zTad[nSampleIndexInBatch * zDimAstride];
-                    Tx Max = -minVal;
-                    // used https://en.wikipedia.org/wiki/Categorical_distribution
-                    // methods: gumbel trick + softmax + argmax
-                    for (auto k = 0; k < numOfClassX; k++) {
-                        auto uniforn_log = log(-log(rng.relativeT<Tx>(k + (nSampleIndexInBatch * zDimAstride), minVal, maxVal)));
-                        Tx tValue = (xTad[k * xDimAstride] - uniforn_log);
+                        Tz& arg = zTad[nSampleIndexInBatch * zDimAstride];
+                        if (0 == nClass) {
+                            Max = -minVal;
+                        }
+
+                        // used https://en.wikipedia.org/wiki/Categorical_distribution
+                        // methods: gumbel trick + softmax + argmax
+                        auto uniforn_log = log(-log(rng.relativeT<Tx>(nClass + (nSampleIndexInBatch * zDimAstride), minVal, maxVal)));
+                        Tx tValue = (xTad[nClass * xDimAstride] - uniforn_log);
                         if (tValue > Max) {
-                            Max = tValue; arg = k;
+                            Max = tValue; 
+                            arg = nClass;
                         }
                     }
                 }
             }
         };
 
-        samediff::Threads::parallel_for(func, 0, batchValue, 1, 0, numOfSamples, 1);
+        samediff::Threads::parallel_for(func, 0, batchValue, 1, 0, numOfSamples, 1, 0, numOfClassX, 1);
         return;
     }
 
