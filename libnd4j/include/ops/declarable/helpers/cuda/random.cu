@@ -271,9 +271,7 @@ __global__ void fillMultiNomialCuda_(graph::RandomGenerator* devRng, const void*
     __syncthreads();
 
     const auto tid = blockIdx.x * blockDim.x + threadIdx.x;
-    // TODO i = ij / S
-    // j = ij - i*N
-    //  combine N*S in one loop
+    
     for (Nd4jLong index = tid; index < batchValue*numOfSamples; index += gridDim.x * blockDim.x) {
         const Nd4jLong nBatchIndex = index / batchValue;
         const Nd4jLong nSampleIndexInBatch = nBatchIndex - nBatchIndex * batchValue;
@@ -284,7 +282,7 @@ __global__ void fillMultiNomialCuda_(graph::RandomGenerator* devRng, const void*
         // used https://en.wikipedia.org/wiki/Categorical_distribution
         // methods: gumbel trick + softmax + argmax
         for (Nd4jLong k = 0; k < numOfClassX; k++) {
-            X tValue = (xTad[k * xDimAstride] - log(-log(devRng->relativeT<X>(k + (nSampleIndexInBatch * zDimAstride), minVal, maxVal))));
+            X tValue = (xTad[k * xDimAstride] - log(-log(devRng->relativeT<X>(nBatchIndex + k + (nSampleIndexInBatch * zDimAstride), minVal, maxVal))));
             if (tValue > Max) {
                 Max = tValue; arg = k;
             }

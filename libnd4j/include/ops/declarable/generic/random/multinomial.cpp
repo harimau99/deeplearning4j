@@ -69,6 +69,9 @@ namespace nd4j {
             if (argSize > 3) {
                 rng.setStates(static_cast<Nd4jLong>(INT_ARG(3)), static_cast<Nd4jLong>(INT_ARG(3)));
             }
+            else {
+                rng.setStates(1, 1);
+            }
 
             helpers::fillRandomMultiNomial(block.launchContext(), rng, *input, *output, dimC);
             return Status::OK();
