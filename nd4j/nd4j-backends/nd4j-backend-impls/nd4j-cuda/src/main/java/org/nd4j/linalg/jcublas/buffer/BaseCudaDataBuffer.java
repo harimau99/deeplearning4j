@@ -237,6 +237,9 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
     }
 
     public void lazyAllocateHostPointer() {
+        if (length() == 0)
+            return;
+
         // java side might be unaware of native-side buffer allocation
         if (this.indexer == null || this.pointer == null || this.pointer.address() == 0) {
             initHostPointerAndIndexer();
@@ -246,12 +249,17 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
     }
 
     protected void initHostPointerAndIndexer() {
+        if (length() == 0)
+            return;
+
         if (allocationPoint.getHostPointer() == null) {
             val location = allocationPoint.getAllocationStatus();
             if (parentWorkspace == null) {
+                //log.info("dbAllocate step");
                 // let cpp allocate primary buffer
                 NativeOpsHolder.getInstance().getDeviceNativeOps().dbAllocatePrimaryBuffer(ptrDataBuffer);
             } else {
+                //log.info("ws alloc step");
                 val ptr = parentWorkspace.alloc(this.length * this.elementSize, MemoryKind.HOST, this.dataType(), false);
                 ptrDataBuffer.setPrimaryBuffer(ptr, this.length);
             }
@@ -260,6 +268,8 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         }
 
         val hostPointer = allocationPoint.getHostPointer();
+
+        assert hostPointer != null;
 
         switch (dataType()) {
             case DOUBLE:
