@@ -1048,11 +1048,11 @@ TEST_F(RNGTests, test_multinomial_3) {
     auto output = result->at(0);
     ASSERT_EQ(Status::OK(), result->status());
     ASSERT_TRUE(expected->isSameShape(output));
-    /*
+    
     for (int i = 0; i < output->lengthOf(); ++i) {
-        printf("%d : %d\n", expected.e<int>(i), output->e<int>(i));
+        printf("%d : %d\n", expected->e<int>(i), output->e<int>(i));
     }
-    */
+    
     // ASSERT_TRUE(expected->equalsTo(output));
     delete result;
     delete test;
