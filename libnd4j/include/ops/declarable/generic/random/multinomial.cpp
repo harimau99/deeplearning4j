@@ -52,21 +52,22 @@ namespace nd4j {
             if (0 == nSamples) 
                 return Status::OK();
 
-            REQUIRE_TRUE(!input->isEmpty(), 0, "Number of classes should be positive, got 0. ");
+            REQUIRE_TRUE(!input->isEmpty(), 0, "Have to be provided atleast one logits. ");
+            REQUIRE_TRUE(nSamples > 0, 0, "Number of samples should be greater then 0, got %i. ", nSamples);
 
             const int rank = input->rankOf();
             REQUIRE_TRUE(rank == 2, 0, "Logits should be a matrix, with requirement rank: %i == 2 ", rank);
             const int dimC = argSize > 1 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
 
             auto dimA = (0 == dimC) ? 1 : 0;
-            if (0 == input->sizeAt(dimA)) {
+            if (1 == input->sizeAt(dimA)) {
                 *output = 0;
                 return Status::OK();
             }
 
             auto rng = block.randomGenerator();
             if (argSize > 3) {
-                rng.setSeed(static_cast<int>(INT_ARG(3)));
+                rng.setStates(static_cast<Nd4jLong>(INT_ARG(3)), static_cast<Nd4jLong>(INT_ARG(3)));
             }
 
             helpers::fillRandomMultiNomial(block.launchContext(), rng, *input, *output, dimC);
@@ -83,12 +84,14 @@ namespace nd4j {
             auto nSamples = INT_ARG(0);
 
             auto input = INPUT_VARIABLE(0);
-            REQUIRE_TRUE(!input->isEmpty(), 0, "Number of classes should be positive, got 0. ");
+
+            REQUIRE_TRUE(!input->isEmpty(), 0, "Have to be provided atleast one logits. ");
+            REQUIRE_TRUE(nSamples > 0, 0, "Number of samples should be greater then 0, got %i. ", nSamples);
+
             const int rank = input->rankOf();
             REQUIRE_TRUE(rank == 2, 0, "Logits should be a matrix, with requirement rank: %i == 2 ", rank);
             const int dimC = argSize > 1 ? (INT_ARG(1) >= 0 ? INT_ARG(1) : INT_ARG(1) + rank) : rank - 1;
            
-
             auto nShape = input->getShapeAsVector();
             auto dimA = (0 == dimC) ? 1 : 0;
             nShape[dimA] = nSamples;

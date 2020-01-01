@@ -175,6 +175,8 @@ namespace helpers {
         
         if (bSimple) {
             
+            printf("RRRRRRRRRRRRR\n");
+
            auto func = PRAGMA_THREADS_FOR_3D{
 
                 for (auto nBatchIndex = start_x; nBatchIndex < stop_x; nBatchIndex += inc_x) {
