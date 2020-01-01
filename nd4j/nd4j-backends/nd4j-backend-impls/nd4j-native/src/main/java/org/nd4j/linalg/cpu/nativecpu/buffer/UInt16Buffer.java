@@ -50,7 +50,10 @@ public class UInt16Buffer extends BaseCpuDataBuffer {
      */
     public UInt16Buffer(long length) {
         super(length);
+    }
 
+    public UInt16Buffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
     }
 
     public UInt16Buffer(long length, boolean initialize) {

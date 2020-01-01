@@ -49,6 +49,10 @@ public class CudaHalfDataBuffer extends BaseCudaDataBuffer {
         super(pointer, specialPointer, indexer, length);
     }
 
+    public CudaHalfDataBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     /**
      * Base constructor
      *

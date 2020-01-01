@@ -63,6 +63,10 @@ public class LongBuffer extends BaseCpuDataBuffer {
         super(length, initialize, workspace);
     }
 
+    public LongBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     public LongBuffer(int[] ints, boolean copy, MemoryWorkspace workspace) {
         super(ints, copy, workspace);
     }

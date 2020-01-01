@@ -50,7 +50,10 @@ public class Int16Buffer extends BaseCpuDataBuffer {
      */
     public Int16Buffer(long length) {
         super(length);
+    }
 
+    public Int16Buffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
     }
 
     public Int16Buffer(long length, boolean initialize) {

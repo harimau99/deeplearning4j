@@ -250,6 +250,42 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
     }
 
     @Override
+    public DataBuffer create(ByteBuffer underlyingBuffer, DataType dataType, long length) {
+        switch (dataType) {
+            case DOUBLE:
+                return new DoubleBuffer(underlyingBuffer, dataType, length);
+            case FLOAT:
+                return new FloatBuffer(underlyingBuffer, dataType, length);
+            case HALF:
+                return new HalfBuffer(underlyingBuffer, dataType, length);
+            case BFLOAT16:
+                return new BFloat16Buffer(underlyingBuffer, dataType, length);
+            case LONG:
+                return new LongBuffer(underlyingBuffer, dataType, length);
+            case INT:
+                return new IntBuffer(underlyingBuffer, dataType, length);
+            case SHORT:
+                return new Int16Buffer(underlyingBuffer, dataType, length);
+            case UBYTE:
+                return new UInt8Buffer(underlyingBuffer, dataType, length);
+            case UINT16:
+                return new UInt16Buffer(underlyingBuffer, dataType, length);
+            case UINT32:
+                return new UInt32Buffer(underlyingBuffer, dataType, length);
+            case UINT64:
+                return new UInt64Buffer(underlyingBuffer, dataType, length);
+            case BYTE:
+                return new Int8Buffer(underlyingBuffer, dataType, length);
+            case BOOL:
+                return new BoolBuffer(underlyingBuffer, dataType, length);
+            case UTF8:
+                return new Utf8Buffer(underlyingBuffer, dataType, length);
+            default:
+                throw new IllegalStateException("Unknown datatype used: [" + dataType + "]");
+        }
+    }
+
+    @Override
     public DataBuffer create(@NonNull DataType dataType, long length, boolean initialize) {
         switch (dataType) {
             case DOUBLE:
@@ -282,9 +318,7 @@ public class DefaultDataBufferFactory implements DataBufferFactory {
                 return new Utf8Buffer(length, true);
             default:
                 throw new IllegalStateException("Unknown datatype used: [" + dataType + "]");
-
         }
-
     }
 
     @Override

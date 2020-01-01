@@ -56,6 +56,10 @@ public class IntBuffer extends BaseCpuDataBuffer {
         super(length, initialize, workspace);
     }
 
+    public IntBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     public IntBuffer(int[] ints, boolean copy, MemoryWorkspace workspace) {
         super(ints, copy, workspace);
     }

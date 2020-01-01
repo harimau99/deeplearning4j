@@ -43,6 +43,10 @@ public class DoubleBuffer extends BaseCpuDataBuffer {
         super(pointer, indexer, length);
     }
 
+    public DoubleBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     public DoubleBuffer(long length) {
         super(length);
     }

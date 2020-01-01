@@ -50,7 +50,10 @@ public class HalfBuffer extends BaseCpuDataBuffer {
      */
     public HalfBuffer(long length) {
         super(length);
+    }
 
+    public HalfBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
     }
 
     public HalfBuffer(long length, boolean initialize) {

@@ -50,6 +50,10 @@ public class CudaBoolDataBuffer extends BaseCudaDataBuffer {
         super(pointer, specialPointer, indexer, length);
     }
 
+    public CudaBoolDataBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     /**
      * Base constructor
      *

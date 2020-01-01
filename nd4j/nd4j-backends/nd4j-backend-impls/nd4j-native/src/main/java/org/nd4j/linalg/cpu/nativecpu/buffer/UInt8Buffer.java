@@ -50,7 +50,10 @@ public class UInt8Buffer extends BaseCpuDataBuffer {
      */
     public UInt8Buffer(long length) {
         super(length);
+    }
 
+    public UInt8Buffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
     }
 
     public UInt8Buffer(long length, boolean initialize) {

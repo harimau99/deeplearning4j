@@ -248,6 +248,64 @@ public abstract class BaseCudaDataBuffer extends BaseDataBuffer implements JCuda
         }
     }
 
+    protected BaseCudaDataBuffer(ByteBuffer buffer, DataType dtype, long length) {
+        this(length, Nd4j.sizeOfDataType(dtype));
+
+        Pointer temp = null;
+
+        switch (dataType()){
+            case DOUBLE:
+                temp = new DoublePointer(buffer.asDoubleBuffer());
+                break;
+            case FLOAT:
+                temp = new FloatPointer(buffer.asFloatBuffer());
+                break;
+            case HALF:
+                temp = new ShortPointer(buffer.asShortBuffer());
+                break;
+            case LONG:
+                temp = new LongPointer(buffer.asLongBuffer());
+                break;
+            case INT:
+                temp = new IntPointer(buffer.asIntBuffer());
+                break;
+            case SHORT:
+                temp = new ShortPointer(buffer.asShortBuffer());
+                break;
+            case UBYTE: //Fall through
+            case BYTE:
+                temp = new BytePointer(buffer);
+                break;
+            case BOOL:
+                temp = new BooleanPointer(length());
+                break;
+            case UTF8:
+                temp = new BytePointer(length());
+                break;
+            case BFLOAT16:
+                temp = new ShortPointer(length());
+                break;
+            case UINT16:
+                temp = new ShortPointer(length());
+                break;
+            case UINT32:
+                temp = new IntPointer(length());
+                break;
+            case UINT64:
+                temp = new LongPointer(length());
+                break;
+        }
+
+        // copy data to device
+        val stream = AtomicAllocator.getInstance().getDeviceContext().getSpecialStream();
+        val ptr = ptrDataBuffer.specialBuffer();
+        NativeOpsHolder.getInstance().getDeviceNativeOps().memcpyAsync(ptr, temp, length * Nd4j.sizeOfDataType(dtype), CudaConstants.cudaMemcpyHostToDevice, stream);
+        stream.synchronize();
+
+        // mark device buffer as updated
+        allocationPoint.tickDeviceWrite();
+    }
+
     protected void initHostPointerAndIndexer() {
         if (length() == 0)
             return;

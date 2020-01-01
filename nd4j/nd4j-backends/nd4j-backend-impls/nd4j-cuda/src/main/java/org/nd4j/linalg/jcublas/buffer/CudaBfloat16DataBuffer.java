@@ -46,6 +46,10 @@ public class CudaBfloat16DataBuffer extends BaseCudaDataBuffer {
         super(pointer, specialPointer, indexer, length);
     }
 
+    public CudaBfloat16DataBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     /**
      * Base constructor
      *

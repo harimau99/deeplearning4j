@@ -58,6 +58,10 @@ public class CudaUtf8Buffer extends BaseCudaDataBuffer {
         super(pointer, indexer, length);
     }
 
+    public CudaUtf8Buffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     public CudaUtf8Buffer(long length) {
         super(length);
     }

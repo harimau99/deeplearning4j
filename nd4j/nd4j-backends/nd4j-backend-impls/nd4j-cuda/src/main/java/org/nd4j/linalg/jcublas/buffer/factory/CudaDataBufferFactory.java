@@ -61,6 +61,42 @@ public class CudaDataBufferFactory implements DataBufferFactory {
     }
 
     @Override
+    public DataBuffer create(ByteBuffer underlyingBuffer, DataType dataType, long length) {
+        switch (dataType) {
+            case DOUBLE:
+                return new CudaDoubleDataBuffer(underlyingBuffer, dataType, length);
+            case FLOAT:
+                return new CudaFloatDataBuffer(underlyingBuffer, dataType, length);
+            case HALF:
+                return new CudaHalfDataBuffer(underlyingBuffer, dataType, length);
+            case BFLOAT16:
+                return new CudaBfloat16DataBuffer(underlyingBuffer, dataType, length);
+            case LONG:
+                return new CudaLongDataBuffer(underlyingBuffer, dataType, length);
+            case INT:
+                return new CudaIntDataBuffer(underlyingBuffer, dataType, length);
+            case SHORT:
+                return new CudaShortDataBuffer(underlyingBuffer, dataType, length);
+            case UBYTE:
+                return new CudaUByteDataBuffer(underlyingBuffer, dataType, length);
+            case UINT16:
+                return new CudaUInt16DataBuffer(underlyingBuffer, dataType, length);
+            case UINT32:
+                return new CudaUInt32DataBuffer(underlyingBuffer, dataType, length);
+            case UINT64:
+                return new CudaUInt64DataBuffer(underlyingBuffer, dataType, length);
+            case BYTE:
+                return new CudaByteDataBuffer(underlyingBuffer, dataType, length);
+            case BOOL:
+                return new CudaBoolDataBuffer(underlyingBuffer, dataType, length);
+            case UTF8:
+                return new CudaUtf8Buffer(underlyingBuffer, dataType, length);
+            default:
+                throw new IllegalStateException("Unknown datatype used: [" + dataType + "]");
+        }
+    }
+
+    @Override
     public DataBuffer create(DataBuffer underlyingBuffer, long offset, long length) {
         switch (underlyingBuffer.dataType()) {
             case DOUBLE:

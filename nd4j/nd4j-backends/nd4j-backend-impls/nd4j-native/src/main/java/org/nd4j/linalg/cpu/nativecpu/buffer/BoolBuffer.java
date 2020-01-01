@@ -50,7 +50,10 @@ public class BoolBuffer extends BaseCpuDataBuffer {
      */
     public BoolBuffer(long length) {
         super(length);
+    }
 
+    public BoolBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
     }
 
     public BoolBuffer(long length, boolean initialize) {

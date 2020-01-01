@@ -58,6 +58,10 @@ public class CudaLongDataBuffer extends BaseCudaDataBuffer {
         super(pointer, specialPointer, indexer, length);
     }
 
+    public CudaLongDataBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     /**
      * This constructor is special one - it's used for ShapeInfo
      * @param hostPointer

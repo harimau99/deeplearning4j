@@ -53,6 +53,10 @@ public class FloatBuffer extends BaseCpuDataBuffer {
 
     }
 
+    public FloatBuffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     public FloatBuffer(long length, boolean initialize) {
         super(length, initialize);
     }

@@ -25,6 +25,7 @@ import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -58,6 +59,15 @@ public interface DataBufferFactory {
      * @return the databuffer as a view
      */
     DataBuffer create(DataBuffer underlyingBuffer, long offset, long length);
+
+    /**
+     * Creates a DataBuffer from java.nio.ByteBuffer
+     * @param underlyingBuffer
+     * @param offset
+     * @param length
+     * @return
+     */
+    DataBuffer create(ByteBuffer underlyingBuffer, DataType type, long length);
 
     /**
      * Create a double data buffer

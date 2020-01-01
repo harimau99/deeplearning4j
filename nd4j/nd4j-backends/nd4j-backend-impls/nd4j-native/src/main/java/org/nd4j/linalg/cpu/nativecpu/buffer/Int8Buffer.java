@@ -50,7 +50,10 @@ public class Int8Buffer extends BaseCpuDataBuffer {
      */
     public Int8Buffer(long length) {
         super(length);
+    }
 
+    public Int8Buffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
     }
 
     public Int8Buffer(long length, boolean initialize) {

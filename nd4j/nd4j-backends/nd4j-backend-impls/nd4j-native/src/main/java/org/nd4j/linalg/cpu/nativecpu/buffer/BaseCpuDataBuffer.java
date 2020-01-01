@@ -157,6 +157,58 @@ public abstract class BaseCpuDataBuffer extends BaseDataBuffer implements Deallo
         actualizePointerAndIndexer();
     }
 
+    protected BaseCpuDataBuffer(ByteBuffer buffer, DataType dtype, long length) {
+        this(length, Nd4j.sizeOfDataType(dtype));
+
+        Pointer temp = null;
+
+        switch (dataType()){
+            case DOUBLE:
+                temp = new DoublePointer(buffer.asDoubleBuffer());
+                break;
+            case FLOAT:
+                temp = new FloatPointer(buffer.asFloatBuffer());
+                break;
+            case HALF:
+                temp = new ShortPointer(buffer.asShortBuffer());
+                break;
+            case LONG:
+                temp = new LongPointer(buffer.asLongBuffer());
+                break;
+            case INT:
+                temp = new IntPointer(buffer.asIntBuffer());
+                break;
+            case SHORT:
+                temp = new ShortPointer(buffer.asShortBuffer());
+                break;
+            case UBYTE: //Fall through
+            case BYTE:
+                temp = new BytePointer(buffer);
+                break;
+            case BOOL:
+                temp = new BooleanPointer(length());
+                break;
+            case UTF8:
+                temp = new BytePointer(length());
+                break;
+            case BFLOAT16:
+                temp = new ShortPointer(length());
+                break;
+            case UINT16:
+                temp = new ShortPointer(length());
+                break;
+            case UINT32:
+                temp = new IntPointer(length());
+                break;
+            case UINT64:
+                temp = new LongPointer(length());
+                break;
+        }
+
+        val ptr = ptrDataBuffer.primaryBuffer();
+        Pointer.memcpy(ptr, temp, length * Nd4j.sizeOfDataType(dtype));
+    }
+
     @Override
     public void pointerIndexerByCurrentType(DataType currentType) {
 

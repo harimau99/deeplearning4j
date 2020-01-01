@@ -50,7 +50,10 @@ public class UInt64Buffer extends BaseCpuDataBuffer {
      */
     public UInt64Buffer(long length) {
         super(length);
+    }
 
+    public UInt64Buffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
     }
 
     public UInt64Buffer(long length, boolean initialize) {

@@ -1318,7 +1318,7 @@ public class Nd4j {
      * @return the created buffer
      */
     public static DataBuffer createBuffer(ByteBuffer buffer, DataType type, int length) {
-        throw new UnsupportedOperationException("This method should be removed");
+        return DATA_BUFFER_FACTORY_INSTANCE.create(buffer, type, length);
     }
 
 

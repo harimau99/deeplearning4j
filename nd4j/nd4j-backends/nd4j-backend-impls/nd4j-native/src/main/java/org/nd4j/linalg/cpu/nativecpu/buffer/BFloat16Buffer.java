@@ -53,6 +53,10 @@ public class BFloat16Buffer extends BaseCpuDataBuffer {
 
     }
 
+    public BFloat16Buffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     public BFloat16Buffer(long length, boolean initialize) {
         super(length, initialize);
     }

@@ -78,6 +78,10 @@ public class Utf8Buffer extends BaseCpuDataBuffer {
         numWords = length;
     }
 
+    public Utf8Buffer(ByteBuffer buffer, DataType dataType, long length) {
+        super(buffer, dataType, length);
+    }
+
     public Utf8Buffer(int[] ints, boolean copy, MemoryWorkspace workspace) {
         super(ints, copy, workspace);
     }
