@@ -420,11 +420,3 @@ TEST_F(PlaygroundTests, my) {
 
 */
 
-TEST_F(PlaygroundTests, my) {
-
-    NDArray a('c',{2,3,4}, nd4j::DataType::DOUBLE);
-    a({0,0, 0,1, 0,1}).printShapeInfo();
-    a({0,1, 0,0, 0,1}).printShapeInfo();
-    a({0,0, 0,1, 0,1}).printShapeInfo();
-
-}
