@@ -206,8 +206,11 @@ void DataBuffer::allocateBuffers(const bool allocBoth) {    // always allocate s
 
 ////////////////////////////////////////////////////////////////////////
 void DataBuffer::setToZeroBuffers(const bool both) {
+    cudaMemsetAsync(special(), 0, getLenInBytes(), *LaunchContext::defaultContext()->getCudaStream());
+    auto res = cudaStreamSynchronize(*LaunchContext::defaultContext()->getCudaStream());
+    if (res != 0)
+        throw cuda_exception::build("DataBuffer::setToZeroBuffers: streamSync failed!", res);
 
-    cudaMemset(special(), 0, getLenInBytes());
     writeSpecial();
 
     if(both) {

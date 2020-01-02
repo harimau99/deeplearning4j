@@ -163,8 +163,7 @@ __host__ linkage void preluBPCudaLauncher(const int blocksPerGrid, const int thr
 
 //////////////////////////////////////////////////////////////////////////
 void preluBP(nd4j::LaunchContext* context, const NDArray& input, const NDArray& alpha, const NDArray& dLdO, NDArray& dLdI, NDArray& dLdA) {
-
-	dLdA.nullify();
+    dLdA.nullify();
 
 	PointersManager manager(context, "preluBP");
 
