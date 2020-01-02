@@ -257,7 +257,7 @@ __global__ void fillMultiNomialCuda_(graph::RandomGenerator* devRng, const void*
                                      void* vz, const Nd4jLong* zShapeInfo, 
                                      const Nd4jLong batchValue,
                                      const Nd4jLong numOfSamples, const Nd4jLong numOfClassX, const int dimA, 
-                                     const float minVal, const float maxVal) {
+                                     const X minVal, const X maxVal) {
                                   
     const X* x = reinterpret_cast<const X*>(vx);
     Z* z = reinterpret_cast<Z*>(vz);
@@ -306,7 +306,10 @@ linkage void fillMultiNomialCudaLauncher(
     graph::RandomGenerator* devRng, const void* vx, const Nd4jLong* xShapeInfo, 
     void* vz, const Nd4jLong* zShapeInfo, 
     const Nd4jLong batchValue, const Nd4jLong numOfSamples, 
-    const Nd4jLong numOfClassX, const int dimA, const float minVal, const float maxVal){
+    const Nd4jLong numOfClassX, const int dimA){
+
+    const X minVal = DataTypeUtils::min<X>();
+    const X maxVal = 1.0;
 
     fillMultiNomialCuda_<X, Z> <<< blocksPerGrid, threadsPerBlock, 256, * stream >>> (
         devRng, vx, xShapeInfo, vz, zShapeInfo, batchValue,
@@ -324,9 +327,6 @@ void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, 
      // TODO check this
      const int threadsPerBlock = MAX_NUM_THREADS / 2;
      const int blocksPerGrid = (batchValue + threadsPerBlock - 1) / threadsPerBlock;
-     
-     const float minVal = DataTypeUtils::min<float>();
-     const float maxVal = 1.0;
     
      PointersManager manager(context, "fillMultinomial");
      graph::RandomGenerator *devRng;
@@ -345,7 +345,7 @@ void fillRandomMultiNomial(LaunchContext* context, graph::RandomGenerator& rng, 
       (blocksPerGrid, threadsPerBlock, context->getCudaStream(), devRng, input.getSpecialBuffer(), 
        input.getSpecialShapeInfo(), output.specialBuffer(), 
        output.specialShapeInfo(), batchValue, numOfSamples, 
-       numOfClassX, dimA, minVal, maxVal), FLOAT_TYPES, INDEXING_TYPES);
+       numOfClassX, dimA), FLOAT_TYPES, INDEXING_TYPES);
      NDArray::registerSpecialUse({ &output }, { &input });
      manager.synchronize();
 
