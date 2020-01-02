@@ -68,6 +68,7 @@ import org.nd4j.linalg.api.ops.impl.scalar.LeakyReLU;
 import org.nd4j.linalg.api.ops.impl.scalar.ReplaceNans;
 import org.nd4j.linalg.api.ops.impl.scalar.comparison.ScalarEquals;
 import org.nd4j.linalg.api.ops.impl.scatter.ScatterUpdate;
+import org.nd4j.linalg.api.ops.impl.shape.Reshape;
 import org.nd4j.linalg.api.ops.impl.transforms.any.IsMax;
 import org.nd4j.linalg.api.ops.impl.transforms.bool.MatchConditionTransform;
 import org.nd4j.linalg.api.ops.impl.transforms.comparison.CompareAndSet;
@@ -8210,6 +8211,20 @@ public class Nd4jTestsC extends BaseNd4jTest {
         INDArray out = Nd4j.exec(new ScalarEquals(Nd4j.createFromArray(-2, -1, 0, 1, 2), null, 0));
         INDArray exp = Nd4j.createFromArray(false, false, true, false, false);
         assertEquals(exp, out);
+    }
+
+    @Test
+    public void testEmptyReshapingMinus1(){
+        INDArray arr0 = Nd4j.create(DataType.FLOAT, 2, 0);
+        INDArray arr1 = Nd4j.create(DataType.FLOAT, 0, 1, 2);
+
+        INDArray out0 = Nd4j.exec(new Reshape(arr0, Nd4j.createFromArray(2, 0, -1), Nd4j.create(DataType.FLOAT, 2, 0, 0)))[0];
+        INDArray out1 = Nd4j.exec(new Reshape(arr1, Nd4j.createFromArray(-1, 1), Nd4j.create(DataType.FLOAT, 0, 1)))[0];
+        INDArray out2 = Nd4j.exec(new Reshape(arr1, Nd4j.createFromArray(10, -1), Nd4j.create(DataType.FLOAT, 10, 0)))[0];
+
+        assertArrayEquals(new long[]{2, 0, 0}, out0.shape());
+        assertArrayEquals(new long[]{0, 1}, out1.shape());
+        assertArrayEquals(new long[]{10, 0}, out2.shape());
     }
 
     @Override
