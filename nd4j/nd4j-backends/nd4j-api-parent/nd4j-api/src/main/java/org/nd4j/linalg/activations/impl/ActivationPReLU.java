@@ -61,9 +61,12 @@ public class ActivationPReLU extends BaseActivationFunction {
     @Override
     public Pair<INDArray, INDArray> backprop(INDArray in, INDArray epsilon) {
         assertShape(in, epsilon);
-        INDArray dLdalpha = Nd4j.create(alpha.shape());
+        INDArray dLdalpha = alpha.ulike();
+        INDArray outTemp = in.ulike();
         DynamicCustomOp.DynamicCustomOpsBuilder preluBp = DynamicCustomOp.builder("prelu_bp")
-                .addInputs(in, alpha, epsilon).addOutputs(in, alpha);
+                .addInputs(in, alpha, epsilon)
+                .addOutputs(outTemp, dLdalpha);
+        in.assign(outTemp);
 
         if (sharedAxes != null) {
             for (long axis: sharedAxes) {
