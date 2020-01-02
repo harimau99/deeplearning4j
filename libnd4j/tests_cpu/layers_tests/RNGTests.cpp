@@ -1049,11 +1049,11 @@ TEST_F(RNGTests, test_multinomial_3) {
     auto output = result->at(0);
     ASSERT_EQ(Status::OK(), result->status());
     ASSERT_TRUE(expected->isSameShape(output));
-    /*
+    
     for (int i = 0; i < output->lengthOf(); ++i) {
         printf("%d : %d\n", expected->e<int>(i), output->e<int>(i));
     }
-    */
+    
     ASSERT_TRUE(expected->equalsTo(output));
     delete result;
     delete test;
@@ -1071,12 +1071,77 @@ TEST_F(RNGTests, test_multinomial_4) {
     auto output = result->at(0);
     ASSERT_EQ(Status::OK(), result->status());
     ASSERT_TRUE(expected->isSameShape(output));
-    /*
+    
     for (int i = 0; i < output->lengthOf(); ++i) {
         printf("%d : %d\n", expected->e<int>(i), output->e<int>(i));
     }
-    */
+    
     ASSERT_TRUE(expected->equalsTo(output));
     delete result;
     delete test;
+}
+
+TEST_F(RNGTests, test_multinomial_5) 
+{
+    Nd4jLong seed = 1234;
+
+    std::vector<Nd4jLong> shape = { 5, 3 };
+    nd4j::graph::RandomGenerator rng;
+
+    rng.setStates((int)seed, (int)seed);
+
+    auto arrayI = NDArrayFactory::create<Nd4jLong>(shape);
+    auto arrayR = NDArrayFactory::create_<float>('c', shape);
+    auto min = NDArrayFactory::create(DataTypeUtils::min<float>());
+    auto max = NDArrayFactory::create(1.0f);
+    nd4j::ops::randomuniform op;
+    op.execute(rng, { &arrayI, &min, &max }, { arrayR }, {}, { DataType::FLOAT32 }, {}, false);
+    for (int i = 0; i < arrayR->lengthOf(); ++i) {
+        printf("%f\n", arrayR->e<float>(i));
+    }
+    delete arrayR;
+    /*
+    tf
+0.848307
+0.32357132
+0.3067001
+
+0.06969976
+0.9138565
+0.17047906
+
+0.2833712
+0.35627055
+0.54155624
+
+0.07525682
+0.07449007
+0.86595404
+
+0.5590595
+0.00934196
+0.06701303
+
+ // our output
+0.946058
+0.052059
+0.298583
+
+0.224822
+0.100098
+0.354417
+
+0.751461
+0.775716
+0.523273
+
+0.095835
+0.843000
+0.152795
+
+0.023065
+0.203380
+0.254156
+    */
+   
 }

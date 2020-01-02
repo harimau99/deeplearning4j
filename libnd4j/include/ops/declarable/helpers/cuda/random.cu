@@ -262,29 +262,38 @@ __global__ void fillMultiNomialCuda_(graph::RandomGenerator* devRng, const void*
     const X* x = reinterpret_cast<const X*>(vx);
     Z* z = reinterpret_cast<Z*>(vz);
 
-    __shared__ Nd4jLong xDimAstride, zDimAstride;
+    const int dimC = (0 == dimA) ? 1 : 0;
+    
+    __shared__ Nd4jLong xDimAstride, zDimAstride, xDimCstride, zDimCstride;
 
     if (0 == threadIdx.x) {
         zDimAstride = shape::stride(zShapeInfo)[dimA];
         xDimAstride = shape::stride(xShapeInfo)[dimA];
+        zDimCstride = shape::stride(zShapeInfo)[dimC];
+        xDimCstride = shape::stride(xShapeInfo)[dimC];
     }
     __syncthreads();
 
     const auto tid = blockIdx.x * blockDim.x + threadIdx.x;
     
     for (Nd4jLong index = tid; index < batchValue*numOfSamples; index += gridDim.x * blockDim.x) {
+        
         const Nd4jLong nBatchIndex = index / batchValue;
         const Nd4jLong nSampleIndexInBatch = nBatchIndex - nBatchIndex * batchValue;
-        const X* xTad = x + nBatchIndex;
-        Z* zTad = z + nSampleIndexInBatch;
+        
+        const X* xTad = x + (nBatchIndex * xDimCstride);
+        Z* zTad = z + (nBatchIndex * zDimCstride);
         Z& arg = zTad[nSampleIndexInBatch * zDimAstride];
+        
         X Max = -minVal;
         // used https://en.wikipedia.org/wiki/Categorical_distribution
         // methods: gumbel trick + softmax + argmax
-        for (Nd4jLong k = 0; k < numOfClassX; k++) {
-            X tValue = (xTad[k * xDimAstride] - log(-log(devRng->relativeT<X>(nBatchIndex + k + (nSampleIndexInBatch * zDimAstride), minVal, maxVal))));
+        for (Nd4jLong nClass = 0; nClass < numOfClassX; nClass++) {
+            const Nd4jLong nIndex = nBatchIndex * xDimCstride * numOfSamples + (nSampleIndexInBatch * numOfClassX) + nClass;
+            X tValue = (xTad[nClass * xDimAstride] - log(-log(devRng->relativeT<X>(nIndex, minVal, maxVal))));
             if (tValue > Max) {
-                Max = tValue; arg = k;
+                Max = tValue; 
+                arg = nClass;
             }
         }
     }
