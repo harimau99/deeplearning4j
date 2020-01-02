@@ -35,6 +35,7 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.nn.weights.embeddings.EmbeddingInitializer;
 import org.junit.Test;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.activations.impl.ActivationIdentity;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -706,5 +707,22 @@ public class EmbeddingLayerTest extends BaseDL4JTest {
         public boolean jsonSerializable() {
             return true;
         }
+    }
+
+    @Test
+    public void testEmbeddingDefaultActivation(){
+
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .list()
+                .layer(new EmbeddingLayer.Builder().nIn(10).nOut(10).build())
+                .layer(new EmbeddingSequenceLayer.Builder().nIn(10).nOut(10).build())
+                .build();
+
+        EmbeddingLayer l = (EmbeddingLayer) conf.getConf(0).getLayer();
+        assertEquals(new ActivationIdentity(), l.getActivationFn());
+
+        EmbeddingSequenceLayer l2 = (EmbeddingSequenceLayer) conf.getConf(1).getLayer();
+        assertEquals(new ActivationIdentity(), l2.getActivationFn());
+
     }
 }
